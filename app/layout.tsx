@@ -1,4 +1,8 @@
 import type { Metadata, Viewport } from "next";
+import { AIChat } from "@/components/chat/AIChat";
+
+// Inside <body>:
+<AIChat />
 import "./globals.css";
 
 export const metadata: Metadata = {
