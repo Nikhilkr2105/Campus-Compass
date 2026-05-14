@@ -9,10 +9,9 @@ import {
 } from "lucide-react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { NeonButton } from "@/components/ui/NeonButton";
-import { BUILDINGS, SEARCH_TERMS } from "@/data/buildings";
-import { Building, NavigationRoute } from "@/types/navigation";
+import { BUILDINGS, SEARCH_TERMS, Building, PATH_EDGES, getBuildingById } from "@/data/buildings";
+import { NavigationRoute } from "@/types/navigation";
 import { buildGraph, dijkstra, distToMinutes } from "@/lib/dijkstra";
-import { PATH_EDGES, getBuildingById } from "@/data/buildings";
 
 interface RoutePanelProps {
   route:           NavigationRoute | null;

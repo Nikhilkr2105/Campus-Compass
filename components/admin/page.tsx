@@ -331,6 +331,44 @@ function Settings() {
   );
 }
 
+// ── Analytics panel ──────────────────────────────────
+function Analytics() {
+  const metrics = [
+    { label: "Navigation Events",    value: "2,847",   trend: "+12%"  },
+    { label: "Avg Route Time",       value: "4.2m",    trend: "-8%"   },
+    { label: "AI Assistant Usage",   value: "1,243",   trend: "+25%"  },
+    { label: "User Retention",       value: "87%",     trend: "+5%"   },
+  ];
+
+  return (
+    <div className="flex flex-col gap-5">
+      <h2
+        className="text-[20px] font-bold gradient-text-cyan"
+        style={{ fontFamily: "var(--font-display)" }}
+      >
+        Analytics Dashboard
+      </h2>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {metrics.map((m, i) => (
+          <motion.div key={m.label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}>
+            <GlassCard neon className="p-4">
+              <div className="text-[12px] mb-2" style={{ color: "var(--text-3)", fontFamily: "var(--font-body)" }}>
+                {m.label}
+              </div>
+              <div className="text-[24px] font-bold mb-1" style={{ color: "var(--cyan)", fontFamily: "var(--font-display)" }}>
+                {m.value}
+              </div>
+              <div className="text-[11px]" style={{ color: "var(--green)", fontFamily: "var(--font-body)" }}>
+                {m.trend}
+              </div>
+            </GlassCard>
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ── Emergency admin ───────────────────────────────────
 function EmergencyAdmin() {
   return (
@@ -389,7 +427,7 @@ const PANEL_MAP: Record<AdminTab, React.ReactNode> = {
   buildings: <BuildingForm />,
   rooms:     <RoomForm />,
   routes:    <RouteManager />,
-  analytics: <Overview />,
+  analytics: <Analytics />,
   emergency: <EmergencyAdmin />,
   settings:  <Settings />,
 };

@@ -4,7 +4,8 @@ import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Layers, ChevronLeft, ChevronRight, Wifi } from "lucide-react";
 import { RoutePanel } from "@/components/navigation/RoutePanel";
-import { Building, NavigationRoute } from "@/types/navigation";
+import { Building } from "@/data/buildings";
+import { NavigationRoute } from "@/types/navigation";
 
 interface SidebarProps {
   selectedBuilding:  Building | null;

@@ -3,7 +3,8 @@
 import { useState, useCallback } from "react";
 import { CampusMap } from "@/components/map/CampusMap";
 import { Sidebar } from "@/components/navigation/Sidebar";
-import { Building, NavigationRoute } from "@/types/navigation";
+import { Building } from "@/data/buildings";
+import { NavigationRoute } from "@/types/navigation";
 
 export default function NavigatorPage() {
   const [route,        setRoute]        = useState<NavigationRoute | null>(null);

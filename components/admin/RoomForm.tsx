@@ -392,7 +392,7 @@ export function RoomForm() {
                 className="text-[12px] truncate"
                 style={{ color: "var(--text-2)", fontFamily: "var(--font-body)" }}
               >
-                {building?.short ?? r.buildingId}
+                {building?.shortName ?? r.buildingId}
               </div>
 
               {/* Floor */}

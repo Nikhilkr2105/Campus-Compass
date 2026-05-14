@@ -5,29 +5,29 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Pencil, Trash2, Building2, X, Check } from "lucide-react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { NeonButton } from "@/components/ui/NeonButton";
-import { BUILDINGS } from "@/data/buildings";
-import { Building, BuildingType } from "@/types/navigation";
+import { BUILDINGS, Building, BuildingCategory } from "@/data/buildings";
 
 type FormState = Omit<Building, "facilities"> & { facilities: string };
 
 const EMPTY: FormState = {
-  id: "", name: "", short: "", x: 300, y: 300,
+  id: "", name: "", shortName: "", x: 300, y: 300,
   type: "academic", icon: "🏢", floors: 1,
   color: "#8b5cf6", description: "", facilities: "",
 };
 
-const TYPES: BuildingType[] = [
-  "entry","academic","facility","hostel","admin","emergency","parking",
+const TYPES: BuildingCategory[] = [
+  "academic","admin","hostel","emergency","parking","cafeteria","facility","sports",
 ];
 
-const TYPE_COLORS: Record<BuildingType, string> = {
-  entry:     "#00d4ff",
+const TYPE_COLORS: Record<BuildingCategory, string> = {
   academic:  "#8b5cf6",
+  admin:     "#3b82f6",
   facility:  "#10b981",
   hostel:    "#ec4899",
-  admin:     "#3b82f6",
   emergency: "#ef4444",
   parking:   "#6b7280",
+  cafeteria: "#f59e0b",
+  sports:    "#f97316",
 };
 
 // ── Field wrapper ─────────────────────────────────────
@@ -197,7 +197,7 @@ export function BuildingForm() {
                 </Field>
 
                 <Field label="SHORT NAME">
-                  <Input value={form.short} onChange={(v) => setField("short", v)} placeholder="e.g. Block A" />
+                  <Input value={form.shortName} onChange={(v) => setField("shortName", v)} placeholder="e.g. Block A" />
                 </Field>
 
                 <Field label="ICON (EMOJI)">
@@ -207,7 +207,7 @@ export function BuildingForm() {
                 <Field label="TYPE">
                   <select
                     value={form.type}
-                    onChange={(e) => setField("type", e.target.value as BuildingType)}
+                    onChange={(e) => setField("type", e.target.value as BuildingCategory)}
                     className="w-full px-3 py-2 rounded-lg text-[13px] outline-none"
                     style={{
                       background: "rgba(255,255,255,0.04)",

@@ -8,8 +8,8 @@ import { ZoomIn, ZoomOut, RotateCcw, Building2, Crosshair } from "lucide-react";
 import {
   BUILDINGS, PATH_EDGES,
   BuildingCategory, CATEGORY_COLORS,
+  Building,
 } from "@/data/buildings";
-import { Building } from "@/types/navigation";
 import { BuildingMarker } from "./BuildingMarker";
 import { MapLegend } from "./MapLegend";
 import { FloorSelector } from "./FloorSelector";
