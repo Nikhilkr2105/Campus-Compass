@@ -213,11 +213,18 @@ export function RoutePanel({
   const [accessible,  setAccessible]  = useState(false);
   const [hoveredBuilding, setHoveredBuilding] = useState<string | null>(null);
 
+  const handleSourceChange = useCallback((v: string) => {
+    setSource(v);
+    setError(null);
+    if (!v) onClear();
+  }, [onClear]);
+
   const handleDestChange = useCallback((v: string) => {
     setDestination(v);
     onDestChange(v);
     setError(null);
-  }, [onDestChange]);
+    if (!v) onClear();
+  }, [onDestChange, onClear]);
 
   const handleFindRoute = useCallback(async () => {
     if (!source || !destination) {
@@ -315,7 +322,7 @@ export function RoutePanel({
             <div className="text-[10px] mb-1.5 px-0.5" style={{ color: "var(--text-3)", fontFamily: "var(--font-body)" }}>FROM</div>
             <SmartSearch
               value={source}
-              onChange={(v) => { setSource(v); setError(null); }}
+              onChange={handleSourceChange}
               placeholder="Start point..."
               color="var(--cyan)"
               onHoverBuilding={setHoveredBuilding}

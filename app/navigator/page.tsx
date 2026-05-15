@@ -87,6 +87,155 @@ export default function NavigatorPage() {
         )}
 
         <div className="relative flex-1 overflow-hidden">
+          {isNavigating && route && (
+  <div
+    className="absolute top-4 left-1/2 -translate-x-1/2 z-40"
+    style={{
+      width: "min(520px, calc(100vw - 40px))",
+    }}
+  >
+    <div
+      className="rounded-2xl overflow-hidden"
+      style={{
+        background: "rgba(6,13,24,0.88)",
+        border: "1px solid rgba(0,212,255,0.18)",
+        backdropFilter: "blur(20px)",
+        boxShadow:
+          "0 12px 40px rgba(0,0,0,0.45), 0 0 24px rgba(0,212,255,0.08)",
+      }}
+    >
+      {/* Header */}
+      <div className="px-5 pt-4 pb-3 flex items-center justify-between">
+        <div>
+          <div
+            className="text-[11px] tracking-[0.24em]"
+            style={{
+              color: "var(--cyan)",
+              fontFamily: "var(--font-body)",
+            }}
+          >
+            LIVE NAVIGATION
+          </div>
+
+          <div
+            className="mt-1 text-lg font-semibold"
+            style={{
+              color: "var(--text-1)",
+              fontFamily: "var(--font-display)",
+            }}
+          >
+            Proceed to{" "}
+            {route.buildings[
+              Math.min(
+                currentStep + 1,
+                route.buildings.length - 1
+              )
+            ]?.name ?? "Destination"}
+          </div>
+        </div>
+
+        <div
+          className="px-3 py-1 rounded-full text-sm"
+          style={{
+            background: "rgba(0,212,255,0.08)",
+            border: "1px solid rgba(0,212,255,0.16)",
+            color: "var(--cyan)",
+          }}
+        >
+          {Math.max(
+            1,
+            route.estimatedMinutes - currentStep
+          )} min
+        </div>
+      </div>
+
+      {/* Progress */}
+      <div className="px-5 pb-4">
+        <div
+          className="h-2 rounded-full overflow-hidden"
+          style={{
+            background: "rgba(255,255,255,0.05)",
+          }}
+        >
+          <div
+            className="h-full rounded-full"
+            style={{
+              width: `${
+                ((currentStep + 1) /
+                  route.buildings.length) *
+                100
+              }%`,
+              background:
+                "linear-gradient(90deg,#00d4ff,#8b5cf6)",
+              boxShadow:
+                "0 0 16px rgba(0,212,255,0.35)",
+              transition: "width 0.5s ease",
+            }}
+          />
+        </div>
+
+        {/* Step indicators */}
+        <div className="flex items-center justify-between mt-4">
+          {route.buildings.map((b, idx) => {
+            const active = idx <= currentStep;
+
+            return (
+              <div
+                key={b.id}
+                className="flex flex-col items-center gap-2"
+              >
+                <div
+                  className="w-3 h-3 rounded-full"
+                  style={{
+                    background: active
+                      ? "var(--cyan)"
+                      : "rgba(255,255,255,0.12)",
+                    boxShadow: active
+                      ? "0 0 14px rgba(0,212,255,0.45)"
+                      : "none",
+                    transition: "all 0.3s ease",
+                  }}
+                />
+
+                <div
+                  className="text-[10px] text-center max-w-[72px]"
+                  style={{
+                    color: active
+                      ? "var(--text-1)"
+                      : "var(--text-3)",
+                    transition: "all 0.3s ease",
+                  }}
+                >
+                  {b.shortName}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Arrival state */}
+        {currentStep >=
+          route.buildings.length - 1 && (
+          <div
+            className="mt-4 rounded-xl px-4 py-3 text-center"
+            style={{
+              background:
+                "rgba(16,185,129,0.08)",
+              border:
+                "1px solid rgba(16,185,129,0.18)",
+              color: "#10b981",
+              fontWeight: 600,
+              boxShadow:
+                "0 0 24px rgba(16,185,129,0.12)",
+            }}
+          >
+            ✨ You have arrived at your destination
+          </div>
+        )}
+      </div>
+    </div>
+  </div>
+)}
           <div
             className="absolute top-4 right-4 z-30 flex rounded-xl overflow-hidden"
             style={{
