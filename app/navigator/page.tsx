@@ -56,9 +56,12 @@ export default function NavigatorPage() {
 
   return (
     <div
-      className="flex bg-grid"
-      style={{ height: "calc(100vh - 95px)", background: "var(--bg-1)", overflow: "hidden" }}
-    >
+  className="flex bg-grid min-h-screen"
+  style={{
+    background: "var(--bg-1)",
+    overflow: "hidden",
+  }}
+>
       <Sidebar
         selectedBuilding={selected}
         route={route}
@@ -81,7 +84,7 @@ export default function NavigatorPage() {
           currentStep={currentStep}
           isNavigating={isNavigating}
           onBuildingClick={handleBuildingClick}
-          height="calc(100vh - 95px)"
+          height="100vh"
         />
       </div>
     </div>
