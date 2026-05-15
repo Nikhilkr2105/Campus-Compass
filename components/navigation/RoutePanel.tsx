@@ -107,7 +107,7 @@ function SmartSearch({
   }, [activeIdx, showDrop, filtered, onHoverBuilding]);
 
   return (
-    <div className="relative">
+    <div className={focused ? "relative z-[80]" : "relative z-0"}>
       <div
         className="flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 transition-all duration-300"
         style={{
@@ -148,7 +148,7 @@ function SmartSearch({
             animate={{ opacity: 1, y: 0,  scale: 1    }}
             exit={{ opacity: 0, y: -6, scale: 0.98    }}
             transition={{ duration: 0.15 }}
-            className="absolute top-full left-0 right-0 mt-2 rounded-xl overflow-hidden z-50"
+            className="absolute top-full left-0 right-0 mt-2 rounded-xl overflow-hidden z-[100]"
             style={{
               background:    "rgba(6,13,24,0.98)",
               border:        "1px solid rgba(0,212,255,0.2)",
@@ -302,7 +302,7 @@ export function RoutePanel({
     <div className="flex flex-col gap-3">
 
       {/* Route planner */}
-      <GlassCard neon className="p-4">
+      <GlassCard neon className="relative z-30 overflow-visible p-4">
         <div
           className="text-[10px] font-semibold tracking-[1.5px] mb-3.5 flex items-center gap-2"
           style={{ color: "var(--cyan)", fontFamily: "var(--font-display)" }}
@@ -401,7 +401,7 @@ export function RoutePanel({
       </GlassCard>
 
       {/* Quick nav */}
-      <GlassCard className="p-4">
+      <GlassCard className="relative z-0 p-4">
         <div className="text-[10px] font-semibold tracking-[1.5px] mb-3" style={{ color: "var(--text-3)", fontFamily: "var(--font-display)" }}>
           ⚡ QUICK NAVIGATE
         </div>
