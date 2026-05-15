@@ -752,39 +752,84 @@ export function CampusMap({
             />
           ))}
 
-          {/* ── Live navigation dot on active building ── */}
-          {isNavigating && activeBuilding && (
-            <g>
-              {/* outer ring */}
-              <circle
-                cx={activeBuilding.x} cy={activeBuilding.y}
-                r={14}
-                fill="none"
-                stroke="rgba(0,212,255,0.3)"
-                strokeWidth="1.5"
-                style={{ animation: "radar-ping 2s ease-out infinite" }}
-              />
-              {/* inner ring */}
-              <circle
-                cx={activeBuilding.x} cy={activeBuilding.y}
-                r={9}
-                fill="none"
-                stroke="rgba(0,212,255,0.5)"
-                strokeWidth="1"
-                style={{ animation: "radar-ping 2s ease-out infinite 0.4s" }}
-              />
-              {/* solid dot */}
-              <circle
-                cx={activeBuilding.x} cy={activeBuilding.y}
-                r={6}
-                fill="#00d4ff"
-                style={{
-                  filter:    "drop-shadow(0 0 10px #00d4ff) drop-shadow(0 0 20px rgba(0,212,255,0.5))",
-                  animation: "glow-pulse 1.2s ease-in-out infinite",
-                }}
-              />
-            </g>
-          )}
+          {/* ── Live navigation orb ── */}
+{isNavigating && route.length > 1 && (() => {
+  const fromId = route[Math.max(0, currentStep)];
+  const toId =
+    route[Math.min(currentStep + 1, route.length - 1)];
+
+  const from = BUILDINGS.find((b) => b.id === fromId);
+  const to = BUILDINGS.find((b) => b.id === toId);
+
+  if (!from || !to) return null;
+
+  // animated interpolation
+  const progress =
+    ((Date.now() / 35) % 100) / 100;
+
+  const x =
+    from.x + (to.x - from.x) * progress;
+
+  const y =
+    from.y + (to.y - from.y) * progress;
+
+  return (
+    <g>
+      {/* ambient glow */}
+      <circle
+        cx={x}
+        cy={y}
+        r={24}
+        fill="rgba(0,212,255,0.12)"
+        style={{
+          filter: "blur(12px)",
+        }}
+      />
+
+      {/* outer pulse */}
+      <circle
+        cx={x}
+        cy={y}
+        r={16}
+        fill="none"
+        stroke="rgba(0,212,255,0.28)"
+        strokeWidth="1.5"
+        style={{
+          animation:
+            "radar-ping 1.8s ease-out infinite",
+        }}
+      />
+
+      {/* mid pulse */}
+      <circle
+        cx={x}
+        cy={y}
+        r={10}
+        fill="none"
+        stroke="rgba(0,212,255,0.5)"
+        strokeWidth="1"
+        style={{
+          animation:
+            "radar-ping 1.8s ease-out infinite 0.4s",
+        }}
+      />
+
+      {/* core orb */}
+      <circle
+        cx={x}
+        cy={y}
+        r={6}
+        fill="#00d4ff"
+        style={{
+          filter:
+            "drop-shadow(0 0 10px #00d4ff) drop-shadow(0 0 24px rgba(0,212,255,0.55))",
+          animation:
+            "glow-pulse 1.2s ease-in-out infinite",
+        }}
+      />
+    </g>
+  );
+})()}
         </svg>
       </div>
     </div>

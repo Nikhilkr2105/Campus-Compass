@@ -200,12 +200,12 @@ export default function HomePage() {
 
         {/* ── FOOTER ── */}
         <footer className="px-6 py-8" style={{ borderTop: "1px solid var(--border)" }}>
-          <div className="max-w-5xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+          <div className="max-w-5xl mx-auto flex flex-col items-center gap-4 text-center">
             <div>
               <div className="font-bold gradient-text-cyan text-sm" style={{ fontFamily: "var(--font-display)" }}>
                 RIMT Smart Campus Navigator
               </div>
-              <div className="text-[11px] mt-1" style={{ color: "var(--text-3)", fontFamily: "var(--font-body)" }}>
+              <div className="text-[14px] mt-2 font-semibold" style={{ color: "rgba(240,244,255,0.82)", fontFamily: "var(--font-body)" }}>
                 Built with ❤️ · Presented by Nikhil
               </div>
             </div>
