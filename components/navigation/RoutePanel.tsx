@@ -249,20 +249,8 @@ export function RoutePanel({
       return;
     }
 
-    if (accessible && (!srcB.accessible || !dstB.accessible)) {
-      setError("One or both locations are not wheelchair accessible.");
-      setFinding(false);
-      return;
-    }
-
-    const graph  = buildGraph(PATH_EDGES, BUILDINGS);
-    let result;
-
-    if (accessible) {
-      result = dijkstra(graph, srcB.id, dstB.id, true);
-    } else {
-      result = dijkstra(graph, srcB.id, dstB.id);
-    }
+    const graph = buildGraph(PATH_EDGES, BUILDINGS, accessible);
+    const result = dijkstra(graph, srcB.id, dstB.id);
 
     if (!result.found || result.path.length < 2) {
       setError("No route found between these locations.");
@@ -279,6 +267,7 @@ export function RoutePanel({
       buildings,
       totalDistance: result.distance,
       estimatedMinutes: distToMinutes(result.distance),
+      accessible,
     });
 
     setFinding(false);

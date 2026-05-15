@@ -30,6 +30,9 @@ const INITIAL: Message = {
   timestamp: new Date(),
 };
 
+const CHAT_TOGGLE_EVENT = "rimt-ai-chat:toggle";
+const CHAT_STATE_EVENT = "rimt-ai-chat:state";
+
 // ── Typing dots ──────────────────────────────────────
 function TypingDots() {
   return (
@@ -96,6 +99,17 @@ export function AIChat() {
   // Focus input on open
   useEffect(() => {
     if (open) setTimeout(() => inputRef.current?.focus(), 80);
+  }, [open]);
+
+  useEffect(() => {
+    const handleToggle = () => setOpen((value) => !value);
+
+    window.addEventListener(CHAT_TOGGLE_EVENT, handleToggle);
+    return () => window.removeEventListener(CHAT_TOGGLE_EVENT, handleToggle);
+  }, []);
+
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent(CHAT_STATE_EVENT, { detail: { open } }));
   }, [open]);
 
   const sendMessage = useCallback(async (text: string) => {

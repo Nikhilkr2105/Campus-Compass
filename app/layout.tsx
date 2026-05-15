@@ -1,4 +1,6 @@
 import type { Metadata, Viewport } from "next";
+import { AIChat } from "@/components/chat/AiChat";
+import { Navbar } from "@/components/layout/Navbar";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -26,7 +28,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className="min-h-screen antialiased" style={{ background: "var(--bg-1)" }}>
+        <Navbar />
         {children}
+        <AIChat />
       </body>
     </html>
   );

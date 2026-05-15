@@ -1,25 +1,7 @@
-export type BuildingType =
-  | "entry"
-  | "academic"
-  | "facility"
-  | "hostel"
-  | "admin"
-  | "emergency"
-  | "parking";
+import type { Building, BuildingCategory } from "@/data/buildings";
 
-export interface Building {
-  id:          string;
-  name:        string;
-  short:       string;
-  x:           number;
-  y:           number;
-  type:        BuildingType;
-  icon:        string;
-  floors:      number;
-  color:       string;
-  description: string;
-  facilities:  string[];
-}
+export type BuildingType = BuildingCategory;
+export type { Building };
 
 export interface PathEdge {
   from:       string;

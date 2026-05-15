@@ -23,6 +23,9 @@ const TICKER_ITEMS = [
   "🏥 Medical Center: 24/7",
 ];
 
+const CHAT_TOGGLE_EVENT = "rimt-ai-chat:toggle";
+const CHAT_STATE_EVENT = "rimt-ai-chat:state";
+
 export function Navbar() {
   const [scrolled,   setScrolled]   = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -39,6 +42,16 @@ export function Navbar() {
   // close mobile menu on route change
   useEffect(() => { setMobileOpen(false); }, [pathname]);
 
+  useEffect(() => {
+    const handleChatState = (event: Event) => {
+      const detail = (event as CustomEvent<{ open: boolean }>).detail;
+      setChatOpen(Boolean(detail?.open));
+    };
+
+    window.addEventListener(CHAT_STATE_EVENT, handleChatState);
+    return () => window.removeEventListener(CHAT_STATE_EVENT, handleChatState);
+  }, []);
+
   const handleNavClick = useCallback((href: string, section: string | null) => {
     if (href === "/" && section && pathname === "/") {
       document.getElementById(section)?.scrollIntoView({ behavior: "smooth" });
@@ -50,6 +63,10 @@ export function Navbar() {
 
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href);
+
+  const handleChatToggle = useCallback(() => {
+    window.dispatchEvent(new Event(CHAT_TOGGLE_EVENT));
+  }, []);
 
   return (
     <>
@@ -133,7 +150,7 @@ export function Navbar() {
           <motion.button
             whileHover={{ scale: 1.08, boxShadow: "0 0 16px rgba(0,212,255,0.3)" }}
             whileTap={{ scale: 0.94 }}
-            onClick={() => setChatOpen((o) => !o)}
+            onClick={handleChatToggle}
             className="w-9 h-9 rounded-[10px] flex items-center justify-center cursor-pointer"
             style={{
               background: chatOpen ? "rgba(0,212,255,0.15)" : "rgba(0,212,255,0.08)",

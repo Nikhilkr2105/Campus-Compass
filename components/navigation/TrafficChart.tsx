@@ -74,11 +74,11 @@ function BarChart({ data, maxVal }: { data: { label: string; val: number }[]; ma
                   border:     `1px solid ${isH ? "rgba(0,212,255,0.7)" : "rgba(0,212,255,0.2)"}`,
                   boxShadow:  isH ? "0 0 12px rgba(0,212,255,0.35)" : "none",
                   transition: "all 0.2s ease",
+                  transformOrigin: "bottom",
                 }}
                 initial={{ scaleY: 0 }}
                 animate={{ scaleY: 1 }}
                 transition={{ delay: i * 0.04, duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-                style={{ transformOrigin: "bottom" } as any}
               />
             </div>
 

@@ -264,7 +264,7 @@ function BuildingNode({
         fontFamily="var(--font-body)"
         style={{ userSelect: "none", transition: "all 0.2s" }}
       >
-        {building.short}
+        {building.shortName}
       </text>
 
       {/* Floor count — selected only */}
