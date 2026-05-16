@@ -487,10 +487,10 @@ export function CommandPalette({
         onClick={openPalette}
         whileHover={{ scale: 1.06, boxShadow: "0 0 28px rgba(0,212,255,0.4)" }}
         whileTap={{ scale: 0.94 }}
-        className="fixed z-40 flex items-center gap-2.5 px-4 py-2.5 rounded-2xl"
+        className="fixed z-40 flex items-center gap-2.5 px-4 py-2.5 rounded-xl"
         style={{
-          bottom:         88,
-          right:          24,
+          bottom:         140,
+          right:          100,
           background:     "linear-gradient(135deg, rgba(0,212,255,0.14), rgba(139,92,246,0.08))",
           border:         "1px solid rgba(0,212,255,0.35)",
           backdropFilter: "blur(20px)",

@@ -4,7 +4,7 @@ import {
   useState, useRef, useEffect, useCallback,
 } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bot, X, Send, Trash2 } from "lucide-react";
+import { Bot, X, Send, Trash2, Copy, Check } from "lucide-react";
 
 // ── Types ────────────────────────────────────────────
 interface Message {
@@ -36,14 +36,23 @@ const CHAT_STATE_EVENT = "rimt-ai-chat:state";
 // ── Typing dots ──────────────────────────────────────
 function TypingDots() {
   return (
-    <div className="flex items-center gap-1.5 px-4 py-3">
+    <div className="flex items-center gap-2 px-4 py-3">
       {[0, 1, 2].map((i) => (
         <motion.span
           key={i}
-          className="w-[6px] h-[6px] rounded-full inline-block"
+          className="w-2 h-2 rounded-full inline-block"
           style={{ background: "var(--cyan)" }}
-          animate={{ opacity: [0.3, 1, 0.3], y: [0, -3, 0] }}
-          transition={{ duration: 1, delay: i * 0.18, repeat: Infinity }}
+          animate={{
+            opacity: [0.3, 1, 0.3],
+            y: [0, -4, 0],
+            scale: [0.9, 1.1, 0.9],
+          }}
+          transition={{
+            duration: 0.8,
+            delay: i * 0.15,
+            repeat: Infinity,
+            easing: "easeInOut",
+          }}
         />
       ))}
     </div>
@@ -53,30 +62,96 @@ function TypingDots() {
 // ── Message bubble ───────────────────────────────────
 function Bubble({ message }: { message: Message }) {
   const isUser = message.role === "user";
+  const [copied, setCopied] = useState(false);
+  const [showActions, setShowActions] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(message.content);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+  };
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10, scale: 0.97 }}
-      animate={{ opacity: 1, y: 0,  scale: 1    }}
-      transition={{ duration: 0.22, ease: "easeOut" }}
-      className={`flex ${isUser ? "justify-end" : "justify-start"}`}
+      initial={{ opacity: 0, y: 12, scale: 0.92 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.28, ease: "easeOut" }}
+      className={`flex ${isUser ? "justify-end" : "justify-start"} group`}
+      onMouseEnter={() => setShowActions(true)}
+      onMouseLeave={() => setShowActions(false)}
     >
-      <div
-        className="max-w-[82%] px-3.5 py-2.5 text-[13px] leading-relaxed"
-        style={{
-          background:   isUser
-            ? "rgba(0,212,255,0.13)"
-            : "rgba(255,255,255,0.05)",
-          border:       `1px solid ${isUser
-            ? "rgba(0,212,255,0.28)"
-            : "rgba(255,255,255,0.08)"}`,
-          borderRadius: isUser
-            ? "16px 16px 4px 16px"
-            : "16px 16px 16px 4px",
-          color:        "var(--text-1)",
-          fontFamily:   "var(--font-body)",
-        }}
-      >
-        {message.content}
+      <div className="flex flex-col gap-1">
+        <motion.div
+          whileHover={{ y: -2 }}
+          transition={{ duration: 0.2 }}
+          className="max-w-[82%] px-4 py-3 text-[13px] leading-relaxed relative"
+          style={{
+            background: isUser
+              ? "linear-gradient(135deg, rgba(0,212,255,0.18), rgba(0,212,255,0.08))"
+              : "linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03))",
+            border: `1px solid ${isUser
+              ? "rgba(0,212,255,0.35)"
+              : "rgba(255,255,255,0.12)"}`,
+            borderRadius: isUser
+              ? "16px 16px 6px 16px"
+              : "16px 16px 16px 6px",
+            color: "var(--text-1)",
+            fontFamily: "var(--font-body)",
+            boxShadow: isUser
+              ? "0 4px 16px rgba(0,212,255,0.08)"
+              : "0 4px 16px rgba(0,0,0,0.2)",
+          }}
+        >
+          {message.content}
+        </motion.div>
+
+        {/* Actions & Timestamp */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: showActions ? 1 : 0.6, scale: 1 }}
+          transition={{ duration: 0.15 }}
+          className={`flex items-center gap-2 px-1 text-[10px] ${
+            isUser ? "justify-end" : "justify-start"
+          }`}
+        >
+          <span style={{ color: "var(--text-3)" }}>
+            {formatTime(message.timestamp)}
+          </span>
+
+          {showActions && !isUser && (
+            <motion.button
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleCopy}
+              className="w-6 h-6 rounded flex items-center justify-center"
+              style={{
+                background: "rgba(0,212,255,0.1)",
+                border: "1px solid rgba(0,212,255,0.2)",
+                color: copied ? "var(--green)" : "var(--cyan)",
+                cursor: "pointer",
+                transition: "all 0.2s",
+              }}
+              title={copied ? "Copied!" : "Copy message"}
+            >
+              {copied ? (
+                <Check className="w-3.5 h-3.5" />
+              ) : (
+                <Copy className="w-3.5 h-3.5" />
+              )}
+            </motion.button>
+          )}
+        </motion.div>
       </div>
     </motion.div>
   );
@@ -300,15 +375,16 @@ export function AIChat() {
 
               {loading && (
                 <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
                   className="flex justify-start"
                 >
                   <div
                     style={{
-                      background:   "rgba(255,255,255,0.05)",
-                      border:       "1px solid rgba(255,255,255,0.08)",
-                      borderRadius: "16px 16px 16px 4px",
+                      background: "linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03))",
+                      border: "1px solid rgba(255,255,255,0.12)",
+                      borderRadius: "16px 16px 16px 6px",
+                      boxShadow: "0 4px 16px rgba(0,0,0,0.2)",
                     }}
                   >
                     <TypingDots />
