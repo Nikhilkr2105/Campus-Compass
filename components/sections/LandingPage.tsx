@@ -2,32 +2,31 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { Navigation, Map, ArrowRight, ChevronDown } from "lucide-react";
-import { GlassCard } from "@/components/ui/GlassCard";
-import { NeonButton } from "@/components/ui/NeonButton";
+import { Navigation, Map, ArrowRight, ChevronDown, Sparkles, Compass } from "lucide-react";
 import { ParticleBackground } from "@/components/ui/ParticleBackground";
 import { useRef } from "react";
 
 const fadeUp = (delay = 0) => ({
-  initial: { opacity: 0, y: 28 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.6, delay, ease: [0.22, 1, 0.36, 1] as any },
+  initial: { opacity: 0, y: 24 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true, amount: 0.3 },
+  transition: { duration: 0.7, delay, ease: [0.22, 1, 0.36, 1] as const },
 });
 
 const STATS = [
-  { value: "22+",    label: "Buildings Mapped",  color: "var(--cyan)"   },
-  { value: "2,400+", label: "Students Using",     color: "var(--purple)" },
-  { value: "99.2%",  label: "Nav Accuracy",       color: "var(--green)"  },
-  { value: "340+",   label: "Active Routes",       color: "var(--amber)"  },
+  { value: "22+", label: "Buildings Digitized" },
+  { value: "2,400+", label: "Active Students" },
+  { value: "99.2%", label: "Routing Precision" },
+  { value: "340+", label: "Live Paths" },
 ];
 
 const FEATURES = [
-  { icon: "🗺️",  title: "Indoor Navigation",   desc: "Floor-by-floor routing with animated path rendering." },
-  { icon: "🧠",  title: "AI Route Detection",  desc: "Dijkstra algorithm finds the optimal path instantly."  },
-  { icon: "⚡",  title: "Real-Time Guidance",  desc: "Step-by-step directions with live ETA tracking."       },
-  { icon: "🚨",  title: "Emergency Mode",      desc: "One-tap SOS with instant medical center routing."      },
-  { icon: "🎙️", title: "Voice Assistant",      desc: "Natural language campus navigation via AI."            },
-  { icon: "♿",  title: "Accessibility Mode",  desc: "Wheelchair-friendly routes via ramps and lifts."       },
+  { icon: "🗺️", title: "Indoor Navigation", desc: "Floor-aware route rendering with smooth transitions." },
+  { icon: "🧠", title: "Smart Path Engine", desc: "Algorithmic wayfinding for accurate, low-latency routes." },
+  { icon: "⚡", title: "Live Guidance", desc: "Step-by-step campus direction with instant recalculation." },
+  { icon: "♿", title: "Accessible Routing", desc: "Barrier-conscious navigation for safer movement across campus." },
+  { icon: "🎙️", title: "Voice Requests", desc: "Natural prompts for hands-free destination search and routing." },
+  { icon: "🚨", title: "Emergency Assist", desc: "One-tap emergency route guidance to key safety locations." },
 ];
 
 export function LandingPage() {
@@ -35,405 +34,228 @@ export function LandingPage() {
   const scrollToFeatures = () => featuresRef.current?.scrollIntoView({ behavior: "smooth" });
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden" style={{ background: "var(--bg-1)" }}>
+    <div className="relative min-h-screen overflow-x-hidden" style={{ background: "#06090f" }}>
       <ParticleBackground />
 
-      {/* ── layered radial mesh background ── */}
       <div className="fixed inset-0 pointer-events-none z-0" aria-hidden>
-        <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse 80% 60% at 20% 30%, rgba(0,212,255,0.055) 0%, transparent 60%)" }} />
-        <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse 60% 50% at 80% 70%, rgba(139,92,246,0.06) 0%, transparent 55%)" }} />
-        <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse 40% 40% at 50% 50%, rgba(0,212,255,0.02) 0%, transparent 70%)" }} />
+        <div className="absolute inset-0" style={{ background: "radial-gradient(60% 55% at 18% 15%, rgba(0,212,255,0.14), transparent 62%)" }} />
+        <div className="absolute inset-0" style={{ background: "radial-gradient(55% 50% at 84% 18%, rgba(140,110,255,0.16), transparent 64%)" }} />
+        <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(7,11,18,0.2) 0%, rgba(6,9,15,0.92) 64%)" }} />
       </div>
 
       <div className="relative z-10" style={{ paddingTop: "95px" }}>
-
-        {/* ══════════════════════════════
-            HERO
-        ══════════════════════════════ */}
-        <section id="hero" className="flex flex-col items-center text-center px-6 pt-20 pb-24 relative">
-
-          {/* floating orbs */}
+        <section className="relative px-6 pt-16 pb-24 max-w-6xl mx-auto">
           <motion.div
-            animate={{ y: [0, -18, 0], scale: [1, 1.04, 1] }}
-            transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
-            style={{ position: "absolute", top: "8%", left: "-8%", width: 560, height: 560, borderRadius: "50%", background: "radial-gradient(circle, rgba(0,212,255,0.09) 0%, transparent 70%)", pointerEvents: "none" }}
-          />
-          <motion.div
-            animate={{ y: [0, 14, 0], scale: [1, 1.03, 1] }}
-            transition={{ duration: 9, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-            style={{ position: "absolute", top: "22%", right: "-6%", width: 480, height: 480, borderRadius: "50%", background: "radial-gradient(circle, rgba(139,92,246,0.09) 0%, transparent 70%)", pointerEvents: "none" }}
+            className="absolute -top-10 -left-20 w-72 h-72 rounded-full blur-3xl"
+            animate={{ y: [0, -16, 0] }}
+            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+            style={{ background: "rgba(0,212,255,0.18)" }}
           />
 
-          {/* badge */}
-          <motion.div {...fadeUp(0.1)}>
+          <motion.div
+            className="absolute top-16 -right-14 w-72 h-72 rounded-full blur-3xl"
+            animate={{ y: [0, 12, 0] }}
+            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+            style={{ background: "rgba(139,92,246,0.17)" }}
+          />
+
+          <motion.div {...fadeUp(0)}>
             <div
-              className="inline-flex items-center gap-2.5 px-5 py-2 rounded-full text-[11px] font-semibold tracking-[2px] mb-10"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8 text-[11px] tracking-[1.8px]"
               style={{
-                background:  "linear-gradient(135deg, rgba(0,212,255,0.08), rgba(139,92,246,0.06))",
-                border:      "1px solid rgba(0,212,255,0.28)",
-                color:       "var(--cyan)",
-                fontFamily:  "var(--font-display)",
-                boxShadow:   "0 0 30px rgba(0,212,255,0.08), inset 0 0 20px rgba(0,212,255,0.04)",
-                backdropFilter: "blur(12px)",
+                color: "#8ce8ff",
+                border: "1px solid rgba(110,229,255,0.35)",
+                background: "linear-gradient(135deg, rgba(0,212,255,0.14), rgba(125,92,255,0.08))",
+                backdropFilter: "blur(14px)",
+                fontFamily: "var(--font-display)",
               }}
             >
-              <span className="w-[6px] h-[6px] rounded-full animate-glow" style={{ background: "var(--cyan)", boxShadow: "0 0 8px var(--cyan)" }} />
-              AI-POWERED CAMPUS NAVIGATION
-              <span className="w-[6px] h-[6px] rounded-full animate-glow" style={{ background: "var(--purple)", boxShadow: "0 0 8px var(--purple)", animationDelay: "0.5s" }} />
+              <Sparkles className="w-3.5 h-3.5" /> PREMIUM CAMPUS WAYFINDING
             </div>
           </motion.div>
 
-          {/* headline */}
           <motion.h1
+            {...fadeUp(0.05)}
+            className="max-w-4xl"
             style={{
-              fontSize:      "clamp(44px, 8vw, 92px)",
-              fontWeight:    800,
-              lineHeight:    1.04,
-              letterSpacing: "-2.5px",
-              fontFamily:    "var(--font-display)",
-              maxWidth:      920,
-              marginBottom:  28,
+              fontFamily: "var(--font-display)",
+              fontSize: "clamp(40px,8vw,88px)",
+              lineHeight: 1.02,
+              letterSpacing: "-0.03em",
+              fontWeight: 800,
             }}
-            {...fadeUp(0.2)}
           >
-            <span style={{
-              background: "linear-gradient(135deg, #ffffff 0%, rgba(240,244,255,0.9) 40%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-            }}>
-              Navigate Your{" "}
+            <span style={{ background: "linear-gradient(180deg, #fff 0%, rgba(236,242,255,0.78) 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+              Navigate RIMT
             </span>
             <br />
-            <span style={{
-              background: "linear-gradient(135deg, #ffffff 0%, rgba(240,244,255,0.9) 30%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-            }}>
-              Campus{" "}
-            </span>
-            <span style={{
-              background: "linear-gradient(90deg, #00d4ff 0%, #a78bfa 50%, #8b5cf6 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              filter: "drop-shadow(0 0 30px rgba(0,212,255,0.4))",
-            }}>
-              Intelligently
+            <span style={{ background: "linear-gradient(90deg, #67e8ff 0%, #9d7bff 52%, #d7ccff 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+              with Cinematic Precision
             </span>
           </motion.h1>
 
-          {/* subtext */}
           <motion.p
-            style={{
-              fontSize:     "clamp(15px, 2vw, 19px)",
-              color:        "rgba(240,244,255,0.62)",
-              maxWidth:     500,
-              lineHeight:   1.8,
-              marginBottom: 52,
-              fontFamily:   "var(--font-body)",
-              fontWeight:   300,
-            }}
-            {...fadeUp(0.3)}
+            {...fadeUp(0.1)}
+            className="max-w-2xl mt-7 text-[15px] sm:text-[18px] leading-8"
+            style={{ color: "rgba(227,236,255,0.68)", fontFamily: "var(--font-body)", fontWeight: 300 }}
           >
-            Smart indoor + outdoor navigation for{" "}
-            <strong style={{ color: "var(--text-1)", fontWeight: 600 }}>RIMT University</strong>
-            {" "}— powered by AI, built for students.
+            A premium, map-first navigation experience for students — blending AI intelligence, immersive visuals, and effortless routing across campus interiors.
           </motion.p>
 
-          {/* CTAs */}
-          <motion.div className="flex gap-4 flex-wrap justify-center" {...fadeUp(0.4)}>
+          <motion.div {...fadeUp(0.14)} className="flex flex-wrap gap-4 mt-10">
             <Link href="/navigator">
               <motion.div
-                whileHover={{ scale: 1.04, y: -2 }}
-                whileTap={{ scale: 0.97 }}
-                className="inline-flex items-center gap-2.5 px-8 py-4 rounded-2xl text-[15px] font-semibold cursor-pointer"
+                whileHover={{ y: -2, scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-2xl cursor-pointer"
                 style={{
-                  background:  "linear-gradient(135deg, rgba(0,212,255,0.2), rgba(0,212,255,0.08))",
-                  border:      "1px solid rgba(0,212,255,0.45)",
-                  color:       "var(--cyan)",
-                  fontFamily:  "var(--font-body)",
-                  boxShadow:   "0 0 30px rgba(0,212,255,0.2), inset 0 0 20px rgba(0,212,255,0.05)",
-                  backdropFilter: "blur(12px)",
-                  transition:  "all 0.25s ease",
+                  color: "#87ecff",
+                  border: "1px solid rgba(108,230,255,0.45)",
+                  background: "linear-gradient(135deg, rgba(0,212,255,0.24), rgba(0,212,255,0.08))",
+                  boxShadow: "0 10px 40px rgba(0,212,255,0.18)",
                 }}
               >
-                <Navigation className="w-4 h-4" />
-                Start Navigation
+                <Navigation className="w-4 h-4" /> Launch Navigator
               </motion.div>
             </Link>
 
-            <motion.div
-              whileHover={{ scale: 1.04, y: -2 }}
-              whileTap={{ scale: 0.97 }}
+            <motion.button
+              whileHover={{ y: -2, scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               onClick={scrollToFeatures}
-              className="inline-flex items-center gap-2.5 px-8 py-4 rounded-2xl text-[15px] font-semibold cursor-pointer"
+              className="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-2xl"
               style={{
-                background:  "linear-gradient(135deg, rgba(139,92,246,0.12), rgba(139,92,246,0.04))",
-                border:      "1px solid rgba(139,92,246,0.35)",
-                color:       "var(--purple)",
-                fontFamily:  "var(--font-body)",
+                color: "#c5b4ff",
+                border: "1px solid rgba(165,138,255,0.35)",
+                background: "linear-gradient(135deg, rgba(139,92,246,0.18), rgba(139,92,246,0.06))",
                 backdropFilter: "blur(12px)",
-                transition:  "all 0.25s ease",
               }}
             >
-              <Map className="w-4 h-4" />
-              Explore Features
-            </motion.div>
+              <Map className="w-4 h-4" /> Explore Experience
+            </motion.button>
           </motion.div>
 
-          {/* scroll cue */}
+          <motion.div
+            {...fadeUp(0.2)}
+            className="mt-14 rounded-3xl p-4 sm:p-6"
+            style={{
+              border: "1px solid rgba(173,196,255,0.2)",
+              background: "linear-gradient(150deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03))",
+              backdropFilter: "blur(20px)",
+            }}
+          >
+            <div className="relative overflow-hidden rounded-2xl p-7 sm:p-10" style={{ background: "linear-gradient(150deg, rgba(6,14,24,0.92), rgba(12,14,27,0.9))", border: "1px solid rgba(255,255,255,0.08)" }}>
+              <div className="absolute inset-0" style={{ background: "radial-gradient(70% 65% at 18% 30%, rgba(0,212,255,0.14), transparent 62%)" }} />
+              <div className="absolute inset-0" style={{ background: "radial-gradient(55% 45% at 90% 10%, rgba(139,92,246,0.14), transparent 68%)" }} />
+
+              <div className="relative z-10 grid md:grid-cols-[1.1fr_0.9fr] gap-6 items-end">
+                <div>
+                  <div className="inline-flex items-center gap-2 text-[11px] tracking-[1.6px] mb-4" style={{ color: "rgba(145,236,255,0.9)", fontFamily: "var(--font-display)" }}>
+                    <Compass className="w-4 h-4" /> LIVE MAP PREVIEW
+                  </div>
+                  <h3 className="text-[22px] sm:text-[30px] font-semibold leading-tight" style={{ color: "#edf3ff", fontFamily: "var(--font-display)" }}>
+                    Immersive route intelligence, visualized before you move.
+                  </h3>
+                </div>
+
+                <motion.div
+                  animate={{ y: [0, -6, 0] }}
+                  transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut" }}
+                  className="rounded-2xl p-4"
+                  style={{
+                    background: "linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02))",
+                    border: "1px solid rgba(180,220,255,0.22)",
+                    backdropFilter: "blur(16px)",
+                  }}
+                >
+                  <div className="aspect-[16/10] rounded-xl relative overflow-hidden" style={{ background: "#08111c", border: "1px solid rgba(255,255,255,0.12)" }}>
+                    <div className="absolute inset-0 opacity-80" style={{ backgroundImage: "linear-gradient(rgba(121,160,255,0.14) 1px, transparent 1px), linear-gradient(90deg, rgba(121,160,255,0.14) 1px, transparent 1px)", backgroundSize: "34px 34px" }} />
+                    <motion.div
+                      className="absolute top-[18%] left-[8%] h-[2px] rounded-full"
+                      animate={{ width: ["20%", "78%", "20%"] }}
+                      transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+                      style={{ background: "linear-gradient(90deg, #5ce8ff, #a185ff)", boxShadow: "0 0 20px rgba(92,232,255,0.7)" }}
+                    />
+                    <motion.div
+                      className="absolute bottom-[24%] left-[26%] w-2.5 h-2.5 rounded-full"
+                      animate={{ x: [0, 80, 26, 0], y: [0, -24, 12, 0] }}
+                      transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+                      style={{ background: "#70ecff", boxShadow: "0 0 18px rgba(112,236,255,0.85)" }}
+                    />
+                    <div className="absolute bottom-3 right-3 text-[10px] tracking-widest" style={{ color: "rgba(198,220,255,0.68)", fontFamily: "var(--font-display)" }}>
+                      PREVIEW MODE
+                    </div>
+                  </div>
+                </motion.div>
+              </div>
+            </div>
+          </motion.div>
+
           <motion.button
-            className="flex flex-col items-center gap-2 mt-20 cursor-pointer"
-            style={{ color: "var(--text-3)", background: "none", border: "none" }}
+            className="flex flex-col items-center gap-2 mt-14 mx-auto"
+            style={{ color: "rgba(184,231,255,0.72)" }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 1.2 }}
+            transition={{ delay: 1.1 }}
             onClick={scrollToFeatures}
           >
-            <span className="text-[9px] tracking-[4px]" style={{ fontFamily: "var(--font-display)", color: "rgba(0,212,255,0.4)" }}>DISCOVER</span>
-            <div className="w-px h-10" style={{ background: "linear-gradient(to bottom, transparent, rgba(0,212,255,0.5), transparent)" }} />
-            <motion.div animate={{ y: [0, 5, 0] }} transition={{ duration: 1.5, repeat: Infinity }}>
-              <ChevronDown className="w-4 h-4" style={{ color: "rgba(0,212,255,0.5)" }} />
+            <span className="text-[10px] tracking-[3.5px]" style={{ fontFamily: "var(--font-display)" }}>SCROLL</span>
+            <div className="w-px h-10" style={{ background: "linear-gradient(to bottom, transparent, rgba(132,225,255,0.7), transparent)" }} />
+            <motion.div animate={{ y: [0, 4, 0] }} transition={{ duration: 1.5, repeat: Infinity }}>
+              <ChevronDown className="w-4 h-4" />
             </motion.div>
           </motion.button>
         </section>
 
-        {/* ══════════════════════════════
-            STATS
-        ══════════════════════════════ */}
-        <section id="stats" className="px-6 pb-20 max-w-5xl mx-auto">
+        <section className="px-6 pb-20 max-w-6xl mx-auto">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {STATS.map((s, i) => (
-              <motion.div
-                key={s.label}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.09 }}
-                whileHover={{ y: -4, scale: 1.02 }}
-              >
-                <div
-                  className="p-6 text-center rounded-2xl relative overflow-hidden"
-                  style={{
-                    background:     "linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02))",
-                    border:         `1px solid ${s.color}33`,
-                    backdropFilter: "blur(20px)",
-                    boxShadow:      `0 0 30px ${s.color}12, inset 0 0 20px ${s.color}06`,
-                    transition:     "all 0.3s ease",
-                  }}
-                >
-                  {/* corner glow */}
-                  <div style={{ position: "absolute", top: 0, right: 0, width: 60, height: 60, background: `radial-gradient(circle, ${s.color}22 0%, transparent 70%)`, pointerEvents: "none" }} />
-
-                  <div
-                    className="text-[clamp(30px,4vw,42px)] font-black mb-1.5 leading-none"
-                    style={{ color: s.color, fontFamily: "var(--font-display)", textShadow: `0 0 20px ${s.color}66` }}
-                  >
-                    {s.value}
-                  </div>
-                  <div className="text-[12px] font-medium" style={{ color: "rgba(240,244,255,0.55)", fontFamily: "var(--font-body)", letterSpacing: "0.3px" }}>
-                    {s.label}
-                  </div>
+              <motion.div key={s.label} {...fadeUp(i * 0.05)}>
+                <div className="p-6 rounded-2xl" style={{ border: "1px solid rgba(189,208,255,0.17)", background: "linear-gradient(145deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))", backdropFilter: "blur(16px)" }}>
+                  <div className="text-[clamp(28px,4vw,40px)] leading-none" style={{ color: "#90e8ff", fontFamily: "var(--font-display)", fontWeight: 700 }}>{s.value}</div>
+                  <div className="text-[12px] mt-2" style={{ color: "rgba(220,232,255,0.6)" }}>{s.label}</div>
                 </div>
               </motion.div>
             ))}
           </div>
         </section>
 
-        {/* ══════════════════════════════
-            FEATURES
-        ══════════════════════════════ */}
-        <section id="features" ref={featuresRef} className="px-6 pb-20 max-w-5xl mx-auto">
-          <motion.div
-            className="text-center mb-14"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
-            <div
-              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-semibold tracking-[2px] mb-5"
-              style={{ background: "rgba(139,92,246,0.08)", border: "1px solid rgba(139,92,246,0.25)", color: "var(--purple)", fontFamily: "var(--font-display)" }}
-            >
-              CORE CAPABILITIES
-            </div>
-            <h2
-              style={{
-                fontSize:   "clamp(28px,4.5vw,46px)",
-                fontWeight: 800,
-                fontFamily: "var(--font-display)",
-                background: "linear-gradient(135deg, #fff 30%, rgba(0,212,255,0.85) 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                marginBottom: 12,
-              }}
-            >
-              Everything You Need
+        <section ref={featuresRef} className="px-6 pb-20 max-w-6xl mx-auto">
+          <motion.div className="text-center mb-14" {...fadeUp(0)}>
+            <h2 style={{ fontSize: "clamp(28px,4.5vw,48px)", fontWeight: 700, fontFamily: "var(--font-display)", color: "#edf3ff", letterSpacing: "-0.02em" }}>
+              Built for a modern campus.
             </h2>
-            <p style={{ color: "rgba(240,244,255,0.5)", fontSize: 15, fontFamily: "var(--font-body)", fontWeight: 300 }}>
-              Advanced algorithms meet beautiful design
+            <p className="mt-3" style={{ color: "rgba(218,228,255,0.56)", fontSize: 15 }}>
+              Minimal, intelligent tools designed for everyday movement.
             </p>
           </motion.div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {FEATURES.map((f, i) => (
-              <motion.div
-                key={f.title}
-                initial={{ opacity: 0, y: 24 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.07 }}
-                whileHover={{ y: -5, scale: 1.01 }}
-              >
-                <div
-                  className="p-6 h-full rounded-2xl relative overflow-hidden group"
-                  style={{
-                    background:     "linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02))",
-                    border:         "1px solid rgba(255,255,255,0.08)",
-                    backdropFilter: "blur(20px)",
-                    transition:     "all 0.3s ease",
-                    cursor:         "default",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.border      = "1px solid rgba(0,212,255,0.25)";
-                    e.currentTarget.style.boxShadow   = "0 0 30px rgba(0,212,255,0.08), inset 0 0 20px rgba(0,212,255,0.03)";
-                    e.currentTarget.style.background  = "linear-gradient(135deg, rgba(0,212,255,0.06), rgba(255,255,255,0.02))";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.border      = "1px solid rgba(255,255,255,0.08)";
-                    e.currentTarget.style.boxShadow   = "none";
-                    e.currentTarget.style.background  = "linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02))";
-                  }}
-                >
-                  {/* top-right glow */}
-                  <div style={{ position: "absolute", top: 0, right: 0, width: 80, height: 80, background: "radial-gradient(circle, rgba(0,212,255,0.08) 0%, transparent 70%)", pointerEvents: "none" }} />
-
-                  <div
-                    className="w-11 h-11 rounded-xl flex items-center justify-center text-xl mb-5"
-                    style={{
-                      background: "linear-gradient(135deg, rgba(0,212,255,0.12), rgba(0,212,255,0.04))",
-                      border:     "1px solid rgba(0,212,255,0.2)",
-                      boxShadow:  "0 0 16px rgba(0,212,255,0.1)",
-                    }}
-                  >
+              <motion.div key={f.title} {...fadeUp(i * 0.04)} whileHover={{ y: -4 }}>
+                <div className="h-full p-6 rounded-2xl" style={{ border: "1px solid rgba(184,212,255,0.18)", background: "linear-gradient(145deg, rgba(255,255,255,0.07), rgba(255,255,255,0.025))", backdropFilter: "blur(18px)" }}>
+                  <div className="w-11 h-11 rounded-xl flex items-center justify-center text-xl mb-5" style={{ background: "linear-gradient(135deg, rgba(103,232,255,0.18), rgba(158,133,255,0.12))", border: "1px solid rgba(161,211,255,0.26)" }}>
                     {f.icon}
                   </div>
-
-                  <h3 className="text-[14px] font-semibold mb-2.5" style={{ fontFamily: "var(--font-display)", color: "var(--text-1)" }}>
-                    {f.title}
-                  </h3>
-                  <p className="text-[13px] leading-relaxed" style={{ color: "rgba(240,244,255,0.5)", fontFamily: "var(--font-body)", fontWeight: 300 }}>
-                    {f.desc}
-                  </p>
+                  <h3 className="text-[15px] mb-2" style={{ color: "#edf3ff", fontFamily: "var(--font-display)", fontWeight: 600 }}>{f.title}</h3>
+                  <p className="text-[13px] leading-relaxed" style={{ color: "rgba(220,232,255,0.6)" }}>{f.desc}</p>
                 </div>
               </motion.div>
             ))}
           </div>
         </section>
 
-        {/* ══════════════════════════════
-            CTA
-        ══════════════════════════════ */}
-        <section id="cta" className="px-6 pb-20">
-          <motion.div
-            className="max-w-2xl mx-auto"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
-            <div
-              className="p-12 text-center rounded-3xl relative overflow-hidden"
-              style={{
-                background:     "linear-gradient(135deg, rgba(0,212,255,0.07), rgba(139,92,246,0.05), rgba(255,255,255,0.02))",
-                border:         "1px solid rgba(0,212,255,0.22)",
-                backdropFilter: "blur(24px)",
-                boxShadow:      "0 0 60px rgba(0,212,255,0.08), 0 0 120px rgba(139,92,246,0.05), inset 0 0 40px rgba(0,212,255,0.04)",
-              }}
-            >
-              {/* bg glow blobs */}
-              <div style={{ position: "absolute", top: "-30%", left: "-10%", width: 300, height: 300, borderRadius: "50%", background: "radial-gradient(circle, rgba(0,212,255,0.1) 0%, transparent 70%)", pointerEvents: "none" }} />
-              <div style={{ position: "absolute", bottom: "-30%", right: "-10%", width: 280, height: 280, borderRadius: "50%", background: "radial-gradient(circle, rgba(139,92,246,0.1) 0%, transparent 70%)", pointerEvents: "none" }} />
-
-              <div className="relative z-10">
-                <h2
-                  style={{
-                    fontSize:   "clamp(26px,4vw,40px)",
-                    fontWeight: 800,
-                    fontFamily: "var(--font-display)",
-                    background: "linear-gradient(135deg, #fff 20%, #00d4ff 60%, #8b5cf6 100%)",
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
-                    marginBottom: 16,
-                  }}
-                >
-                  Ready to Navigate?
-                </h2>
-                <p
-                  className="mb-10"
-                  style={{ fontSize: 16, color: "rgba(240,244,255,0.55)", fontFamily: "var(--font-body)", fontWeight: 300, lineHeight: 1.7 }}
-                >
-                  Join 2,400+ RIMT students already using the system
-                </p>
-                <Link href="/navigator">
-                  <motion.div
-                    whileHover={{ scale: 1.05, y: -2, boxShadow: "0 0 40px rgba(0,212,255,0.35)" }}
-                    whileTap={{ scale: 0.97 }}
-                    className="inline-flex items-center gap-2.5 px-10 py-4 rounded-2xl text-[15px] font-semibold cursor-pointer"
-                    style={{
-                      background:  "linear-gradient(135deg, rgba(0,212,255,0.22), rgba(0,212,255,0.1))",
-                      border:      "1px solid rgba(0,212,255,0.5)",
-                      color:       "var(--cyan)",
-                      fontFamily:  "var(--font-body)",
-                      boxShadow:   "0 0 24px rgba(0,212,255,0.18)",
-                      transition:  "all 0.25s ease",
-                    }}
-                  >
-                    Open Navigator
-                    <ArrowRight className="w-4 h-4" />
-                  </motion.div>
-                </Link>
-              </div>
-            </div>
+        <section className="px-6 pb-20">
+          <motion.div className="max-w-3xl mx-auto text-center rounded-3xl p-12" {...fadeUp(0)} style={{ border: "1px solid rgba(171,211,255,0.2)", background: "linear-gradient(145deg, rgba(14,22,34,0.88), rgba(20,16,36,0.8))", backdropFilter: "blur(22px)" }}>
+            <h2 style={{ fontSize: "clamp(26px,4vw,42px)", fontWeight: 700, color: "#f0f5ff", fontFamily: "var(--font-display)" }}>Ready to move smarter?</h2>
+            <p className="mt-4 mb-9" style={{ color: "rgba(220,232,255,0.62)", lineHeight: 1.75 }}>Experience premium campus routing engineered for speed, clarity, and confidence.</p>
+            <Link href="/navigator">
+              <motion.div whileHover={{ scale: 1.03, y: -2 }} whileTap={{ scale: 0.98 }} className="inline-flex items-center gap-2.5 px-9 py-4 rounded-2xl" style={{ color: "#87ebff", border: "1px solid rgba(102,228,255,0.45)", background: "linear-gradient(135deg, rgba(0,212,255,0.22), rgba(0,212,255,0.08))", boxShadow: "0 8px 30px rgba(0,212,255,0.16)" }}>
+                Open Navigator <ArrowRight className="w-4 h-4" />
+              </motion.div>
+            </Link>
           </motion.div>
         </section>
-
-        {/* ══════════════════════════════
-            FOOTER
-        ══════════════════════════════ */}
-        <footer
-          className="px-6 py-10"
-          style={{ borderTop: "1px solid rgba(255,255,255,0.07)", background: "linear-gradient(to top, rgba(0,212,255,0.02), transparent)" }}
-        >
-          <div className="max-w-5xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-5">
-            <div>
-              <div
-                className="font-bold text-sm mb-1"
-                style={{
-                  fontFamily: "var(--font-display)",
-                  background: "linear-gradient(90deg, #fff, #00d4ff)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                }}
-              >
-                RIMT Smart Campus Navigator
-              </div>
-              <div className="text-[11px]" style={{ color: "rgba(240,244,255,0.3)", fontFamily: "var(--font-body)" }}>
-                Built with ❤️ · Presented by Nikhil
-              </div>
-            </div>
-            <div className="flex gap-6">
-              {["Privacy", "Terms", "Support"].map((l) => (
-                <span
-                  key={l}
-                  className="text-[13px] cursor-pointer transition-colors duration-200"
-                  style={{ color: "rgba(240,244,255,0.4)", fontFamily: "var(--font-body)" }}
-                  onMouseEnter={(e) => (e.currentTarget.style.color = "var(--cyan)")}
-                  onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(240,244,255,0.4)")}
-                >
-                  {l}
-                </span>
-              ))}
-            </div>
-          </div>
-        </footer>
       </div>
     </div>
   );
