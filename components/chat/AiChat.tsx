@@ -14,13 +14,19 @@ interface Message {
   timestamp: Date;
 }
 
+// API shape — only role+content, no extra fields
+interface ApiMessage {
+  role:    "user" | "assistant";
+  content: string;
+}
+
 const uid = () => Math.random().toString(36).slice(2, 9);
 
 const QUICK_PROMPTS = [
   "How to reach Library?",
   "Where is Medical Center?",
-  "CSE Lab 3 location?",
-  "Nearest washroom?",
+  "Where is the CSE department?",
+  "Where is the Canteen?",
 ];
 
 const INITIAL: Message = {
@@ -31,7 +37,7 @@ const INITIAL: Message = {
 };
 
 const CHAT_TOGGLE_EVENT = "rimt-ai-chat:toggle";
-const CHAT_STATE_EVENT = "rimt-ai-chat:state";
+const CHAT_STATE_EVENT  = "rimt-ai-chat:state";
 
 // ── Typing dots ──────────────────────────────────────
 function TypingDots() {
@@ -44,14 +50,14 @@ function TypingDots() {
           style={{ background: "var(--cyan)" }}
           animate={{
             opacity: [0.3, 1, 0.3],
-            y: [0, -4, 0],
-            scale: [0.9, 1.1, 0.9],
+            y:       [0, -4, 0],
+            scale:   [0.9, 1.1, 0.9],
           }}
           transition={{
             duration: 0.8,
-            delay: i * 0.15,
-            repeat: Infinity,
-            easing: "easeInOut",
+            delay:    i * 0.15,
+            repeat:   Infinity,
+            ease:     "easeInOut",
           }}
         />
       ))}
@@ -62,7 +68,7 @@ function TypingDots() {
 // ── Message bubble ───────────────────────────────────
 function Bubble({ message }: { message: Message }) {
   const isUser = message.role === "user";
-  const [copied, setCopied] = useState(false);
+  const [copied,      setCopied]      = useState(false);
   const [showActions, setShowActions] = useState(false);
 
   const handleCopy = () => {
@@ -71,28 +77,27 @@ function Bubble({ message }: { message: Message }) {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString("en-US", {
-      hour: "2-digit",
+  const formatTime = (date: Date) =>
+    date.toLocaleTimeString("en-US", {
+      hour:   "2-digit",
       minute: "2-digit",
       hour12: true,
     });
-  };
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 12, scale: 0.92 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
+      animate={{ opacity: 1, y: 0,  scale: 1    }}
       transition={{ duration: 0.28, ease: "easeOut" }}
       className={`flex ${isUser ? "justify-end" : "justify-start"} group`}
       onMouseEnter={() => setShowActions(true)}
       onMouseLeave={() => setShowActions(false)}
     >
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-1" style={{ maxWidth: "82%" }}>
         <motion.div
           whileHover={{ y: -2 }}
           transition={{ duration: 0.2 }}
-          className="max-w-[82%] px-4 py-3 text-[13px] leading-relaxed relative"
+          className="px-4 py-3 text-[13px] leading-relaxed"
           style={{
             background: isUser
               ? "linear-gradient(135deg, rgba(0,212,255,0.18), rgba(0,212,255,0.08))"
@@ -103,11 +108,12 @@ function Bubble({ message }: { message: Message }) {
             borderRadius: isUser
               ? "16px 16px 6px 16px"
               : "16px 16px 16px 6px",
-            color: "var(--text-1)",
+            color:      "var(--text-1)",
             fontFamily: "var(--font-body)",
-            boxShadow: isUser
+            boxShadow:  isUser
               ? "0 4px 16px rgba(0,212,255,0.08)"
               : "0 4px 16px rgba(0,0,0,0.2)",
+            wordBreak: "break-word",
           }}
         >
           {message.content}
@@ -115,8 +121,7 @@ function Bubble({ message }: { message: Message }) {
 
         {/* Actions & Timestamp */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: showActions ? 1 : 0.6, scale: 1 }}
+          animate={{ opacity: showActions ? 1 : 0.6 }}
           transition={{ duration: 0.15 }}
           className={`flex items-center gap-2 px-1 text-[10px] ${
             isUser ? "justify-end" : "justify-start"
@@ -137,18 +142,16 @@ function Bubble({ message }: { message: Message }) {
               className="w-6 h-6 rounded flex items-center justify-center"
               style={{
                 background: "rgba(0,212,255,0.1)",
-                border: "1px solid rgba(0,212,255,0.2)",
-                color: copied ? "var(--green)" : "var(--cyan)",
-                cursor: "pointer",
+                border:     "1px solid rgba(0,212,255,0.2)",
+                color:      copied ? "var(--green)" : "var(--cyan)",
+                cursor:     "pointer",
                 transition: "all 0.2s",
               }}
               title={copied ? "Copied!" : "Copy message"}
             >
-              {copied ? (
-                <Check className="w-3.5 h-3.5" />
-              ) : (
-                <Copy className="w-3.5 h-3.5" />
-              )}
+              {copied
+                ? <Check className="w-3.5 h-3.5" />
+                : <Copy  className="w-3.5 h-3.5" />}
             </motion.button>
           )}
         </motion.div>
@@ -159,11 +162,14 @@ function Bubble({ message }: { message: Message }) {
 
 // ── Main AIChat component ────────────────────────────
 export function AIChat() {
-  const [open,     setOpen]     = useState(false);
-  const [messages, setMessages] = useState<Message[]>([INITIAL]);
-  const [input,    setInput]    = useState("");
-  const [loading,  setLoading]  = useState(false);
-  const endRef  = useRef<HTMLDivElement>(null);
+  const [open,        setOpen]        = useState(false);
+  const [messages,    setMessages]    = useState<Message[]>([INITIAL]);
+  const [input,       setInput]       = useState("");
+  const [loading,     setLoading]     = useState(false);
+  const [error,       setError]       = useState<string | null>(null);
+  const [suggestions, setSuggestions] = useState<string[]>(QUICK_PROMPTS);
+
+  const endRef   = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Auto-scroll
@@ -176,33 +182,52 @@ export function AIChat() {
     if (open) setTimeout(() => inputRef.current?.focus(), 80);
   }, [open]);
 
+  // Toggle event from external buttons
   useEffect(() => {
-    const handleToggle = () => setOpen((value) => !value);
-
+    const handleToggle = () => setOpen((v) => !v);
     window.addEventListener(CHAT_TOGGLE_EVENT, handleToggle);
     return () => window.removeEventListener(CHAT_TOGGLE_EVENT, handleToggle);
   }, []);
 
+  // Broadcast open state
   useEffect(() => {
     window.dispatchEvent(new CustomEvent(CHAT_STATE_EVENT, { detail: { open } }));
   }, [open]);
 
+  // ── Core send ───────────────────────────────────────
   const sendMessage = useCallback(async (text: string) => {
     const trimmed = text.trim();
     if (!trimmed || loading) return;
 
+    setError(null);
+
+    // 1. Append user message immediately
     const userMsg: Message = {
-      id: uid(), role: "user", content: trimmed, timestamp: new Date(),
+      id:        uid(),
+      role:      "user",
+      content:   trimmed,
+      timestamp: new Date(),
     };
-    setMessages((prev) => [...prev, userMsg]);
+
+    // Use functional update so we always have latest messages
+    setMessages((prev) => {
+      const next = [...prev, userMsg];
+      // Kick off API call inside the updater's callback using the fresh array
+      void callApi(next);
+      return next;
+    });
+
     setInput("");
     setLoading(true);
+  }, [loading]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Separate async function so we can pass the already-updated array
+  const callApi = async (currentMessages: Message[]) => {
     try {
-      const history = [...messages, userMsg].map((m) => ({
-        role:    m.role,
-        content: m.content,
-      }));
+      // Strip internal fields — send only role + content
+      const history: ApiMessage[] = currentMessages
+        .filter((m) => m.content.trim() !== "")
+        .map((m) => ({ role: m.role, content: m.content }));
 
       const res = await fetch("/api/chat", {
         method:  "POST",
@@ -210,43 +235,85 @@ export function AIChat() {
         body:    JSON.stringify({ messages: history }),
       });
 
-      if (!res.ok) throw new Error("API error");
+      // Parse error body if available
+      if (!res.ok) {
+        let errText = `API error ${res.status}`;
+        try {
+          const errData = await res.json();
+          if (errData?.error) errText = errData.error;
+        } catch { /* ignore parse failure */ }
+        throw new Error(errText);
+      }
 
       const data = await res.json();
 
+      // data.content is the string reply from route.ts
+      const replyText: string =
+        typeof data.content === "string" && data.content.trim()
+          ? data.content.trim()
+          : "Sorry, I couldn't get a response. Please try again.";
+
+      const assistantMsg: Message = {
+        id:        uid(),
+        role:      "assistant",
+        content:   replyText,
+        timestamp: new Date(),
+      };
+
+      setMessages((prev) => [...prev, assistantMsg]);
+
+      // Update chips: use backend suggestions if valid array, else keep current
+      if (Array.isArray(data.suggestions) && data.suggestions.length > 0) {
+        setSuggestions(
+          data.suggestions
+            .filter((s: unknown) => typeof s === "string" && s.trim())
+            .slice(0, 5)
+        );
+      }
+
+    } catch (err: unknown) {
+      const msg =
+        err instanceof Error
+          ? err.message
+          : "Connection issue. Please try again.";
+
+      setError(msg);
+
       setMessages((prev) => [
         ...prev,
         {
           id:        uid(),
           role:      "assistant",
-          content:   data.content ?? "Sorry, I couldn't respond. Try again.",
-          timestamp: new Date(),
-        },
-      ]);
-    } catch {
-      setMessages((prev) => [
-        ...prev,
-        {
-          id:        uid(),
-          role:      "assistant",
-          content:   "Connection issue. Please try again.",
+          content:   `⚠️ ${msg}`,
           timestamp: new Date(),
         },
       ]);
     } finally {
       setLoading(false);
     }
-  }, [messages, loading]);
+  };
 
-  const handleKey = (e: React.KeyboardEvent) => {
+  // ── Chip click ──────────────────────────────────────
+  // Direct call — bypasses input state entirely
+  const handleChipClick = (q: string) => {
+    if (loading) return;
+    sendMessage(q);
+  };
+
+  const handleKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       sendMessage(input);
     }
   };
 
-  const clearChat = () => setMessages([INITIAL]);
+  const clearChat = () => {
+    setMessages([INITIAL]);
+    setError(null);
+    setSuggestions(QUICK_PROMPTS);
+  };
 
+  // ── Render ──────────────────────────────────────────
   return (
     <>
       {/* ── Floating button ── */}
@@ -266,7 +333,6 @@ export function AIChat() {
               border:        "1.5px solid rgba(0,212,255,0.45)",
               backdropFilter:"blur(12px)",
               boxShadow:     "0 0 24px rgba(0,212,255,0.2)",
-              animation:     "float 3.5s ease-in-out infinite",
               cursor:        "pointer",
             }}
             title="AI Assistant"
@@ -321,14 +387,17 @@ export function AIChat() {
                   </div>
                   <div className="flex items-center gap-1.5 mt-0.5">
                     <span
-                      className="w-[5px] h-[5px] rounded-full inline-block animate-glow"
-                      style={{ background: "var(--green)" }}
+                      className="w-[5px] h-[5px] rounded-full inline-block"
+                      style={{ background: loading ? "var(--cyan)" : "var(--green)" }}
                     />
                     <span
                       className="text-[10px]"
-                      style={{ color: "var(--green)", fontFamily: "var(--font-body)" }}
+                      style={{
+                        color:      loading ? "var(--cyan)" : "var(--green)",
+                        fontFamily: "var(--font-body)",
+                      }}
                     >
-                      Online
+                      {loading ? "Thinking…" : "Online"}
                     </span>
                   </div>
                 </div>
@@ -364,27 +433,27 @@ export function AIChat() {
             </div>
 
             {/* Messages */}
-            <div
-              className="flex-1 overflow-y-auto px-4 py-3 flex flex-col gap-2.5 no-scrollbar"
-            >
+            <div className="flex-1 overflow-y-auto px-4 py-3 flex flex-col gap-2.5 no-scrollbar">
               <AnimatePresence initial={false}>
                 {messages.map((m) => (
                   <Bubble key={m.id} message={m} />
                 ))}
               </AnimatePresence>
 
+              {/* Typing indicator */}
               {loading && (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
                   className="flex justify-start"
                 >
                   <div
                     style={{
-                      background: "linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03))",
-                      border: "1px solid rgba(255,255,255,0.12)",
+                      background:   "linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03))",
+                      border:       "1px solid rgba(255,255,255,0.12)",
                       borderRadius: "16px 16px 16px 6px",
-                      boxShadow: "0 4px 16px rgba(0,0,0,0.2)",
+                      boxShadow:    "0 4px 16px rgba(0,0,0,0.2)",
                     }}
                   >
                     <TypingDots />
@@ -392,37 +461,62 @@ export function AIChat() {
                 </motion.div>
               )}
 
+              {/* Inline error banner */}
+              {error && !loading && (
+                <motion.div
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-[11px] px-3 py-2 rounded-lg text-center"
+                  style={{
+                    background: "rgba(255,80,80,0.08)",
+                    border:     "1px solid rgba(255,80,80,0.2)",
+                    color:      "#ff7070",
+                    fontFamily: "var(--font-body)",
+                  }}
+                >
+                  {error}
+                </motion.div>
+              )}
+
               <div ref={endRef} />
             </div>
 
-            {/* Quick chips */}
-            <div
-              className="px-4 py-2 flex gap-2 overflow-x-auto no-scrollbar flex-shrink-0"
-              style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}
-            >
-              {QUICK_PROMPTS.map((q) => (
-                <motion.button
-                  key={q}
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={() => sendMessage(q)}
-                  disabled={loading}
-                  className="flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] whitespace-nowrap transition-colors"
-                  style={{
-                    background:   "rgba(0,212,255,0.07)",
-                    border:       "1px solid rgba(0,212,255,0.2)",
-                    color:        "var(--cyan)",
-                    cursor:       loading ? "not-allowed" : "pointer",
-                    opacity:      loading ? 0.5 : 1,
-                    fontFamily:   "var(--font-body)",
-                  }}
-                >
-                  {q}
-                </motion.button>
-              ))}
-            </div>
+            {/* Suggestion chips — dynamic from backend, fallback to QUICK_PROMPTS */}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={suggestions.join("|")}
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="px-4 py-2 flex gap-2 overflow-x-auto no-scrollbar flex-shrink-0"
+                style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}
+              >
+                {suggestions.map((q) => (
+                  <motion.button
+                    key={q}
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => handleChipClick(q)}
+                    disabled={loading}
+                    className="flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] whitespace-nowrap"
+                    style={{
+                      background: "rgba(0,212,255,0.07)",
+                      border:     "1px solid rgba(0,212,255,0.2)",
+                      color:      "var(--cyan)",
+                      cursor:     loading ? "not-allowed" : "pointer",
+                      opacity:    loading ? 0.5 : 1,
+                      fontFamily: "var(--font-body)",
+                      transition: "opacity 0.2s",
+                    }}
+                  >
+                    {q}
+                  </motion.button>
+                ))}
+              </motion.div>
+            </AnimatePresence>
 
-            {/* Input */}
+            {/* Input row */}
             <div
               className="px-4 py-3 flex gap-2.5 items-center flex-shrink-0"
               style={{ borderTop: "1px solid rgba(255,255,255,0.07)" }}
@@ -432,15 +526,16 @@ export function AIChat() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKey}
-                placeholder="Ask anything about campus..."
+                placeholder="Ask anything about campus…"
                 disabled={loading}
                 className="flex-1 text-[13px] px-3.5 py-2.5 rounded-xl outline-none"
                 style={{
-                  background:   "rgba(255,255,255,0.04)",
-                  border:       "1px solid rgba(255,255,255,0.09)",
-                  color:        "var(--text-1)",
-                  fontFamily:   "var(--font-body)",
-                  transition:   "border-color 0.2s",
+                  background: "rgba(255,255,255,0.04)",
+                  border:     "1px solid rgba(255,255,255,0.09)",
+                  color:      "var(--text-1)",
+                  fontFamily: "var(--font-body)",
+                  transition: "border-color 0.2s",
+                  opacity:    loading ? 0.6 : 1,
                 }}
                 onFocus={(e) => (e.currentTarget.style.borderColor = "rgba(0,212,255,0.35)")}
                 onBlur={(e)  => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.09)")}
@@ -452,11 +547,12 @@ export function AIChat() {
                 disabled={!input.trim() || loading}
                 className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
                 style={{
-                  background:   "rgba(0,212,255,0.15)",
-                  border:       "1px solid rgba(0,212,255,0.35)",
-                  color:        "var(--cyan)",
-                  cursor:       (!input.trim() || loading) ? "not-allowed" : "pointer",
-                  opacity:      (!input.trim() || loading) ? 0.5 : 1,
+                  background: "rgba(0,212,255,0.15)",
+                  border:     "1px solid rgba(0,212,255,0.35)",
+                  color:      "var(--cyan)",
+                  cursor:     (!input.trim() || loading) ? "not-allowed" : "pointer",
+                  opacity:    (!input.trim() || loading) ? 0.5 : 1,
+                  transition: "opacity 0.2s",
                 }}
               >
                 <Send className="w-3.5 h-3.5" />
