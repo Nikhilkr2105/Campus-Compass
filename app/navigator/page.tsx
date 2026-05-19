@@ -63,27 +63,7 @@ export default function NavigatorPage() {
   }, []);
 
   // ── Auto live navigation progression ─────────────────────
-  useEffect(() => {
-    if (
-      !isNavigating ||
-      !route ||
-      currentStep >= route.buildings.length - 1
-    ) {
-      return;
-    }
-
-    const timer = setTimeout(() => {
-      setCurrentStep((prev) =>
-        Math.min(prev + 1, route.buildings.length - 1)
-      );
-    }, 3500);
-
-    return () => clearTimeout(timer);
-  }, [
-    isNavigating,
-    currentStep,
-    route,
-  ]);
+ 
 
   return (
     <div
