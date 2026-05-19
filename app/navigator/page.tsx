@@ -1,74 +1,514 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
-import { CampusMap } from "@/components/map/CampusMap";
-import { FloorMap } from "@/components/map/FloorMap";
-
-import { Sidebar } from "@/components/navigation/Sidebar";
+import { CampusMap }      from "@/components/map/CampusMap";
+import { FloorMap }       from "@/components/map/FloorMap";
+import { Sidebar }        from "@/components/navigation/Sidebar";
 import { CommandPalette } from "@/components/navigation/CommandPalette";
 
-import { Building } from "@/data/buildings";
-import { NavigationRoute } from "@/types/navigation";
+import { Building }         from "@/data/buildings";
+import { NavigationRoute }  from "@/types/navigation";
+
+// ─────────────────────────────────────────────────────────────
+// TYPES
+// ─────────────────────────────────────────────────────────────
 
 type NavigatorMode = "campus" | "indoor";
 
+type CampusCondition = {
+  label:   string;
+  detail:  string;
+  color:   string;
+  dot:     string;
+};
+
+// ─────────────────────────────────────────────────────────────
+// CAMPUS CONDITIONS — time-aware ambient context
+// ─────────────────────────────────────────────────────────────
+
+function getCampusCondition(): CampusCondition {
+  const h = new Date().getHours();
+
+  if (h >= 6  && h < 9)  return { label: "Morning Commute",  detail: "Campus filling up",         color: "rgba(100,180,255,0.75)", dot: "#60b4ff" };
+  if (h >= 9  && h < 12) return { label: "Peak Activity",    detail: "High foot traffic",          color: "rgba(251,191,36,0.85)",  dot: "#fbbf24" };
+  if (h >= 12 && h < 14) return { label: "Lunch Rush",       detail: "Cafeteria & commons busy",   color: "rgba(249,115,22,0.85)",  dot: "#f97316" };
+  if (h >= 14 && h < 17) return { label: "Afternoon Session",detail: "Classes in progress",        color: "rgba(0,212,255,0.8)",    dot: "#00d4ff" };
+  if (h >= 17 && h < 20) return { label: "Evening Wind-down",detail: "Reducing activity",          color: "rgba(139,92,246,0.8)",   dot: "#8b5cf6" };
+  if (h >= 20 && h < 23) return { label: "Quiet Hours",      detail: "Limited services active",    color: "rgba(148,163,184,0.7)",  dot: "#94a3b8" };
+  return                         { label: "Night Mode",       detail: "Campus security active",     color: "rgba(100,116,139,0.65)", dot: "#64748b" };
+}
+
+// ─────────────────────────────────────────────────────────────
+// STEP COUNTDOWN — progress ring for auto-advance
+// ─────────────────────────────────────────────────────────────
+
+function StepCountdown({
+  isNavigating,
+  currentStep,
+  totalSteps,
+  intervalMs = 4000,
+}: {
+  isNavigating: boolean;
+  currentStep:  number;
+  totalSteps:   number;
+  intervalMs?:  number;
+}) {
+  const [progress, setProgress] = useState(0);
+  const startRef = useRef<number | null>(null);
+  const rafRef   = useRef<number | null>(null);
+  const isLast   = currentStep >= totalSteps - 1;
+
+  useEffect(() => {
+    if (!isNavigating || isLast) {
+      setProgress(0);
+      return;
+    }
+
+    startRef.current = performance.now();
+
+    const tick = (now: number) => {
+      const elapsed = now - (startRef.current ?? now);
+      setProgress(Math.min(elapsed / intervalMs, 1));
+      if (elapsed < intervalMs) {
+        rafRef.current = requestAnimationFrame(tick);
+      }
+    };
+
+    rafRef.current = requestAnimationFrame(tick);
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, [isNavigating, currentStep, isLast, intervalMs]);
+
+  if (!isNavigating || isLast) return null;
+
+  const r   = 10;
+  const circ = 2 * Math.PI * r;
+
+  return (
+    <div className="relative w-7 h-7 flex items-center justify-center flex-shrink-0" title="Auto-advancing">
+      <svg width="28" height="28" style={{ transform: "rotate(-90deg)" }}>
+        {/* Track */}
+        <circle cx="14" cy="14" r={r}
+          fill="none"
+          stroke="rgba(0,212,255,0.12)"
+          strokeWidth="2"
+        />
+        {/* Progress */}
+        <circle cx="14" cy="14" r={r}
+          fill="none"
+          stroke="#00d4ff"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeDasharray={circ}
+          strokeDashoffset={circ * (1 - progress)}
+          style={{
+            filter:     "drop-shadow(0 0 3px rgba(0,212,255,0.8))",
+            transition: "stroke-dashoffset 0.08s linear",
+          }}
+        />
+      </svg>
+      {/* Inner dot */}
+      <div
+        className="absolute w-1.5 h-1.5 rounded-full"
+        style={{
+          background: "#00d4ff",
+          boxShadow:  "0 0 6px #00d4ff",
+        }}
+      />
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// CONDITION STRIP — ambient campus status bar
+// ─────────────────────────────────────────────────────────────
+
+function ConditionStrip({ condition }: { condition: CampusCondition }) {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setVisible(true), 600);
+    return () => clearTimeout(t);
+  }, []);
+
+  return (
+    <motion.div
+      className="absolute bottom-14 left-1/2 z-20 flex items-center gap-2.5 px-3.5 py-1.5 rounded-full pointer-events-none"
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: visible ? 1 : 0, y: visible ? 0 : 8 }}
+      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+      style={{
+        background:     "rgba(6,13,24,0.78)",
+        border:         "1px solid rgba(255,255,255,0.07)",
+        backdropFilter: "blur(14px)",
+        transform:      "translateX(-50%)",
+        whiteSpace:     "nowrap",
+      }}
+    >
+      {/* Condition dot */}
+      <span
+        className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+        style={{
+          background: condition.dot,
+          boxShadow:  `0 0 5px ${condition.dot}`,
+          animation:  "cond-blink 2.5s ease-in-out infinite",
+        }}
+      />
+      <span
+        className="text-[10px] font-semibold"
+        style={{ color: condition.color, fontFamily: "var(--font-display)", letterSpacing: "0.04em" }}
+      >
+        {condition.label}
+      </span>
+      <span
+        className="text-[9px]"
+        style={{ color: "rgba(240,244,255,0.35)", fontFamily: "var(--font-body)" }}
+      >
+        ·
+      </span>
+      <span
+        className="text-[9px]"
+        style={{ color: "rgba(240,244,255,0.45)", fontFamily: "var(--font-body)" }}
+      >
+        {condition.detail}
+      </span>
+    </motion.div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// ARRIVED CARD
+// ─────────────────────────────────────────────────────────────
+
+function ArrivedCard({ buildingName, onDismiss }: { buildingName: string; onDismiss: () => void }) {
+  return (
+    <motion.div
+      className="mt-4 rounded-xl px-4 py-3.5"
+      initial={{ opacity: 0, scale: 0.95, y: 6 }}
+      animate={{ opacity: 1, scale: 1,    y: 0 }}
+      exit={{    opacity: 0, scale: 0.95       }}
+      transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+      style={{
+        background: "rgba(16,185,129,0.07)",
+        border:     "1px solid rgba(16,185,129,0.2)",
+        boxShadow:  "0 0 28px rgba(16,185,129,0.1)",
+      }}
+    >
+      <div className="flex items-start gap-3">
+        {/* Icon */}
+        <div
+          className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 text-base"
+          style={{
+            background: "rgba(16,185,129,0.12)",
+            border:     "1px solid rgba(16,185,129,0.25)",
+          }}
+        >
+          ✓
+        </div>
+        <div className="flex-1 min-w-0">
+          <div
+            className="text-[11px] tracking-widest font-semibold mb-0.5"
+            style={{ color: "#10b981", fontFamily: "var(--font-display)" }}
+          >
+            DESTINATION REACHED
+          </div>
+          <div
+            className="text-[13px] font-medium truncate"
+            style={{ color: "rgba(240,244,255,0.85)", fontFamily: "var(--font-body)" }}
+          >
+            {buildingName}
+          </div>
+          <div
+            className="text-[10px] mt-0.5"
+            style={{ color: "rgba(16,185,129,0.7)", fontFamily: "var(--font-body)" }}
+          >
+            Navigation complete
+          </div>
+        </div>
+        <button
+          onClick={onDismiss}
+          className="text-[10px] px-2.5 py-1 rounded-lg flex-shrink-0 mt-0.5"
+          style={{
+            background: "rgba(16,185,129,0.1)",
+            border:     "1px solid rgba(16,185,129,0.2)",
+            color:      "#10b981",
+            cursor:     "pointer",
+            fontFamily: "var(--font-body)",
+          }}
+        >
+          Done
+        </button>
+      </div>
+    </motion.div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// LIVE HUD
+// ─────────────────────────────────────────────────────────────
+
+function LiveHUD({
+  route,
+  currentStep,
+  isNavigating,
+  onStop,
+}: {
+  route:        NavigationRoute;
+  currentStep:  number;
+  isNavigating: boolean;
+  onStop:       () => void;
+}) {
+  const [eta, setEta] = useState(() => new Date());
+  const arrived       = currentStep >= route.buildings.length - 1;
+
+  // Compute live ETA
+  useEffect(() => {
+    const minsLeft = Math.max(1, route.estimatedMinutes - currentStep);
+    const t        = new Date();
+    t.setMinutes(t.getMinutes() + minsLeft);
+    setEta(t);
+  }, [currentStep, route.estimatedMinutes]);
+
+  const etaStr    = eta.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  const minsLeft  = Math.max(1, route.estimatedMinutes - currentStep);
+  const nextBuilding = route.buildings[Math.min(currentStep + 1, route.buildings.length - 1)];
+  const pct       = ((currentStep + 1) / route.buildings.length) * 100;
+
+  return (
+    <div
+      className="rounded-2xl overflow-hidden"
+      style={{
+        background:     "rgba(6,13,24,0.9)",
+        border:         "1px solid rgba(0,212,255,0.18)",
+        backdropFilter: "blur(24px)",
+        boxShadow:
+          "0 12px 40px rgba(0,0,0,0.5), 0 0 28px rgba(0,212,255,0.07)",
+      }}
+    >
+      {/* ── Top bar ── */}
+      <div
+        className="flex items-center justify-between px-5 pt-3.5 pb-2.5"
+        style={{ borderBottom: "1px solid rgba(255,255,255,0.045)" }}
+      >
+        {/* Live indicator + label */}
+        <div className="flex items-center gap-2">
+          <span
+            className="w-1.5 h-1.5 rounded-full"
+            style={{
+              background: "#00d4ff",
+              boxShadow:  "0 0 6px #00d4ff",
+              animation:  "live-blink 1.8s ease-in-out infinite",
+            }}
+          />
+          <span
+            className="text-[10px] tracking-[0.22em] font-semibold"
+            style={{ color: "var(--cyan)", fontFamily: "var(--font-display)" }}
+          >
+            LIVE NAVIGATION
+          </span>
+        </div>
+
+        {/* ETA chip + stop */}
+        <div className="flex items-center gap-2">
+          <div
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px]"
+            style={{
+              background: "rgba(0,212,255,0.07)",
+              border:     "1px solid rgba(0,212,255,0.15)",
+              color:      "var(--cyan)",
+              fontFamily: "var(--font-body)",
+            }}
+          >
+            <span style={{ opacity: 0.6 }}>ETA</span>
+            <span className="font-semibold">{etaStr}</span>
+            <span
+              className="px-1.5 py-0.5 rounded text-[9px] font-bold"
+              style={{ background: "rgba(0,212,255,0.15)", letterSpacing: "0.03em" }}
+            >
+              ~{minsLeft}m
+            </span>
+          </div>
+          <button
+            onClick={onStop}
+            className="text-[10px] px-2.5 py-1 rounded-lg"
+            style={{
+              background: "rgba(239,68,68,0.08)",
+              border:     "1px solid rgba(239,68,68,0.18)",
+              color:      "rgba(239,68,68,0.8)",
+              cursor:     "pointer",
+              fontFamily: "var(--font-body)",
+            }}
+          >
+            End
+          </button>
+        </div>
+      </div>
+
+      {/* ── Destination row ── */}
+      <div className="px-5 pt-3 pb-2 flex items-center gap-3">
+        <StepCountdown
+          isNavigating={isNavigating}
+          currentStep={currentStep}
+          totalSteps={route.buildings.length}
+        />
+        <div className="flex-1 min-w-0">
+          <div
+            className="text-[10px] mb-0.5"
+            style={{ color: "rgba(240,244,255,0.4)", fontFamily: "var(--font-body)" }}
+          >
+            Proceed to
+          </div>
+          <div
+            className="text-[15px] font-semibold truncate"
+            style={{ color: "var(--text-1)", fontFamily: "var(--font-display)" }}
+          >
+            {nextBuilding?.name ?? "Destination"}
+          </div>
+        </div>
+        {/* Step badge */}
+        <div
+          className="flex-shrink-0 text-[10px] px-2 py-0.5 rounded-md font-mono"
+          style={{
+            background: "rgba(255,255,255,0.05)",
+            border:     "1px solid rgba(255,255,255,0.08)",
+            color:      "rgba(240,244,255,0.45)",
+          }}
+        >
+          {currentStep + 1} / {route.buildings.length}
+        </div>
+      </div>
+
+      {/* ── Progress bar ── */}
+      <div className="px-5 pb-3">
+        <div
+          className="h-1.5 rounded-full overflow-hidden mb-3"
+          style={{ background: "rgba(255,255,255,0.05)" }}
+        >
+          <motion.div
+            className="h-full rounded-full"
+            animate={{ width: `${pct}%` }}
+            transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+            style={{
+              background: "linear-gradient(90deg, #00d4ff, #8b5cf6)",
+              boxShadow:  "0 0 12px rgba(0,212,255,0.4)",
+              willChange: "width",
+            }}
+          />
+        </div>
+
+        {/* Step dots */}
+        <div className="flex items-start justify-between gap-1">
+          {route.buildings.map((b, idx) => {
+            const done   = idx < currentStep;
+            const active = idx === currentStep;
+            return (
+              <div key={b.id} className="flex flex-col items-center gap-1.5 flex-1">
+                <motion.div
+                  className="rounded-full"
+                  animate={{
+                    width:      active ? 10 : 7,
+                    height:     active ? 10 : 7,
+                    background: done
+                      ? "#00d4ff"
+                      : active
+                      ? "#00d4ff"
+                      : "rgba(255,255,255,0.1)",
+                    boxShadow: active
+                      ? "0 0 14px rgba(0,212,255,0.6)"
+                      : done
+                      ? "0 0 6px rgba(0,212,255,0.3)"
+                      : "none",
+                  }}
+                  transition={{ duration: 0.25, ease: "easeOut" }}
+                />
+                <div
+                  className="text-[8.5px] text-center leading-tight"
+                  style={{
+                    color:      active ? "var(--text-1)" : done ? "rgba(0,212,255,0.6)" : "var(--text-3)",
+                    fontFamily: "var(--font-body)",
+                    maxWidth:   60,
+                  }}
+                >
+                  {b.shortName}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Arrived card */}
+        <AnimatePresence>
+          {arrived && (
+            <ArrivedCard
+              buildingName={route.buildings[route.buildings.length - 1]?.name ?? "Destination"}
+              onDismiss={onStop}
+            />
+          )}
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// KEYFRAMES — injected once
+// ─────────────────────────────────────────────────────────────
+
+const NAV_KEYFRAMES = `
+@keyframes live-blink {
+  0%, 100% { opacity: 1;   }
+  50%       { opacity: 0.3; }
+}
+@keyframes cond-blink {
+  0%, 100% { opacity: 1;   }
+  50%       { opacity: 0.45; }
+}
+`;
+
+// ─────────────────────────────────────────────────────────────
+// NAVIGATOR PAGE
+// ─────────────────────────────────────────────────────────────
+
 export default function NavigatorPage() {
-  const [route, setRoute] =
-    useState<NavigationRoute | null>(null);
+  const [route,      setRoute]      = useState<NavigationRoute | null>(null);
+  const [currentStep, setCurrentStep] = useState(0);
+  const [isNavigating, setIsNavigating] = useState(false);
+  const [selected,   setSelected]   = useState<Building | null>(null);
+  const [mode,       setMode]       = useState<NavigatorMode>("campus");
+  const [condition,  setCondition]  = useState<CampusCondition>(getCampusCondition);
 
-  const [currentStep, setCurrentStep] =
-    useState(0);
-
-  const [isNavigating, setIsNavigating] =
-    useState(false);
-
-  const [selected, setSelected] =
-    useState<Building | null>(null);
-
-  const [mode, setMode] =
-    useState<NavigatorMode>("campus");
-
-  const [commandDestination, setCommandDestination] =
-    useState("");
+  // Refresh condition every 60s
+  useEffect(() => {
+    const iv = setInterval(() => setCondition(getCampusCondition()), 60_000);
+    return () => clearInterval(iv);
+  }, []);
 
   // ─────────────────────────────────────────────
   // BUILDING
   // ─────────────────────────────────────────────
 
-  const handleBuildingClick = useCallback(
-    (b: Building) => {
-      setSelected((prev) =>
-        prev?.id === b.id ? null : b
-      );
-    },
-    []
-  );
-
-  const handleCloseBuilding = useCallback(() => {
-    setSelected(null);
+  const handleBuildingClick = useCallback((b: Building) => {
+    setSelected((prev) => (prev?.id === b.id ? null : b));
   }, []);
 
-  const handleNavigateTo = useCallback(
-    (name: string) => {
-      setSelected(null);
-    },
-    []
-  );
+  const handleCloseBuilding = useCallback(() => setSelected(null), []);
+
+  const handleNavigateTo = useCallback((_name: string) => {
+    setSelected(null);
+  }, []);
 
   // ─────────────────────────────────────────────
   // ROUTE
   // ─────────────────────────────────────────────
 
-  const handleRouteFound = useCallback(
-    (r: NavigationRoute) => {
-      setRoute(r);
-      setCurrentStep(0);
-      setIsNavigating(false);
-    },
-    []
-  );
+  const handleRouteFound = useCallback((r: NavigationRoute) => {
+    setRoute(r);
+    setCurrentStep(0);
+    setIsNavigating(false);
+  }, []);
 
   const handleStart = useCallback(() => {
     setIsNavigating(true);
@@ -80,12 +520,7 @@ export default function NavigatorPage() {
   }, []);
 
   const handleNext = useCallback(() => {
-    setCurrentStep((s) =>
-      Math.min(
-        s + 1,
-        (route?.buildings.length ?? 1) - 1
-      )
-    );
+    setCurrentStep((s) => Math.min(s + 1, (route?.buildings.length ?? 1) - 1));
   }, [route]);
 
   const handlePrev = useCallback(() => {
@@ -103,592 +538,188 @@ export default function NavigatorPage() {
   // ─────────────────────────────────────────────
 
   useEffect(() => {
-    if (
-      !isNavigating ||
-      !route ||
-      currentStep >= route.buildings.length - 1
-    ) {
-      return;
-    }
-
+    if (!isNavigating || !route || currentStep >= route.buildings.length - 1) return;
     const timer = setTimeout(() => {
-      setCurrentStep((s) =>
-        Math.min(
-          s + 1,
-          route.buildings.length - 1
-        )
-      );
+      setCurrentStep((s) => Math.min(s + 1, route.buildings.length - 1));
     }, 4000);
-
     return () => clearTimeout(timer);
-  }, [
-    isNavigating,
-    currentStep,
-    route,
-  ]);
+  }, [isNavigating, currentStep, route]);
 
   // ─────────────────────────────────────────────
-  // PAGE
+  // RENDER
   // ─────────────────────────────────────────────
 
   return (
-    <motion.div
-      className="bg-grid"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{
-        duration: 0.4,
-        ease: "easeOut",
-      }}
-      style={{
-        height: "100vh",
-        paddingTop: 95,
-        background: "var(--bg-1)",
-        overflow: "hidden",
-        willChange: "opacity",
-      }}
-    >
-      <div className="flex h-full overflow-hidden">
+    <>
+      <style suppressHydrationWarning>{NAV_KEYFRAMES}</style>
 
-        {/* ───────────────── SIDEBAR ───────────────── */}
-        <AnimatePresence mode="wait">
-          {mode === "campus" && (
-            <motion.div
-              key="sidebar"
-              initial={{
-                x: -24,
-                opacity: 0,
-              }}
-              animate={{
-                x: 0,
-                opacity: 1,
-              }}
-              exit={{
-                x: -24,
-                opacity: 0,
-              }}
-              transition={{
-                duration: 0.28,
-                ease: [0.22, 1, 0.36, 1],
-              }}
-              style={{
-                display: "flex",
-                willChange:
-                  "transform, opacity",
-              }}
-            >
-              <Sidebar
-                selectedBuilding={selected}
-                route={route}
-                isNavigating={isNavigating}
-                currentStep={currentStep}
-                onRouteFound={handleRouteFound}
-                onStart={handleStart}
-                onStop={handleStop}
-                onNext={handleNext}
-                onPrev={handlePrev}
-                onClear={handleClear}
-                onCloseBuilding={
-                  handleCloseBuilding
-                }
-                onNavigateTo={
-                  handleNavigateTo
-                }
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
+      <motion.div
+        className="bg-grid"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+        style={{
+          height:     "100vh",
+          paddingTop: 95,
+          background: "var(--bg-1)",
+          overflow:   "hidden",
+          willChange: "opacity",
+        }}
+      >
+        <div className="flex h-full overflow-hidden">
 
-        {/* ───────────────── MAIN ───────────────── */}
-        <div className="relative flex-1 overflow-hidden">
-
-          {/* ───────────────── LIVE HUD ───────────────── */}
-          <AnimatePresence>
-            {isNavigating && route && (
-              <motion.div
-                key="hud"
-                className="absolute top-4 left-1/2 z-40"
-                initial={{
-                  y: -16,
-                  opacity: 0,
-                  scale: 0.97,
-                }}
-                animate={{
-                  y: 0,
-                  opacity: 1,
-                  scale: 1,
-                }}
-                exit={{
-                  y: -12,
-                  opacity: 0,
-                  scale: 0.97,
-                }}
-                transition={{
-                  duration: 0.32,
-                  ease: [0.22, 1, 0.36, 1],
-                }}
-                style={{
-                  width:
-                    "min(520px, calc(100vw - 40px))",
-
-                  translateX: "-50%",
-
-                  willChange:
-                    "transform, opacity",
-                }}
-              >
-                <div
-                  className="rounded-2xl overflow-hidden"
-                  style={{
-                    background:
-                      "rgba(6,13,24,0.88)",
-
-                    border:
-                      "1px solid rgba(0,212,255,0.18)",
-
-                    backdropFilter:
-                      "blur(20px)",
-
-                    boxShadow:
-                      "0 12px 40px rgba(0,0,0,0.45), 0 0 24px rgba(0,212,255,0.08)",
-                  }}
-                >
-
-                  {/* Header */}
-                  <div className="px-5 pt-4 pb-3 flex items-center justify-between">
-                    <div>
-
-                      <motion.div
-                        className="text-[11px] tracking-[0.24em]"
-                        initial={{
-                          opacity: 0,
-                        }}
-                        animate={{
-                          opacity: 1,
-                        }}
-                        transition={{
-                          delay: 0.1,
-                          duration: 0.2,
-                        }}
-                        style={{
-                          color:
-                            "var(--cyan)",
-
-                          fontFamily:
-                            "var(--font-body)",
-                        }}
-                      >
-                        LIVE NAVIGATION
-                      </motion.div>
-
-                      <motion.div
-                        className="mt-1 text-lg font-semibold"
-                        initial={{
-                          opacity: 0,
-                          y: 4,
-                        }}
-                        animate={{
-                          opacity: 1,
-                          y: 0,
-                        }}
-                        transition={{
-                          delay: 0.15,
-                          duration: 0.25,
-                        }}
-                        style={{
-                          color:
-                            "var(--text-1)",
-
-                          fontFamily:
-                            "var(--font-display)",
-                        }}
-                      >
-                        Proceed to{" "}
-                        {route.buildings[
-                          Math.min(
-                            currentStep + 1,
-                            route.buildings.length - 1
-                          )
-                        ]?.name ??
-                          "Destination"}
-                      </motion.div>
-                    </div>
-
-                    <motion.div
-                      className="px-3 py-1 rounded-full text-sm"
-                      initial={{
-                        opacity: 0,
-                        scale: 0.9,
-                      }}
-                      animate={{
-                        opacity: 1,
-                        scale: 1,
-                      }}
-                      transition={{
-                        delay: 0.2,
-                        duration: 0.22,
-                      }}
-                      style={{
-                        background:
-                          "rgba(0,212,255,0.08)",
-
-                        border:
-                          "1px solid rgba(0,212,255,0.16)",
-
-                        color:
-                          "var(--cyan)",
-                      }}
-                    >
-                      {Math.max(
-                        1,
-                        route.estimatedMinutes -
-                          currentStep
-                      )}{" "}
-                      min
-                    </motion.div>
-                  </div>
-
-                  {/* Progress */}
-                  <div className="px-5 pb-4">
-
-                    {/* Bar */}
-                    <div
-                      className="h-2 rounded-full overflow-hidden"
-                      style={{
-                        background:
-                          "rgba(255,255,255,0.05)",
-                      }}
-                    >
-                      <motion.div
-                        className="h-full rounded-full"
-                        animate={{
-                          width: `${
-                            ((currentStep + 1) /
-                              route.buildings
-                                .length) *
-                            100
-                          }%`,
-                        }}
-                        transition={{
-                          duration: 0.55,
-                          ease: [
-                            0.22,
-                            1,
-                            0.36,
-                            1,
-                          ],
-                        }}
-                        style={{
-                          background:
-                            "linear-gradient(90deg,#00d4ff,#8b5cf6)",
-
-                          boxShadow:
-                            "0 0 16px rgba(0,212,255,0.35)",
-
-                          willChange:
-                            "width",
-                        }}
-                      />
-                    </div>
-
-                    {/* Dots */}
-                    <div className="flex items-center justify-between mt-4">
-                      {route.buildings.map(
-                        (b, idx) => {
-                          const active =
-                            idx <= currentStep;
-
-                          return (
-                            <div
-                              key={b.id}
-                              className="flex flex-col items-center gap-2"
-                            >
-                              <motion.div
-                                className="w-3 h-3 rounded-full"
-                                animate={{
-                                  background:
-                                    active
-                                      ? "var(--cyan)"
-                                      : "rgba(255,255,255,0.12)",
-
-                                  boxShadow:
-                                    active
-                                      ? "0 0 14px rgba(0,212,255,0.45)"
-                                      : "0 0 0px rgba(0,212,255,0)",
-                                }}
-                                transition={{
-                                  duration: 0.3,
-                                  ease:
-                                    "easeOut",
-                                }}
-                                style={{
-                                  willChange:
-                                    "background, box-shadow",
-                                }}
-                              />
-
-                              <motion.div
-                                className="text-[10px] text-center max-w-[72px]"
-                                animate={{
-                                  color:
-                                    active
-                                      ? "var(--text-1)"
-                                      : "var(--text-3)",
-                                }}
-                                transition={{
-                                  duration: 0.3,
-                                }}
-                              >
-                                {b.shortName}
-                              </motion.div>
-                            </div>
-                          );
-                        }
-                      )}
-                    </div>
-
-                    {/* Arrived */}
-                    <AnimatePresence>
-                      {currentStep >=
-                        route.buildings.length -
-                          1 && (
-                        <motion.div
-                          className="mt-4 rounded-xl px-4 py-3 text-center"
-                          initial={{
-                            opacity: 0,
-                            scale: 0.95,
-                            y: 6,
-                          }}
-                          animate={{
-                            opacity: 1,
-                            scale: 1,
-                            y: 0,
-                          }}
-                          exit={{
-                            opacity: 0,
-                            scale: 0.95,
-                          }}
-                          transition={{
-                            duration: 0.3,
-                            ease: [
-                              0.22,
-                              1,
-                              0.36,
-                              1,
-                            ],
-                          }}
-                          style={{
-                            background:
-                              "rgba(16,185,129,0.08)",
-
-                            border:
-                              "1px solid rgba(16,185,129,0.18)",
-
-                            color:
-                              "#10b981",
-
-                            fontWeight: 600,
-
-                            boxShadow:
-                              "0 0 24px rgba(16,185,129,0.12)",
-                          }}
-                        >
-                          ✨ You have arrived at
-                          your destination
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* ───────────────── MODE TOGGLE ───────────────── */}
-          <div
-            className="absolute top-4 right-4 z-30 flex rounded-xl overflow-hidden"
-            style={{
-              background:
-                "rgba(6,13,24,0.92)",
-
-              border:
-                "1px solid rgba(0,212,255,0.18)",
-
-              backdropFilter:
-                "blur(16px)",
-
-              boxShadow:
-                "0 8px 24px rgba(0,0,0,0.35)",
-            }}
-          >
-            {([
-              {
-                id: "campus",
-                label: "Campus Map",
-              },
-
-              {
-                id: "indoor",
-                label: "Indoor Map",
-              },
-            ] as const).map((item) => {
-              const active =
-                mode === item.id;
-
-              return (
-                <button
-                  key={item.id}
-                  onClick={() =>
-                    setMode(item.id)
-                  }
-                  className="relative px-4 py-2 text-[12px] font-semibold"
-                  style={{
-                    background:
-                      "transparent",
-
-                    color: active
-                      ? "var(--cyan)"
-                      : "var(--text-2)",
-
-                    border: "none",
-
-                    borderRight:
-                      item.id === "campus"
-                        ? "1px solid rgba(255,255,255,0.06)"
-                        : "none",
-
-                    cursor: "pointer",
-
-                    fontFamily:
-                      "var(--font-body)",
-
-                    transition:
-                      "color 0.2s ease",
-                  }}
-                >
-                  {active && (
-                    <motion.span
-                      layoutId="mode-pill"
-                      className="absolute inset-0 rounded-xl"
-                      style={{
-                        background:
-                          "rgba(0,212,255,0.12)",
-
-                        zIndex: -1,
-                      }}
-                      transition={{
-                        duration: 0.25,
-                        ease: [
-                          0.22,
-                          1,
-                          0.36,
-                          1,
-                        ],
-                      }}
-                    />
-                  )}
-
-                  {item.label}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* ───────────────── MAIN CONTENT ───────────────── */}
+          {/* ── SIDEBAR ── */}
           <AnimatePresence mode="wait">
-            {mode === "campus" ? (
+            {mode === "campus" && (
               <motion.div
-                key="campus"
-                className="h-full"
-                initial={{
-                  opacity: 0,
-                }}
-                animate={{
-                  opacity: 1,
-                }}
-                exit={{
-                  opacity: 0,
-                }}
-                transition={{
-                  duration: 0.22,
-                  ease: "easeInOut",
-                }}
-                style={{
-                  willChange:
-                    "opacity",
-                }}
+                key="sidebar"
+                initial={{ x: -24, opacity: 0 }}
+                animate={{ x: 0,   opacity: 1 }}
+                exit={{    x: -24, opacity: 0 }}
+                transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                style={{ display: "flex", willChange: "transform, opacity" }}
               >
-                <CampusMap
-                  route={
-                    route?.path ?? []
-                  }
-                  selectedBuilding={
-                    selected
-                  }
-                  currentStep={
-                    currentStep
-                  }
-                  isNavigating={
-                    isNavigating
-                  }
-                  onBuildingClick={
-                    handleBuildingClick
-                  }
-                  height="100%"
+                <Sidebar
+                  selectedBuilding={selected}
+                  route={route}
+                  isNavigating={isNavigating}
+                  currentStep={currentStep}
+                  onRouteFound={handleRouteFound}
+                  onStart={handleStart}
+                  onStop={handleStop}
+                  onNext={handleNext}
+                  onPrev={handlePrev}
+                  onClear={handleClear}
+                  onCloseBuilding={handleCloseBuilding}
+                  onNavigateTo={handleNavigateTo}
                 />
               </motion.div>
-            ) : (
-              <motion.div
-                key="indoor"
-                className="h-full p-4 pt-16"
-                initial={{
-                  opacity: 0,
-                  scale: 0.99,
-                }}
-                animate={{
-                  opacity: 1,
-                  scale: 1,
-                }}
-                exit={{
-                  opacity: 0,
-                  scale: 0.99,
-                }}
-                transition={{
-                  duration: 0.25,
-                  ease: [
-                    0.22,
-                    1,
-                    0.36,
-                    1,
-                  ],
-                }}
-                style={{
-                  willChange:
-                    "transform, opacity",
-                }}
-              >
-                <FloorMap />
-              </motion.div>
             )}
           </AnimatePresence>
 
-          {/* ───────────────── COMMAND PALETTE ───────────────── */}
-          <CommandPalette
-            onSelectDestination={(
-              name
-            ) => {
-              setCommandDestination(
-                name
-              );
-            }}
-            onSelectBuilding={(b) => {
-              setSelected(b);
-            }}
-            onSetSource={() => {}}
-            currentSource=""
-          />
+          {/* ── MAIN ── */}
+          <div className="relative flex-1 overflow-hidden">
+
+            {/* ── LIVE HUD ── */}
+            <AnimatePresence>
+              {isNavigating && route && (
+                <motion.div
+                  key="hud"
+                  className="absolute top-4 left-1/2 z-40"
+                  initial={{ y: -20, opacity: 0, scale: 0.96 }}
+                  animate={{ y: 0,   opacity: 1, scale: 1    }}
+                  exit={{    y: -16, opacity: 0, scale: 0.97  }}
+                  transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+                  style={{
+                    width:      "min(520px, calc(100vw - 40px))",
+                    translateX: "-50%",
+                    willChange: "transform, opacity",
+                  }}
+                >
+                  <LiveHUD
+                    route={route}
+                    currentStep={currentStep}
+                    isNavigating={isNavigating}
+                    onStop={handleStop}
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* ── MODE TOGGLE ── */}
+            <div
+              className="absolute top-4 right-4 z-30 flex rounded-xl overflow-hidden"
+              style={{
+                background:     "rgba(6,13,24,0.92)",
+                border:         "1px solid rgba(0,212,255,0.18)",
+                backdropFilter: "blur(16px)",
+                boxShadow:      "0 8px 24px rgba(0,0,0,0.35)",
+              }}
+            >
+              {([ { id: "campus", label: "Campus Map" }, { id: "indoor", label: "Indoor Map" } ] as const).map((item) => {
+                const active = mode === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => setMode(item.id)}
+                    className="relative px-4 py-2 text-[12px] font-semibold"
+                    style={{
+                      background: "transparent",
+                      color:      active ? "var(--cyan)" : "var(--text-2)",
+                      border:     "none",
+                      borderRight: item.id === "campus"
+                        ? "1px solid rgba(255,255,255,0.06)"
+                        : "none",
+                      cursor:     "pointer",
+                      fontFamily: "var(--font-body)",
+                      transition: "color 0.2s ease",
+                    }}
+                  >
+                    {active && (
+                      <motion.span
+                        layoutId="mode-pill"
+                        className="absolute inset-0 rounded-xl"
+                        style={{ background: "rgba(0,212,255,0.12)", zIndex: -1 }}
+                        transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                      />
+                    )}
+                    {item.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* ── MAP CONTENT ── */}
+            <AnimatePresence mode="wait">
+              {mode === "campus" ? (
+                <motion.div
+                  key="campus"
+                  className="h-full"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{    opacity: 0 }}
+                  transition={{ duration: 0.22, ease: "easeInOut" }}
+                  style={{ willChange: "opacity" }}
+                >
+                  <CampusMap
+                    route={route?.path ?? []}
+                    selectedBuilding={selected}
+                    currentStep={currentStep}
+                    isNavigating={isNavigating}
+                    onBuildingClick={handleBuildingClick}
+                    height="100%"
+                  />
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="indoor"
+                  className="h-full p-4 pt-16"
+                  initial={{ opacity: 0, scale: 0.99 }}
+                  animate={{ opacity: 1, scale: 1    }}
+                  exit={{    opacity: 0, scale: 0.99  }}
+                  transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                  style={{ willChange: "transform, opacity" }}
+                >
+                  <FloorMap />
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* ── CONDITION STRIP ── */}
+            {mode === "campus" && (
+              <ConditionStrip condition={condition} />
+            )}
+
+            {/* ── COMMAND PALETTE ── */}
+            <CommandPalette
+              onSelectDestination={(name) => {}}
+              onSelectBuilding={(b)  => setSelected(b)}
+              onSetSource={() => {}}
+              currentSource=""
+            />
+          </div>
         </div>
-      </div>
-    </motion.div>
+      </motion.div>
+    </>
   );
 }
