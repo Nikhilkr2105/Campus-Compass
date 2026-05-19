@@ -91,3 +91,23 @@ h1,h2,h3,h4,h5,h6 { font-family: var(--font-display); }
     pointer-events: none;
   }
 }
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 0.8; transform: translateY(0); }
+}
+
+@keyframes radar-ping {
+  0%   { transform: scale(1);   opacity: 0.7; }
+  80%  { transform: scale(2.2); opacity: 0;   }
+  100% { transform: scale(2.2); opacity: 0;   }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { transform: scale(1);    opacity: 1;   }
+  50%       { transform: scale(1.28); opacity: 0.8; }
+}
+
+@keyframes orb-travel {
+  from { transform: translateX(-18px); }
+  to   { transform: translateX(18px);  }
+}

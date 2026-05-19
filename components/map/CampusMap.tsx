@@ -37,35 +37,44 @@ interface RouteSegmentProps {
 }
 
 function RouteSegment({ x1, y1, x2, y2, index, routeKey }: RouteSegmentProps) {
-  const len               = Math.hypot(x2 - x1, y2 - y1);
+  const len = Math.hypot(x2 - x1, y2 - y1);
   const [drawn, setDrawn] = useState(false);
 
-  // Reset then draw whenever the route changes
   useEffect(() => {
     setDrawn(false);
-    const t = setTimeout(() => setDrawn(true), index * 130 + 60);
+    const t = setTimeout(() => setDrawn(true), index * 110 + 40);
     return () => clearTimeout(t);
   }, [routeKey, index]);
 
+  const delay = `${index * 0.11}s`;
+
   return (
     <g>
-      {/* Outer ambient glow */}
+      {/* Outer ambient glow — fades in with line */}
       <line
         x1={x1} y1={y1} x2={x2} y2={y2}
-        stroke="rgba(0,212,255,0.1)"
-        strokeWidth={18}
+        stroke="rgba(0,212,255,0.08)"
+        strokeWidth={22}
         strokeLinecap="round"
-        style={{ filter: "blur(8px)" }}
+        style={{
+          filter: "blur(10px)",
+          opacity: drawn ? 1 : 0,
+          transition: `opacity 0.6s cubic-bezier(0.22,1,0.36,1) ${delay}`,
+        }}
       />
       {/* Mid glow */}
       <line
         x1={x1} y1={y1} x2={x2} y2={y2}
-        stroke="rgba(0,212,255,0.22)"
-        strokeWidth={7}
+        stroke="rgba(0,212,255,0.2)"
+        strokeWidth={6}
         strokeLinecap="round"
-        style={{ filter: "blur(3px)" }}
+        style={{
+          filter: "blur(2.5px)",
+          opacity: drawn ? 1 : 0,
+          transition: `opacity 0.5s cubic-bezier(0.22,1,0.36,1) ${delay}`,
+        }}
       />
-      {/* Main animated line */}
+      {/* Main draw line */}
       <line
         x1={x1} y1={y1} x2={x2} y2={y2}
         stroke="#00d4ff"
@@ -74,20 +83,24 @@ function RouteSegment({ x1, y1, x2, y2, index, routeKey }: RouteSegmentProps) {
         strokeDasharray={`${len} ${len}`}
         style={{
           strokeDashoffset: drawn ? 0 : len,
-          transition: `stroke-dashoffset 0.7s cubic-bezier(0.4,0,0.2,1) ${index * 0.13}s`,
-          filter: "drop-shadow(0 0 6px rgba(0,212,255,1)) drop-shadow(0 0 14px rgba(0,212,255,0.5))",
+          transition: `stroke-dashoffset 0.65s cubic-bezier(0.22,1,0.36,1) ${delay}`,
+          filter: "drop-shadow(0 0 5px rgba(0,212,255,0.9)) drop-shadow(0 0 12px rgba(0,212,255,0.45))",
+          willChange: "stroke-dashoffset",
         }}
       />
-      {/* Midpoint waypoint dot */}
+      {/* Waypoint dot */}
       <circle
         cx={(x1 + x2) / 2}
         cy={(y1 + y2) / 2}
         r={3.5}
         fill="#00d4ff"
-        opacity={drawn ? 0.9 : 0}
         style={{
-          transition: `opacity 0.3s ease ${index * 0.13 + 0.55}s`,
-          filter: "drop-shadow(0 0 6px #00d4ff) drop-shadow(0 0 12px rgba(0,212,255,0.6))",
+          opacity: drawn ? 0.85 : 0,
+          transform: drawn ? "scale(1)" : "scale(0)",
+          transformOrigin: `${(x1 + x2) / 2}px ${(y1 + y2) / 2}px`,
+          transition: `opacity 0.25s ease ${index * 0.11 + 0.5}s, transform 0.3s cubic-bezier(0.34,1.56,0.64,1) ${index * 0.11 + 0.5}s`,
+          filter: "drop-shadow(0 0 5px #00d4ff) drop-shadow(0 0 10px rgba(0,212,255,0.55))",
+          willChange: "transform, opacity",
         }}
       />
     </g>
@@ -109,28 +122,12 @@ interface BuildingNodeProps {
 }
 
 function BuildingNode({
-  building,
-  isOnRoute,
-  isSelected,
-  isCurrentStep,
-  isStart,
-  isEnd,
-  onClick,
+  building, isOnRoute, isSelected, isCurrentStep, isStart, isEnd, onClick,
 }: BuildingNodeProps) {
-  const [hov, setHov]     = useState(false);
-  const [pulse, setPulse] = useState(0);
+  const [hov, setHov] = useState(false);
 
-  // Pulse ring animation tick
-  useEffect(() => {
-    if (!isSelected && !isCurrentStep && !isStart && !isEnd) return;
-    const id = setInterval(() => setPulse((p) => (p + 1) % 60), 40);
-    return () => clearInterval(id);
-  }, [isSelected, isCurrentStep, isStart, isEnd]);
-
-  const r          = isSelected ? 18 : hov ? 16 : 13;
-  const ringColor  = isStart ? "#00d4ff" : isEnd ? "#8b5cf6" : building.color;
-  const pulseR     = r + 10 + (pulse % 30) * 0.5;
-  const pulseOpacity = Math.max(0, 0.6 - (pulse % 30) / 30);
+  const r = isSelected ? 18 : hov ? 16 : 13;
+  const ringColor = isStart ? "#00d4ff" : isEnd ? "#8b5cf6" : building.color;
 
   const strokeColor = isSelected
     ? building.color
@@ -142,6 +139,8 @@ function BuildingNode({
     ? `${building.color}bb`
     : `${building.color}66`;
 
+  const TRANSITION = "all 0.28s cubic-bezier(0.22,1,0.36,1)";
+
   return (
     <g
       onClick={onClick}
@@ -149,43 +148,47 @@ function BuildingNode({
       onMouseLeave={() => setHov(false)}
       style={{ cursor: "pointer" }}
     >
-      {/* Animated radar rings — start / end / current */}
+      {/* Radar rings — CSS animation, no JS interval */}
       {(isStart || isEnd || isCurrentStep) && (
         <>
           <circle
             cx={building.x} cy={building.y}
-            r={pulseR + 8}
+            r={r + 10}
             fill="none"
             stroke={ringColor}
             strokeWidth={1}
-            opacity={pulseOpacity * 0.5}
+            style={{ animation: "radar-ping 2.2s cubic-bezier(0,0,0.2,1) infinite 0.3s" }}
           />
           <circle
             cx={building.x} cy={building.y}
-            r={pulseR}
+            r={r + 10}
             fill="none"
             stroke={ringColor}
             strokeWidth={1.5}
-            opacity={pulseOpacity * 0.8}
+            style={{ animation: "radar-ping 2.2s cubic-bezier(0,0,0.2,1) infinite" }}
           />
         </>
       )}
 
-      {/* Static outer glow — selected or hovered */}
+      {/* Hover / selected glow bloom */}
       {(isSelected || hov) && (
         <circle
           cx={building.x} cy={building.y}
-          r={r + 12}
+          r={r + 14}
           fill={building.color}
-          opacity={isSelected ? 0.13 : 0.07}
-          style={{ filter: "blur(8px)" }}
+          style={{
+            opacity: isSelected ? 0.12 : 0.06,
+            filter: "blur(10px)",
+            transition: TRANSITION,
+            willChange: "opacity",
+          }}
         />
       )}
 
-      {/* Main circle */}
+      {/* Main circle — GPU transform for radius change */}
       <circle
         cx={building.x} cy={building.y}
-        r={r}
+        r={13}
         fill={
           isSelected
             ? `${building.color}28`
@@ -196,41 +199,48 @@ function BuildingNode({
         stroke={strokeColor}
         strokeWidth={isSelected ? 2.5 : hov ? 2 : 1.5}
         style={{
+          transform: `scale(${isSelected ? 1.385 : hov ? 1.23 : 1})`,
+          transformOrigin: `${building.x}px ${building.y}px`,
+          transition: TRANSITION,
           filter: isSelected
-            ? `drop-shadow(0 0 10px ${building.color}) drop-shadow(0 0 20px ${building.color}66)`
+            ? `drop-shadow(0 0 10px ${building.color}) drop-shadow(0 0 22px ${building.color}55)`
             : hov
-            ? `drop-shadow(0 0 6px ${building.color}88)`
+            ? `drop-shadow(0 0 7px ${building.color}77)`
             : "none",
-          transition: "all 0.22s ease",
+          willChange: "transform, filter",
         }}
       />
 
-      {/* Emoji icon */}
+      {/* Icon */}
       <text
-        x={building.x}
-        y={building.y + 4}
+        x={building.x} y={building.y + 4}
         textAnchor="middle"
-        fontSize={isSelected ? 14 : hov ? 12 : 10}
-        style={{ userSelect: "none", transition: "font-size 0.2s ease" }}
+        fontSize={10}
+        style={{
+          userSelect: "none",
+          transform: `scale(${isSelected ? 1.4 : hov ? 1.2 : 1})`,
+          transformOrigin: `${building.x}px ${building.y}px`,
+          transition: TRANSITION,
+          willChange: "transform",
+        }}
       >
         {building.icon}
       </text>
 
-      {/* Route start / end badge */}
-      {(isRouteStartEnd(isStart, isEnd)) && (
+      {/* Start / end badge */}
+      {isRouteStartEnd(isStart, isEnd) && (
         <>
           <circle
-            cx={building.x + r - 2}
-            cy={building.y - r + 2}
+            cx={building.x + r - 2} cy={building.y - r + 2}
             r={6}
             fill={isStart ? "#00d4ff" : "#8b5cf6"}
             style={{
               filter: `drop-shadow(0 0 5px ${isStart ? "#00d4ff" : "#8b5cf6"})`,
+              transition: TRANSITION,
             }}
           />
           <text
-            x={building.x + r - 2}
-            y={building.y - r + 6}
+            x={building.x + r - 2} y={building.y - r + 6}
             textAnchor="middle"
             fill="#fff"
             fontSize={7}
@@ -262,21 +272,25 @@ function BuildingNode({
         fontSize={isSelected ? 9.5 : 8.5}
         fontWeight={isSelected ? 600 : 400}
         fontFamily="var(--font-body)"
-        style={{ userSelect: "none", transition: "all 0.2s" }}
-      >
-        {building.shortName}
-      </text>
+        style={{
+          userSelect: "none",
+          transition: "all 0.28s cubic-bezier(0.22,1,0.36,1)",
+        }}
+      />
 
-      {/* Floor count — selected only */}
+      {/* Floor count */}
       {isSelected && (
         <text
-          x={building.x}
-          y={building.y + 45}
+          x={building.x} y={building.y + 45}
           textAnchor="middle"
           fill={building.color}
           fontSize={8}
           fontFamily="var(--font-body)"
-          style={{ userSelect: "none", opacity: 0.8 }}
+          style={{
+            userSelect: "none",
+            opacity: 0.8,
+            animation: "fade-in-up 0.35s cubic-bezier(0.22,1,0.36,1) both",
+          }}
         >
           {building.floors}F
         </text>
@@ -452,24 +466,25 @@ export function CampusMap({
           { icon: RotateCcw, fn: reset,   title: "Reset View"},
         ].map(({ icon: Icon, fn, title }) => (
           <motion.button
-            key={title}
-            whileHover={{ scale: 1.12, boxShadow: "0 0 20px rgba(0,212,255,0.4)" }}
-            whileTap={{ scale: 0.9 }}
-            onClick={fn}
-            title={title}
-            className="w-9 h-9 rounded-xl flex items-center justify-center"
-            style={{
-              background:     "linear-gradient(135deg, rgba(0,212,255,0.12), rgba(0,212,255,0.04))",
-              border:         "1px solid rgba(0,212,255,0.28)",
-              color:          "rgba(0,212,255,0.85)",
-              backdropFilter: "blur(16px)",
-              cursor:         "pointer",
-              boxShadow:      "0 2px 12px rgba(0,0,0,0.5)",
-              transition:     "all 0.2s ease",
-            }}
-          >
-            <Icon className="w-4 h-4" />
-          </motion.button>
+  key={title}
+  whileHover={{ scale: 1.1, boxShadow: "0 0 18px rgba(0,212,255,0.38)" }}
+  whileTap={{ scale: 0.88 }}
+  transition={{ type: "spring", stiffness: 400, damping: 22 }}
+  onClick={fn}
+  title={title}
+  className="w-9 h-9 rounded-xl flex items-center justify-center"
+  style={{
+    background:     "linear-gradient(135deg, rgba(0,212,255,0.12), rgba(0,212,255,0.04))",
+    border:         "1px solid rgba(0,212,255,0.28)",
+    color:          "rgba(0,212,255,0.85)",
+    backdropFilter: "blur(16px)",
+    cursor:         "pointer",
+    boxShadow:      "0 2px 12px rgba(0,0,0,0.5)",
+    willChange:     "transform",
+  }}
+>
+  <Icon className="w-4 h-4" />
+</motion.button>
         ))}
         <div
           className="text-center text-[9px] font-mono mt-0.5"
@@ -503,7 +518,7 @@ export function CampusMap({
             initial={{ opacity: 0, y: -16, scale: 0.96 }}
             animate={{ opacity: 1,  y: 0,   scale: 1    }}
             exit={{ opacity: 0, y: -12, scale: 0.97      }}
-            transition={{ type: "spring", stiffness: 300, damping: 28 }}
+            transition={{ type: "spring", stiffness: 380, damping: 32, mass: 0.85 }}
             className="absolute top-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-4 px-5 py-3.5 rounded-2xl"
             style={{
               background:     "linear-gradient(135deg, rgba(0,212,255,0.1), rgba(6,13,24,0.97))",
@@ -582,16 +597,16 @@ export function CampusMap({
         onTouchEnd={onTouchEnd}
       >
         <svg
-          width="100%"
-          height="100%"
-          viewBox="0 0 620 620"
-          style={{
-            transform:
-              `scale(${zoom}) translate(${pan.x / zoom}px, ${pan.y / zoom}px)`,
-            transformOrigin: "center",
-            transition: dragging ? "none" : "transform 0.08s ease-out",
-          }}
-        >
+  width="100%"
+  height="100%"
+  viewBox="0 0 620 620"
+  style={{
+    transform: `scale(${zoom}) translate(${pan.x / zoom}px, ${pan.y / zoom}px)`,
+    transformOrigin: "center",
+    transition: dragging ? "none" : "transform 0.18s cubic-bezier(0.22,1,0.36,1)",
+    willChange: "transform",
+  }}
+>
           <defs>
             <radialGradient id="campus-bg-main" cx="50%" cy="50%" r="65%">
               <stop offset="0%"   stopColor="#0d1f38" />
@@ -755,76 +770,35 @@ export function CampusMap({
           {/* ── Live navigation orb ── */}
 {isNavigating && route.length > 1 && (() => {
   const fromId = route[Math.max(0, currentStep)];
-  const toId =
-    route[Math.min(currentStep + 1, route.length - 1)];
-
-  const from = BUILDINGS.find((b) => b.id === fromId);
-  const to = BUILDINGS.find((b) => b.id === toId);
-
+  const toId   = route[Math.min(currentStep + 1, route.length - 1)];
+  const from   = BUILDINGS.find((b) => b.id === fromId);
+  const to     = BUILDINGS.find((b) => b.id === toId);
   if (!from || !to) return null;
 
-  // animated interpolation
-  const progress =
-    ((Date.now() / 35) % 100) / 100;
-
-  const x =
-    from.x + (to.x - from.x) * progress;
-
-  const y =
-    from.y + (to.y - from.y) * progress;
+  // mid-point static anchor — real animation via CSS
+  const mx = (from.x + to.x) / 2;
+  const my = (from.y + to.y) / 2;
 
   return (
-    <g>
-      {/* ambient glow */}
-      <circle
-        cx={x}
-        cy={y}
-        r={24}
-        fill="rgba(0,212,255,0.12)"
-        style={{
-          filter: "blur(12px)",
-        }}
+    <g style={{ animation: "orb-travel 3.2s cubic-bezier(0.45,0,0.55,1) infinite alternate" }}>
+      <circle cx={mx} cy={my} r={26}
+        fill="rgba(0,212,255,0.1)"
+        style={{ filter: "blur(14px)", willChange: "transform" }}
       />
-
-      {/* outer pulse */}
-      <circle
-        cx={x}
-        cy={y}
-        r={16}
-        fill="none"
-        stroke="rgba(0,212,255,0.28)"
-        strokeWidth="1.5"
-        style={{
-          animation:
-            "radar-ping 1.8s ease-out infinite",
-        }}
+      <circle cx={mx} cy={my} r={16}
+        fill="none" stroke="rgba(0,212,255,0.25)" strokeWidth={1.5}
+        style={{ animation: "radar-ping 2s cubic-bezier(0,0,0.2,1) infinite" }}
       />
-
-      {/* mid pulse */}
-      <circle
-        cx={x}
-        cy={y}
-        r={10}
-        fill="none"
-        stroke="rgba(0,212,255,0.5)"
-        strokeWidth="1"
-        style={{
-          animation:
-            "radar-ping 1.8s ease-out infinite 0.4s",
-        }}
+      <circle cx={mx} cy={my} r={10}
+        fill="none" stroke="rgba(0,212,255,0.45)" strokeWidth={1}
+        style={{ animation: "radar-ping 2s cubic-bezier(0,0,0.2,1) infinite 0.45s" }}
       />
-
-      {/* core orb */}
-      <circle
-        cx={x}
-        cy={y}
-        r={6}
+      <circle cx={mx} cy={my} r={6}
         fill="#00d4ff"
         style={{
-          filter:
-            "drop-shadow(0 0 10px #00d4ff) drop-shadow(0 0 24px rgba(0,212,255,0.55))",
-          animation:
-            "glow-pulse 1.2s ease-in-out infinite",
+          filter: "drop-shadow(0 0 10px #00d4ff) drop-shadow(0 0 22px rgba(0,212,255,0.5))",
+          animation: "glow-pulse 1.4s cubic-bezier(0.45,0,0.55,1) infinite",
+          willChange: "transform",
         }}
       />
     </g>
