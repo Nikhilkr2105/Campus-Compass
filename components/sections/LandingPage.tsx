@@ -1,24 +1,46 @@
 "use client";
 
-import { motion, useScroll, useTransform, useSpring } from "framer-motion";
+import {
+  AnimatePresence,
+  motion,
+  useScroll,
+  useTransform,
+  useSpring,
+} from "framer-motion";
 import Link from "next/link";
-import { Navigation, Map, ArrowRight, ChevronDown, Zap, Brain, Mic, Accessibility, AlertTriangle, MapPin } from "lucide-react";
-import { ParticleBackground } from "@/components/ui/ParticleBackground";
+import { usePathname } from "next/navigation";
+import {
+  Navigation,
+  Map,
+  ArrowRight,
+  ChevronDown,
+  Menu,
+  X,
+  Zap,
+  Brain,
+  Mic,
+  Accessibility,
+  AlertTriangle,
+  MapPin,
+  Bell,
+  CreditCard,
+  Calendar,
+  BarChart3,
+  Briefcase,
+  Sparkles,
+  Shield,
+} from "lucide-react";
 import { useRef, useState, useEffect } from "react";
 
 /* ─────────────────────────────────────────
-   ANIMATION VARIANTS
+   EASING
 ───────────────────────────────────────── */
-const fadeUp = (delay = 0, distance = 32) => ({
-  initial: { opacity: 0, y: distance },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.75, delay, ease: [0.16, 1, 0.3, 1] as any },
-});
+const EASE = [0.16, 1, 0.3, 1] as const;
 
 /* ─────────────────────────────────────────
-   COUNT-UP HOOK (From Code 2)
+   COUNT-UP HOOK
 ───────────────────────────────────────── */
-function useCountUp(target: number, duration = 1.8, trigger: boolean) {
+function useCountUp(target: number, duration = 2, trigger: boolean) {
   const [count, setCount] = useState(0);
   useEffect(() => {
     if (!trigger) return;
@@ -28,7 +50,11 @@ function useCountUp(target: number, duration = 1.8, trigger: boolean) {
       if (!start) start = ts;
       const progress = Math.min((ts - start) / (duration * 1000), 1);
       const eased = 1 - Math.pow(1 - progress, 3);
-      setCount(isDecimal ? parseFloat((eased * target).toFixed(1)) : Math.floor(eased * target));
+      setCount(
+        isDecimal
+          ? parseFloat((eased * target).toFixed(1))
+          : Math.floor(eased * target)
+      );
       if (progress < 1) requestAnimationFrame(step);
     };
     requestAnimationFrame(step);
@@ -37,13 +63,41 @@ function useCountUp(target: number, duration = 1.8, trigger: boolean) {
 }
 
 /* ─────────────────────────────────────────
-   DATA (Modified to support animation)
+   DATA
 ───────────────────────────────────────── */
 const STATS = [
-  { value: 22,   suffix: "+", label: "Buildings Mapped",  color: "#00d4ff",   glow: "rgba(0,212,255,0.35)"    },
-  { value: 2400, suffix: "+", label: "Students Using",     color: "#a78bfa",   glow: "rgba(167,139,250,0.35)"  },
-  { value: 99.2, suffix: "%", label: "Nav Accuracy",       color: "#34d399",   glow: "rgba(52,211,153,0.35)"   },
-  { value: 340,  suffix: "+", label: "Active Routes",      color: "#fbbf24",   glow: "rgba(251,191,36,0.35)"   },
+  {
+    value: 22,
+    suffix: "+",
+    label: "Buildings Mapped",
+    color: "#3882f6",
+    bg: "rgba(56,130,246,0.08)",
+    border: "rgba(56,130,246,0.18)",
+  },
+  {
+    value: 2400,
+    suffix: "+",
+    label: "Students Using",
+    color: "#c9922a",
+    bg: "rgba(201,146,42,0.08)",
+    border: "rgba(201,146,42,0.18)",
+  },
+  {
+    value: 99.2,
+    suffix: "%",
+    label: "Nav Accuracy",
+    color: "#0d9e6e",
+    bg: "rgba(13,158,110,0.08)",
+    border: "rgba(13,158,110,0.18)",
+  },
+  {
+    value: 340,
+    suffix: "+",
+    label: "Active Routes",
+    color: "#6b4fcf",
+    bg: "rgba(107,79,207,0.08)",
+    border: "rgba(107,79,207,0.18)",
+  },
 ];
 
 const FEATURES = [
@@ -51,106 +105,575 @@ const FEATURES = [
     icon: MapPin,
     title: "Indoor Navigation",
     desc: "Floor-by-floor routing with animated path rendering across all campus buildings.",
-    accent: "#00d4ff",
-    accentBg: "rgba(0,212,255,0.07)",
-    accentBorder: "rgba(0,212,255,0.18)",
+    color: "#3882f6",
+    bg: "rgba(56,130,246,0.06)",
+    border: "rgba(56,130,246,0.14)",
   },
   {
     icon: Brain,
     title: "AI Route Detection",
     desc: "Dijkstra algorithm finds the optimal path instantly, adapting to live conditions.",
-    accent: "#a78bfa",
-    accentBg: "rgba(167,139,250,0.07)",
-    accentBorder: "rgba(167,139,250,0.18)",
+    color: "#6b4fcf",
+    bg: "rgba(107,79,207,0.06)",
+    border: "rgba(107,79,207,0.14)",
   },
   {
     icon: Zap,
     title: "Real-Time Guidance",
     desc: "Step-by-step directions with live ETA tracking and dynamic rerouting.",
-    accent: "#fbbf24",
-    accentBg: "rgba(251,191,36,0.07)",
-    accentBorder: "rgba(251,191,36,0.18)",
+    color: "#c9922a",
+    bg: "rgba(201,146,42,0.06)",
+    border: "rgba(201,146,42,0.14)",
   },
   {
     icon: AlertTriangle,
-    title: "Emergency Mode",
-    desc: "One-tap SOS with instant medical center routing and emergency alerts.",
-    accent: "#f87171",
-    accentBg: "rgba(248,113,113,0.07)",
-    accentBorder: "rgba(248,113,113,0.18)",
+    title: "Emergency Alerts",
+    desc: "One-tap SOS with instant medical center routing and campus-wide emergency alerts.",
+    color: "#d94040",
+    bg: "rgba(217,64,64,0.06)",
+    border: "rgba(217,64,64,0.14)",
+  },
+  {
+    icon: Bell,
+    title: "Notices & Reminders",
+    desc: "Fee reminders, academic notices, and smart push alerts delivered intelligently.",
+    color: "#0d9e6e",
+    bg: "rgba(13,158,110,0.06)",
+    border: "rgba(13,158,110,0.14)",
+  },
+  {
+    icon: Calendar,
+    title: "Events",
+    desc: "Campus events calendar with location-aware directions to every venue.",
+    color: "#3882f6",
+    bg: "rgba(56,130,246,0.06)",
+    border: "rgba(56,130,246,0.14)",
+  },
+  {
+    icon: BarChart3,
+    title: "Campus Analytics",
+    desc: "Usage insights, footfall heatmaps, and admin dashboards for smarter decisions.",
+    color: "#c9922a",
+    bg: "rgba(201,146,42,0.06)",
+    border: "rgba(201,146,42,0.14)",
   },
   {
     icon: Mic,
     title: "Voice Assistant",
     desc: "Natural language campus navigation via AI — just speak your destination.",
-    accent: "#34d399",
-    accentBg: "rgba(52,211,153,0.07)",
-    accentBorder: "rgba(52,211,153,0.18)",
+    color: "#6b4fcf",
+    bg: "rgba(107,79,207,0.06)",
+    border: "rgba(107,79,207,0.14)",
   },
   {
     icon: Accessibility,
     title: "Accessibility Mode",
     desc: "Wheelchair-friendly routes prioritising ramps, lifts, and level surfaces.",
-    accent: "#60a5fa",
-    accentBg: "rgba(96,165,250,0.07)",
-    accentBorder: "rgba(96,165,250,0.18)",
+    color: "#0d9e6e",
+    bg: "rgba(13,158,110,0.06)",
+    border: "rgba(13,158,110,0.14)",
   },
 ];
 
-/* ─────────────────────────────────────────
-   AMBIENT ORB COMPONENT
-───────────────────────────────────────── */
-function AmbientOrb({
-  size, top, left, right, bottom, color, delay = 0, duration = 8,
-}: {
-  size: number; top?: string; left?: string; right?: string; bottom?: string;
-  color: string; delay?: number; duration?: number;
-}) {
-  return (
-    <motion.div
-      animate={{ y: [0, -20, 0], scale: [1, 1.06, 1], opacity: [0.6, 1, 0.6] }}
-      transition={{ duration, repeat: Infinity, ease: "easeInOut", delay }}
-      style={{
-        position: "absolute",
-        width: size, height: size,
-        top, left, right, bottom,
-        borderRadius: "50%",
-        background: `radial-gradient(circle, ${color} 0%, transparent 70%)`,
-        pointerEvents: "none",
-        filter: "blur(1px)",
-      }}
-    />
-  );
-}
+const ECOSYSTEM = [
+  { icon: Sparkles, label: "AI Ecosystem", desc: "Nikhil-powered intelligence" },
+  { icon: Shield,   label: "Admin System", desc: "Full control dashboard" },
+  { icon: Briefcase,label: "Opportunities", desc: "Jobs, internships & more" },
+  { icon: CreditCard, label: "Fee Reminders", desc: "Smart payment alerts" },
+];
 
 /* ─────────────────────────────────────────
-   GRID LINE OVERLAY
+   SKY HERO BACKGROUND
 ───────────────────────────────────────── */
-function GridOverlay() {
+function SkyHero() {
   return (
     <div
       aria-hidden
       style={{
-        position: "fixed",
+        position: "absolute",
         inset: 0,
+        overflow: "hidden",
         pointerEvents: "none",
-        zIndex: 0,
-        backgroundImage: `
-          linear-gradient(rgba(0,212,255,0.025) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(0,212,255,0.025) 1px, transparent 1px)
-        `,
-        backgroundSize: "80px 80px",
-        maskImage: "radial-gradient(ellipse 100% 100% at 50% 50%, black 20%, transparent 80%)",
       }}
-    />
+    >
+      {/* Base sky gradient — sunrise atmosphere */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          background:
+            "linear-gradient(165deg, #0d1a2e 0%, #1a3560 18%, #1e4b8a 34%, #2b6cb8 50%, #4a90d9 65%, #7ab4e8 78%, #c4dff5 90%, #e8f4fd 100%)",
+        }}
+      />
+
+      {/* Sunrise glow — gold warmth at horizon */}
+      <div
+        style={{
+          position: "absolute",
+          bottom: "18%",
+          left: "50%",
+          transform: "translateX(-50%)",
+          width: "120%",
+          height: "45%",
+          background:
+            "radial-gradient(ellipse 80% 60% at 50% 100%, rgba(230,170,60,0.32) 0%, rgba(200,120,40,0.15) 40%, transparent 70%)",
+          animation: "sunrise-pulse 8s ease-in-out infinite",
+        }}
+      />
+
+      {/* Volumetric light shaft — left */}
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: "20%",
+          width: "28%",
+          height: "75%",
+          background:
+            "linear-gradient(175deg, rgba(255,255,255,0.06) 0%, rgba(180,210,255,0.04) 50%, transparent 100%)",
+          transform: "skewX(-8deg)",
+          transformOrigin: "top",
+        }}
+      />
+
+      {/* Volumetric light shaft — right */}
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          right: "18%",
+          width: "22%",
+          height: "65%",
+          background:
+            "linear-gradient(175deg, rgba(255,255,255,0.04) 0%, rgba(200,220,255,0.025) 50%, transparent 100%)",
+          transform: "skewX(6deg)",
+          transformOrigin: "top",
+        }}
+      />
+
+      {/* Cloud layer 1 — slow drift */}
+      <motion.div
+        animate={{ x: [0, 30, 0], opacity: [0.5, 0.7, 0.5] }}
+        transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
+        style={{
+          position: "absolute",
+          top: "28%",
+          left: "-5%",
+          width: "55%",
+          height: "18%",
+          background:
+            "radial-gradient(ellipse 90% 50% at 40% 50%, rgba(255,255,255,0.12) 0%, rgba(180,210,255,0.06) 55%, transparent 80%)",
+          borderRadius: "50%",
+          filter: "blur(18px)",
+        }}
+      />
+
+      {/* Cloud layer 2 */}
+      <motion.div
+        animate={{ x: [0, -20, 0], opacity: [0.4, 0.65, 0.4] }}
+        transition={{ duration: 18, repeat: Infinity, ease: "easeInOut", delay: 3 }}
+        style={{
+          position: "absolute",
+          top: "20%",
+          right: "-8%",
+          width: "50%",
+          height: "16%",
+          background:
+            "radial-gradient(ellipse 85% 45% at 55% 50%, rgba(255,255,255,0.1) 0%, rgba(160,200,255,0.05) 55%, transparent 80%)",
+          borderRadius: "50%",
+          filter: "blur(22px)",
+        }}
+      />
+
+      {/* Fog layer — lower atmosphere */}
+      <div
+        style={{
+          position: "absolute",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: "30%",
+          background:
+            "linear-gradient(to top, rgba(200,225,255,0.18) 0%, rgba(180,210,255,0.08) 50%, transparent 100%)",
+          filter: "blur(6px)",
+        }}
+      />
+
+      {/* Floating ambient particles */}
+      {Array.from({ length: 18 }).map((_, i) => (
+        <motion.div
+          key={i}
+          animate={{
+            y: [0, -(28 + (i % 5) * 14), 0],
+            x: [0, (i % 3 === 0 ? 1 : -1) * (6 + (i % 4) * 4), 0],
+            opacity: [0, 0.45 + (i % 4) * 0.1, 0],
+          }}
+          transition={{
+            duration: 6 + (i % 5) * 2.2,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: i * 0.55,
+          }}
+          style={{
+            position: "absolute",
+            left: `${5 + ((i * 37) % 90)}%`,
+            top: `${30 + ((i * 23) % 55)}%`,
+            width: 2 + (i % 3),
+            height: 2 + (i % 3),
+            borderRadius: "50%",
+            background:
+              i % 4 === 0
+                ? "rgba(230,180,60,0.7)"
+                : i % 3 === 0
+                ? "rgba(255,255,255,0.65)"
+                : "rgba(160,200,255,0.55)",
+          }}
+        />
+      ))}
+
+      {/* Top vignette */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          background:
+            "linear-gradient(to bottom, rgba(8,14,28,0.55) 0%, transparent 35%, transparent 60%, rgba(8,14,28,0.2) 100%)",
+        }}
+      />
+    </div>
   );
 }
 
 /* ─────────────────────────────────────────
-   STAT CARD (Updated with animation logic)
+   TOPOLOGY MAP — Deep premium campus style
 ───────────────────────────────────────── */
-function StatCard({ s, i }: { s: typeof STATS[0]; i: number }) {
-  const [hovered, setHovered] = useState(false);
+function TopologyMap() {
+  const buildings = [
+    { id: "A", x: 80,  y: 210, label: "Main Block",  floors: 4, w: 95,  h: 62, active: true  },
+    { id: "B", x: 222, y: 132, label: "Science",     floors: 3, w: 82,  h: 72, active: false },
+    { id: "C", x: 344, y: 196, label: "Library",     floors: 2, w: 72,  h: 58, active: false },
+    { id: "D", x: 462, y: 124, label: "Admin",       floors: 3, w: 88,  h: 68, active: false },
+    { id: "E", x: 562, y: 234, label: "Hostel",      floors: 5, w: 76,  h: 52, active: false },
+    { id: "F", x: 198, y: 284, label: "Medical",     floors: 2, w: 68,  h: 50, active: false },
+    { id: "G", x: 402, y: 296, label: "Sports",      floors: 1, w: 92,  h: 46, active: false },
+  ];
+
+  const paths = [
+    { d: "M 127 241 L 222 168", active: true,  label: "120m" },
+    { d: "M 304 168 L 344 225", active: false, label: "80m"  },
+    { d: "M 416 225 L 462 158", active: true,  label: "95m"  },
+    { d: "M 550 158 L 562 257", active: false, label: "60m"  },
+    { d: "M 127 241 L 198 309", active: false, label: "70m"  },
+    { d: "M 266 309 L 344 225", active: false, label: "90m"  },
+    { d: "M 416 225 L 402 319", active: true,  label: "55m"  },
+  ];
+
+  return (
+    <div
+      style={{
+        position: "relative",
+        width: "100%",
+        maxWidth: 700,
+        margin: "0 auto",
+        borderRadius: 24,
+        overflow: "hidden",
+        background: "linear-gradient(150deg, #0c1829 0%, #0f2040 40%, #132850 100%)",
+        border: "1px solid rgba(56,130,246,0.2)",
+        boxShadow:
+          "0 40px 100px rgba(13,26,46,0.45), 0 8px 32px rgba(56,130,246,0.12), inset 0 1px 0 rgba(255,255,255,0.07), inset 0 -1px 0 rgba(56,130,246,0.08)",
+      }}
+    >
+      {/* Header bar */}
+      <div
+        style={{
+          padding: "14px 20px",
+          borderBottom: "1px solid rgba(56,130,246,0.12)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          background: "rgba(56,130,246,0.05)",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <motion.div
+            animate={{ opacity: [1, 0.3, 1] }}
+            transition={{ duration: 1.8, repeat: Infinity }}
+            style={{
+              width: 7, height: 7, borderRadius: "50%",
+              background: "#0d9e6e",
+              boxShadow: "0 0 10px rgba(13,158,110,0.7)",
+            }}
+          />
+          <span style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.7)", fontFamily: "var(--font-sans)", letterSpacing: "0.8px" }}>
+            RIMT CAMPUS · LIVE TOPOLOGY
+          </span>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          {/* Floor selector pill */}
+          <div style={{ display: "flex", gap: 4 }}>
+            {["B1","G","F1","F2"].map((f, i) => (
+              <div key={f} style={{
+                padding: "2px 7px", borderRadius: 6, fontSize: 9, fontWeight: 600,
+                fontFamily: "var(--font-sans)",
+                background: i === 1 ? "rgba(56,130,246,0.3)" : "rgba(255,255,255,0.06)",
+                border: `1px solid ${i === 1 ? "rgba(56,130,246,0.5)" : "rgba(255,255,255,0.1)"}`,
+                color: i === 1 ? "#6ea8ff" : "rgba(255,255,255,0.38)",
+              }}>{f}</div>
+            ))}
+          </div>
+          <div style={{ display: "flex", gap: 5 }}>
+            {["#d94040","#c9922a","#0d9e6e"].map((c,i) => (
+              <div key={i} style={{ width:9, height:9, borderRadius:"50%", background:c, opacity:0.7 }} />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* SVG Map */}
+      <svg viewBox="0 0 700 390" style={{ width: "100%", display: "block" }}>
+        <defs>
+          <pattern id="campusGrid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(56,130,246,0.06)" strokeWidth="0.5"/>
+          </pattern>
+          <pattern id="campusDotGrid" width="20" height="20" patternUnits="userSpaceOnUse">
+            <circle cx="10" cy="10" r="0.6" fill="rgba(56,130,246,0.12)"/>
+          </pattern>
+          <linearGradient id="routeMain" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#3882f6" stopOpacity="1"/>
+            <stop offset="100%" stopColor="#6ea8ff" stopOpacity="1"/>
+          </linearGradient>
+          <linearGradient id="routeAlt" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#c9922a" stopOpacity="0.5"/>
+            <stop offset="100%" stopColor="#e8b84b" stopOpacity="0.5"/>
+          </linearGradient>
+          <linearGradient id="groundGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="rgba(13,80,40,0.18)"/>
+            <stop offset="100%" stopColor="rgba(13,80,40,0.04)"/>
+          </linearGradient>
+          <filter id="buildingGlow">
+            <feGaussianBlur stdDeviation="4" result="blur"/>
+            <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+          </filter>
+          <filter id="activeGlow">
+            <feGaussianBlur stdDeviation="6" result="blur"/>
+            <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+          </filter>
+        </defs>
+
+        {/* Base layers */}
+        <rect width="700" height="390" fill="url(#campusDotGrid)"/>
+        <rect width="700" height="390" fill="url(#campusGrid)"/>
+
+        {/* Campus ground plane — perspective illusion */}
+        <ellipse cx="350" cy="390" rx="300" ry="55" fill="url(#groundGrad)"/>
+        {/* Central pathway spine */}
+        <path d="M 40 360 Q 350 300 660 360" fill="none" stroke="rgba(56,130,246,0.08)" strokeWidth="18" strokeLinecap="round"/>
+        <path d="M 40 360 Q 350 300 660 360" fill="none" stroke="rgba(56,130,246,0.06)" strokeWidth="2" strokeLinecap="round" strokeDasharray="8 6"/>
+
+        {/* Green zones */}
+        <ellipse cx="340" cy="365" rx="140" ry="22" fill="rgba(13,120,60,0.1)"/>
+        <ellipse cx="340" cy="365" rx="100" ry="14" fill="rgba(13,120,60,0.08)"/>
+
+        {/* Path connections with distance labels */}
+        {paths.map((p, i) => (
+          <motion.g key={i}>
+            <motion.path
+              d={p.d}
+              fill="none"
+              stroke={p.active ? "url(#routeMain)" : "url(#routeAlt)"}
+              strokeWidth={p.active ? 2.5 : 1.5}
+              strokeLinecap="round"
+              strokeDasharray={p.active ? "none" : "5 4"}
+              initial={{ pathLength: 0, opacity: 0 }}
+              animate={{ pathLength: 1, opacity: 1 }}
+              transition={{ duration: 1.1, delay: 0.3 + i * 0.12, ease: EASE }}
+            />
+          </motion.g>
+        ))}
+
+        {/* Active route animated pulse */}
+        <motion.path
+          d="M 60 241 L 127 241 L 222 168 L 304 168 L 344 225 L 416 225 L 462 158"
+          fill="none"
+          stroke="rgba(56,130,246,0.4)"
+          strokeWidth="8"
+          strokeLinecap="round"
+        />
+        <motion.path
+          d="M 60 241 L 127 241 L 222 168 L 304 168 L 344 225 L 416 225 L 462 158"
+          fill="none"
+          stroke="#3882f6"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeDasharray="10 6"
+          animate={{ strokeDashoffset: [0, -32] }}
+          transition={{ duration: 1.1, repeat: Infinity, ease: "linear" }}
+          opacity={0.9}
+        />
+
+        {/* Buildings with isometric depth hint */}
+        {buildings.map((b, i) => (
+          <motion.g
+            key={b.id}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 + i * 0.1, duration: 0.55, ease: EASE }}
+          >
+            {/* Shadow */}
+            <rect x={b.x+4} y={b.y+4} width={b.w} height={b.h} rx="5"
+              fill="rgba(0,0,0,0.3)" filter="url(#buildingGlow)"/>
+            {/* Floor depth bars — isometric feel */}
+            {Array.from({ length: Math.min(b.floors, 4) }).map((_, fi) => (
+              <rect
+                key={fi}
+                x={b.x} y={b.y - fi * 5}
+                width={b.w} height={b.h}
+                rx="5"
+                fill={b.active
+                  ? `rgba(56,130,246,${0.08 + fi * 0.04})`
+                  : `rgba(22,42,78,${0.6 + fi * 0.08})`}
+                stroke={b.active
+                  ? `rgba(56,130,246,${0.3 + fi * 0.1})`
+                  : `rgba(56,130,246,${0.1 + fi * 0.04})`}
+                strokeWidth={b.active ? 1.5 : 0.75}
+              />
+            ))}
+            {/* Top face */}
+            <rect
+              x={b.x} y={b.y - (Math.min(b.floors,4)-1)*5}
+              width={b.w} height={b.h} rx="5"
+              fill={b.active ? "rgba(56,130,246,0.28)" : "rgba(30,52,88,0.85)"}
+              stroke={b.active ? "rgba(110,168,255,0.7)" : "rgba(56,130,246,0.22)"}
+              strokeWidth={b.active ? 1.5 : 1}
+            />
+            {/* Window dots — occupied feel */}
+            {!b.active && Array.from({ length: 3 }).map((_, wi) =>
+              Array.from({ length: 2 }).map((_, hi) => (
+                <rect
+                  key={`${wi}-${hi}`}
+                  x={b.x + 10 + wi * ((b.w-20)/3)}
+                  y={b.y - (Math.min(b.floors,4)-1)*5 + 10 + hi * ((b.h-20)/2.5)}
+                  width={6} height={5} rx="1"
+                  fill={Math.random() > 0.4 ? "rgba(200,220,255,0.18)" : "rgba(200,220,255,0.05)"}
+                />
+              ))
+            )}
+            {/* Building ID */}
+            <text
+              x={b.x + b.w/2}
+              y={b.y - (Math.min(b.floors,4)-1)*5 + b.h/2 + 1}
+              textAnchor="middle" dominantBaseline="middle"
+              fill={b.active ? "#6ea8ff" : "rgba(160,190,230,0.75)"}
+              fontSize="11" fontWeight="700" fontFamily="var(--font-sans)"
+            >{b.id}</text>
+            {/* Floor count badge */}
+            <rect
+              x={b.x + b.w - 18}
+              y={b.y - (Math.min(b.floors,4)-1)*5 - 14}
+              width={16} height={12} rx="3"
+              fill="rgba(56,130,246,0.2)"
+              stroke="rgba(56,130,246,0.35)"
+              strokeWidth="0.8"
+            />
+            <text
+              x={b.x + b.w - 10}
+              y={b.y - (Math.min(b.floors,4)-1)*5 - 8}
+              textAnchor="middle" dominantBaseline="middle"
+              fill="#6ea8ff" fontSize="7" fontFamily="var(--font-sans)" fontWeight="700"
+            >F{b.floors}</text>
+            {/* Label */}
+            <text
+              x={b.x + b.w/2}
+              y={b.y + b.h + 14}
+              textAnchor="middle"
+              fill="rgba(140,170,210,0.6)"
+              fontSize="9" fontFamily="var(--font-body)" letterSpacing="0.3"
+            >{b.label}</text>
+          </motion.g>
+        ))}
+
+        {/* Start / End nodes */}
+        {[
+          { cx: 60, cy: 241, color: "#0d9e6e", label: "You", sub: "Main Entry" },
+          { cx: 506, cy: 158, color: "#d94040", label: "Dest", sub: "Admin Block" },
+        ].map((n, i) => (
+          <motion.g key={i}
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 1.2 + i*0.2, duration: 0.4, ease: EASE }}
+          >
+            <motion.circle cx={n.cx} cy={n.cy} r="14"
+              fill="transparent"
+              stroke={n.color}
+              strokeWidth="1"
+              animate={{ r: [12, 20, 12], opacity: [0.6, 0, 0.6] }}
+              transition={{ duration: 2.2, repeat: Infinity, delay: i * 0.8 }}
+            />
+            <circle cx={n.cx} cy={n.cy} r="7"
+              fill={`${n.color}22`} stroke={n.color} strokeWidth="1.5"/>
+            <circle cx={n.cx} cy={n.cy} r="3" fill={n.color}/>
+            <text x={n.cx} y={n.cy - 20} textAnchor="middle"
+              fill={n.color} fontSize="9" fontWeight="700" fontFamily="var(--font-sans)" letterSpacing="0.5">
+              {n.label}
+            </text>
+            <text x={n.cx} y={n.cy - 10} textAnchor="middle"
+              fill={`${n.color}88`} fontSize="7.5" fontFamily="var(--font-body)">
+              {n.sub}
+            </text>
+          </motion.g>
+        ))}
+
+        {/* Compass rose */}
+        <g transform="translate(648, 348)">
+          <circle cx="0" cy="0" r="16" fill="rgba(13,26,46,0.7)" stroke="rgba(56,130,246,0.2)" strokeWidth="1"/>
+          <text x="0" y="-7" textAnchor="middle" fill="rgba(110,168,255,0.8)" fontSize="7" fontWeight="700" fontFamily="var(--font-sans)">N</text>
+          <path d="M 0 -4 L 2 2 L 0 0 L -2 2 Z" fill="#3882f6" opacity="0.9"/>
+          <path d="M 0 4 L 2 -1 L 0 0 L -2 -1 Z" fill="rgba(255,255,255,0.3)"/>
+        </g>
+      </svg>
+
+      {/* Legend + Status bar */}
+      <div style={{
+        padding: "12px 20px",
+        borderTop: "1px solid rgba(56,130,246,0.1)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        background: "rgba(0,0,0,0.25)",
+        flexWrap: "wrap",
+        gap: 8,
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          {[
+            { color: "#3882f6", label: "Active route" },
+            { color: "#c9922a", label: "Alternate" },
+            { color: "#0d9e6e", label: "Origin" },
+            { color: "#d94040", label: "Destination" },
+          ].map((l) => (
+            <div key={l.label} style={{ display:"flex", alignItems:"center", gap:5 }}>
+              <div style={{ width:18, height:2, borderRadius:2, background:l.color, opacity:0.85 }}/>
+              <span style={{ fontSize:9, color:"rgba(160,190,230,0.55)", fontFamily:"var(--font-body)" }}>{l.label}</span>
+            </div>
+          ))}
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+            <Navigation size={11} style={{ color: "#3882f6" }}/>
+            <span style={{ fontSize:11, color:"rgba(160,190,230,0.7)", fontFamily:"var(--font-body)" }}>340m · Optimal</span>
+          </div>
+          <div style={{ fontSize:14, fontWeight:700, color:"#6ea8ff", fontFamily:"var(--font-sans)" }}>
+            3 min ETA
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────
+   STAT CARD
+───────────────────────────────────────── */
+function StatCard({ s, i }: { s: (typeof STATS)[0]; i: number }) {
   const [visible, setVisible] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const count = useCountUp(s.value, 2, visible);
@@ -158,7 +681,10 @@ function StatCard({ s, i }: { s: typeof STATS[0]; i: number }) {
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setVisible(true); }, { threshold: 0.3 });
+    const obs = new IntersectionObserver(
+      ([e]) => { if (e.isIntersecting) setVisible(true); },
+      { threshold: 0.3 }
+    );
     obs.observe(el);
     return () => obs.disconnect();
   }, []);
@@ -166,67 +692,50 @@ function StatCard({ s, i }: { s: typeof STATS[0]; i: number }) {
   return (
     <motion.div
       ref={ref}
-      key={s.label}
       initial={{ opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      transition={{ delay: i * 0.1, duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
-      whileHover={{ y: -6, scale: 1.03 }}
-      onHoverStart={() => setHovered(true)}
-      onHoverEnd={() => setHovered(false)}
+      transition={{ delay: i * 0.1, duration: 0.7, ease: EASE }}
+      whileHover={{ y: -4 }}
+      style={{ height: "100%" }}
     >
       <div
         style={{
-          padding: "28px 20px",
+          padding: "32px 24px",
           textAlign: "center",
           borderRadius: 20,
-          position: "relative",
-          overflow: "hidden",
-          background: hovered
-            ? `linear-gradient(135deg, ${s.color}12, rgba(255,255,255,0.03))`
-            : "linear-gradient(135deg, rgba(255,255,255,0.045), rgba(255,255,255,0.015))",
-          border: `1px solid ${hovered ? s.color + "45" : s.color + "25"}`,
-          backdropFilter: "blur(24px)",
-          boxShadow: hovered
-            ? `0 0 40px ${s.glow}, 0 8px 32px rgba(0,0,0,0.4), inset 0 0 30px ${s.color}08`
-            : `0 0 20px ${s.color}10, inset 0 0 20px ${s.color}04`,
-          transition: "all 0.35s cubic-bezier(0.16,1,0.3,1)",
+          background: s.bg,
+          border: `1px solid ${s.border}`,
+          backdropFilter: "blur(20px)",
+          boxShadow: "var(--shadow-md)",
+          transition: "all 0.3s ease",
+          height: "100%",
         }}
       >
-        <div style={{
-          position: "absolute", top: 0, right: 0,
-          width: 70, height: 70,
-          background: `radial-gradient(circle at top right, ${s.color}30 0%, transparent 70%)`,
-          pointerEvents: "none",
-        }} />
-        <div style={{
-          position: "absolute", bottom: 0, left: 0,
-          width: 50, height: 50,
-          background: `radial-gradient(circle at bottom left, ${s.color}15 0%, transparent 70%)`,
-          pointerEvents: "none",
-        }} />
-
-        <div style={{
-          fontSize: "clamp(32px, 4.5vw, 46px)",
-          fontWeight: 900,
-          lineHeight: 1,
-          marginBottom: 8,
-          color: s.color,
-          fontFamily: "var(--font-display)",
-          textShadow: hovered ? `0 0 28px ${s.glow}` : `0 0 16px ${s.color}50`,
-          transition: "text-shadow 0.3s ease",
-          letterSpacing: "-1px",
-        }}>
-          {count.toLocaleString()}{s.suffix}
+        <div
+          style={{
+            fontSize: "clamp(36px, 4.5vw, 52px)",
+            fontWeight: 700,
+            lineHeight: 1,
+            marginBottom: 8,
+            color: s.color,
+            fontFamily: "var(--font-display)",
+            letterSpacing: "-1.5px",
+          }}
+        >
+          {count.toLocaleString()}
+          {s.suffix}
         </div>
-        <div style={{
-          fontSize: 11,
-          fontWeight: 600,
-          color: "rgba(240,244,255,0.5)",
-          fontFamily: "var(--font-body)",
-          letterSpacing: "0.8px",
-          textTransform: "uppercase",
-        }}>
+        <div
+          style={{
+            fontSize: 12,
+            fontWeight: 600,
+            color: "var(--text-2)",
+            fontFamily: "var(--font-sans)",
+            letterSpacing: "0.6px",
+            textTransform: "uppercase",
+          }}
+        >
           {s.label}
         </div>
       </div>
@@ -237,110 +746,95 @@ function StatCard({ s, i }: { s: typeof STATS[0]; i: number }) {
 /* ─────────────────────────────────────────
    FEATURE CARD
 ───────────────────────────────────────── */
-function FeatureCard({ f, i }: { f: typeof FEATURES[0]; i: number }) {
+function FeatureCard({ f, i }: { f: (typeof FEATURES)[0]; i: number }) {
   const [hovered, setHovered] = useState(false);
   const IconComp = f.icon;
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 28, scale: 0.96 }}
-      whileInView={{ opacity: 1, y: 0, scale: 1 }}
+      initial={{ opacity: 0, y: 28 }}
+      whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      transition={{ delay: i * 0.08, duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
-      whileHover={{ y: -7, scale: 1.02 }}
+      transition={{ delay: i * 0.06, duration: 0.65, ease: EASE }}
+      whileHover={{ y: -5 }}
       onHoverStart={() => setHovered(true)}
       onHoverEnd={() => setHovered(false)}
       style={{ height: "100%" }}
     >
-      <div style={{
-        padding: "28px 26px",
-        height: "100%",
-        borderRadius: 22,
-        position: "relative",
-        overflow: "hidden",
-        background: hovered
-          ? `linear-gradient(145deg, ${f.accentBg}, rgba(255,255,255,0.02))`
-          : "linear-gradient(145deg, rgba(255,255,255,0.04), rgba(255,255,255,0.015))",
-        border: `1px solid ${hovered ? f.accentBorder : "rgba(255,255,255,0.07)"}`,
-        backdropFilter: "blur(28px)",
-        boxShadow: hovered
-          ? `0 0 36px ${f.accent}18, 0 12px 40px rgba(0,0,0,0.45), inset 0 0 24px ${f.accent}06`
-          : "0 2px 20px rgba(0,0,0,0.3)",
-        transition: "all 0.35s cubic-bezier(0.16,1,0.3,1)",
-        cursor: "default",
-        display: "flex",
-        flexDirection: "column",
-        gap: 0,
-      }}>
-        <motion.div
-          animate={{ top: hovered ? ["0%", "100%", "0%"] : "0%" }}
-          transition={{ duration: 2, repeat: hovered ? Infinity : 0, ease: "linear" }}
-          style={{
-            position: "absolute",
-            left: 0, right: 0,
-            height: 1,
-            background: `linear-gradient(90deg, transparent, ${f.accent}40, transparent)`,
-            pointerEvents: "none",
-            opacity: hovered ? 1 : 0,
-            transition: "opacity 0.3s ease",
-          }}
-        />
-
-        <div style={{
-          position: "absolute", top: 0, right: 0,
-          width: 100, height: 100,
-          background: `radial-gradient(circle at top right, ${f.accent}18 0%, transparent 70%)`,
-          pointerEvents: "none",
-          transition: "opacity 0.3s ease",
-          opacity: hovered ? 1 : 0.4,
-        }} />
-
-        <div style={{
-          width: 48, height: 48,
-          borderRadius: 14,
+      <div
+        style={{
+          padding: "28px 26px",
+          height: "100%",
+          borderRadius: 20,
+          background: hovered
+            ? "rgba(255,255,255,0.95)"
+            : "rgba(255,255,255,0.72)",
+          border: `1px solid ${hovered ? f.border : "rgba(13,26,46,0.07)"}`,
+          boxShadow: hovered
+            ? `var(--shadow-lg), 0 0 0 1px ${f.border}`
+            : "var(--shadow-sm)",
+          backdropFilter: "blur(20px)",
+          transition: "all 0.3s cubic-bezier(0.16,1,0.3,1)",
           display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          background: `linear-gradient(135deg, ${f.accent}18, ${f.accent}06)`,
-          border: `1px solid ${f.accentBorder}`,
-          boxShadow: hovered ? `0 0 20px ${f.accent}30` : `0 0 10px ${f.accent}15`,
-          marginBottom: 20,
-          transition: "all 0.3s ease",
-          flexShrink: 0,
-        }}>
-          <IconComp size={20} style={{ color: f.accent }} strokeWidth={1.5} />
+          flexDirection: "column",
+          gap: 0,
+        }}
+      >
+        <div
+          style={{
+            width: 44,
+            height: 44,
+            borderRadius: 12,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            background: f.bg,
+            border: `1px solid ${f.border}`,
+            marginBottom: 18,
+            flexShrink: 0,
+            transition: "all 0.3s ease",
+          }}
+        >
+          <IconComp size={18} style={{ color: f.color }} strokeWidth={1.75} />
         </div>
 
-        <div style={{
-          fontSize: 15,
-          fontWeight: 700,
-          marginBottom: 10,
-          fontFamily: "var(--font-display)",
-          color: "var(--text-1)",
-          letterSpacing: "-0.2px",
-        }}>
+        <div
+          style={{
+            fontSize: 15,
+            fontWeight: 600,
+            marginBottom: 10,
+            fontFamily: "var(--font-sans)",
+            color: "var(--text-1)",
+            letterSpacing: "-0.1px",
+          }}
+        >
           {f.title}
         </div>
 
-        <p style={{
-          fontSize: 13,
-          lineHeight: 1.75,
-          color: "rgba(240,244,255,0.48)",
-          fontFamily: "var(--font-body)",
-          fontWeight: 300,
-          flex: 1,
-        }}>
+        <p
+          style={{
+            fontSize: 13.5,
+            lineHeight: 1.7,
+            color: "var(--text-2)",
+            fontFamily: "var(--font-body)",
+            fontWeight: 400,
+            flex: 1,
+          }}
+        >
           {f.desc}
         </p>
 
-        <div style={{
-          marginTop: 20,
-          height: 2,
-          borderRadius: 2,
-          background: `linear-gradient(90deg, ${f.accent}60, transparent)`,
-          opacity: hovered ? 1 : 0,
-          transition: "opacity 0.3s ease",
-        }} />
+        <motion.div
+          animate={{ width: hovered ? "100%" : "0%" }}
+          transition={{ duration: 0.3, ease: EASE }}
+          style={{
+            marginTop: 20,
+            height: 2,
+            borderRadius: 2,
+            background: `linear-gradient(90deg, ${f.color}, transparent)`,
+            opacity: 0.6,
+          }}
+        />
       </div>
     </motion.div>
   );
@@ -349,505 +843,1567 @@ function FeatureCard({ f, i }: { f: typeof FEATURES[0]; i: number }) {
 /* ─────────────────────────────────────────
    SECTION LABEL
 ───────────────────────────────────────── */
-function SectionLabel({ children, color = "var(--cyan)" }: { children: React.ReactNode; color?: string }) {
+function SectionLabel({
+  children,
+  color = "var(--sky)",
+}: {
+  children: React.ReactNode;
+  color?: string;
+}) {
   return (
-    <div style={{
-      display: "inline-flex",
-      alignItems: "center",
-      gap: 8,
-      padding: "6px 16px",
-      borderRadius: 999,
-      fontSize: 10,
-      fontWeight: 700,
-      letterSpacing: "2.5px",
-      textTransform: "uppercase" as const,
-      background: `${color}0f`,
-      border: `1px solid ${color}30`,
-      color,
-      fontFamily: "var(--font-display)",
-      marginBottom: 20,
-    }}>
-      <span style={{ width: 5, height: 5, borderRadius: "50%", background: color, boxShadow: `0 0 6px ${color}` }} />
+    <div
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 8,
+        padding: "6px 16px",
+        borderRadius: 999,
+        fontSize: 11,
+        fontWeight: 600,
+        letterSpacing: "2px",
+        textTransform: "uppercase" as const,
+        background: `${color}12`,
+        border: `1px solid ${color}28`,
+        color,
+        fontFamily: "var(--font-sans)",
+        marginBottom: 20,
+      }}
+    >
+      <span
+        style={{
+          width: 5,
+          height: 5,
+          borderRadius: "50%",
+          background: color,
+          opacity: 0.85,
+        }}
+      />
       {children}
     </div>
   );
 }
 
 /* ─────────────────────────────────────────
-   MAP PREVIEW MOCKUP
+   TOP NAVIGATION
 ───────────────────────────────────────── */
-function MapPreviewMockup() {
-  return (
-    <div style={{
-      position: "relative",
-      width: "100%",
-      maxWidth: 560,
-      margin: "0 auto",
-      borderRadius: 24,
-      overflow: "hidden",
-      border: "1px solid rgba(0,212,255,0.2)",
-      background: "linear-gradient(135deg, rgba(0,212,255,0.04), rgba(139,92,246,0.03))",
-      backdropFilter: "blur(20px)",
-      boxShadow: "0 0 60px rgba(0,212,255,0.12), 0 0 120px rgba(139,92,246,0.06), 0 24px 80px rgba(0,0,0,0.5)",
-      aspectRatio: "16/9",
-    }}>
-      <div style={{
-        position: "absolute", inset: 0,
-        backgroundImage: `
-          linear-gradient(rgba(0,212,255,0.06) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(0,212,255,0.06) 1px, transparent 1px)
-        `,
-        backgroundSize: "40px 40px",
-      }} />
+const TOP_NAV_LINKS = [
+  {
+    label: "Features",
+    href: "#features",
+    sectionId: "features",
+    icon: Sparkles,
+    accent: "#6b4fcf",
+  },
+  {
+    label: "Navigation",
+    href: "/navigator",
+    sectionId: null,
+    icon: Navigation,
+    accent: "#3882f6",
+  },
+  {
+    label: "Analytics",
+    href: "/analytics",
+    sectionId: null,
+    icon: BarChart3,
+    accent: "#c9922a",
+  },
+  {
+    label: "Emergency",
+    href: "/emergency",
+    sectionId: null,
+    icon: AlertTriangle,
+    accent: "#d94040",
+  },
+  {
+    label: "Admin",
+    href: "/admin",
+    sectionId: null,
+    icon: Shield,
+    accent: "#0d9e6e",
+  },
+] as const;
 
-      {[
-        { x: "8%",  y: "12%", w: 90,  h: 55,  color: "rgba(0,212,255,0.15)",  border: "rgba(0,212,255,0.4)"  },
-        { x: "22%", y: "40%", w: 110, h: 65,  color: "rgba(167,139,250,0.12)", border: "rgba(167,139,250,0.4)" },
-        { x: "42%", y: "18%", w: 75,  h: 80,  color: "rgba(0,212,255,0.1)",   border: "rgba(0,212,255,0.35)" },
-        { x: "58%", y: "45%", w: 95,  h: 50,  color: "rgba(52,211,153,0.1)",  border: "rgba(52,211,153,0.35)" },
-        { x: "70%", y: "15%", w: 70,  h: 60,  color: "rgba(251,191,36,0.08)", border: "rgba(251,191,36,0.3)"  },
-        { x: "15%", y: "68%", w: 80,  h: 45,  color: "rgba(0,212,255,0.08)",  border: "rgba(0,212,255,0.25)" },
-        { x: "50%", y: "70%", w: 100, h: 40,  color: "rgba(167,139,250,0.08)", border: "rgba(167,139,250,0.25)" },
-      ].map((b, i) => (
-        <motion.div
-          key={i}
-          animate={{ opacity: [0.6, 1, 0.6] }}
-          transition={{ duration: 3 + i * 0.5, repeat: Infinity, delay: i * 0.4 }}
-          style={{
-            position: "absolute",
-            left: b.x, top: b.y,
-            width: b.w, height: b.h,
-            background: b.color,
-            border: `1px solid ${b.border}`,
-            borderRadius: 4,
-          }}
-        />
-      ))}
+function TopNav() {
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState<string | null>(null);
+  const pathname = usePathname();
 
-      <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }} viewBox="0 0 560 315">
-        <motion.path
-          d="M 80 280 L 80 200 L 180 200 L 180 140 L 300 140 L 300 200 L 420 200 L 420 130"
-          fill="none"
-          stroke="url(#routeGrad)"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeDasharray="8 4"
-          initial={{ pathLength: 0, opacity: 0 }}
-          animate={{ pathLength: 1, opacity: 1 }}
-          transition={{ duration: 2.5, ease: "easeInOut", delay: 0.5, repeat: Infinity, repeatDelay: 2 }}
-        />
-        <defs>
-          <linearGradient id="routeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#00d4ff" stopOpacity="0.9" />
-            <stop offset="100%" stopColor="#a78bfa" stopOpacity="0.9" />
-          </linearGradient>
-        </defs>
-        <motion.circle
-          cx="80" cy="280"
-          r="6"
-          fill="#34d399"
-          animate={{ r: [5, 8, 5], opacity: [1, 0.5, 1] }}
-          transition={{ duration: 1.5, repeat: Infinity }}
-        />
-        <motion.circle
-          cx="420" cy="130"
-          r="6"
-          fill="#f87171"
-          animate={{ r: [5, 8, 5], opacity: [1, 0.5, 1] }}
-          transition={{ duration: 1.5, repeat: Infinity, delay: 0.75 }}
-        />
-      </svg>
+  useEffect(() => {
+    let frame = 0;
 
-      <div style={{
-        position: "absolute", top: 12, left: 12,
-        display: "flex", alignItems: "center", gap: 6,
-        padding: "6px 12px",
-        borderRadius: 8,
-        background: "rgba(0,0,0,0.6)",
-        border: "1px solid rgba(0,212,255,0.25)",
-        backdropFilter: "blur(12px)",
-      }}>
-        <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#34d399", boxShadow: "0 0 8px #34d399" }} />
-        <span style={{ fontSize: 10, color: "#00d4ff", fontFamily: "var(--font-display)", letterSpacing: "1px", fontWeight: 600 }}>LIVE ROUTE ACTIVE</span>
-      </div>
+    const updateNavState = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        setScrolled(window.scrollY > 36);
 
-      <div style={{
-        position: "absolute", bottom: 12, right: 12,
-        padding: "8px 14px",
-        borderRadius: 8,
-        background: "rgba(0,0,0,0.6)",
-        border: "1px solid rgba(167,139,250,0.25)",
-        backdropFilter: "blur(12px)",
-        textAlign: "right",
-      }}>
-        <div style={{ fontSize: 18, fontWeight: 800, color: "#a78bfa", fontFamily: "var(--font-display)", lineHeight: 1 }}>3 min</div>
-        <div style={{ fontSize: 9, color: "rgba(240,244,255,0.4)", fontFamily: "var(--font-body)", marginTop: 2, letterSpacing: "0.5px" }}>ETA · 340m</div>
-      </div>
+        const features = document.getElementById("features");
+        if (!features) return;
 
+        const marker = 136;
+        const rect = features.getBoundingClientRect();
+        setActiveSection(
+          rect.top <= marker && rect.bottom > marker ? "features" : null
+        );
+      });
+    };
+
+    updateNavState();
+    window.addEventListener("scroll", updateNavState, { passive: true });
+    window.addEventListener("resize", updateNavState);
+
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", updateNavState);
+      window.removeEventListener("resize", updateNavState);
+    };
+  }, []);
+
+  const shellBackground = scrolled
+    ? "rgba(255,255,255,0.84)"
+    : "rgba(255,255,255,0.08)";
+  const shellBorder = scrolled
+    ? "rgba(13,26,46,0.1)"
+    : "rgba(255,255,255,0.18)";
+  const shellShadow = scrolled
+    ? "0 18px 48px rgba(13,26,46,0.14), 0 1px 0 rgba(255,255,255,0.7) inset"
+    : "0 12px 36px rgba(13,26,46,0.12), 0 1px 0 rgba(255,255,255,0.16) inset";
+  const ink = scrolled ? "var(--navy)" : "rgba(255,255,255,0.94)";
+  const mutedInk = scrolled ? "var(--text-2)" : "rgba(255,255,255,0.68)";
+
+  const closeMobile = () => setMobileOpen(false);
+
+  const scrollToSection = (sectionId: string) => {
+    document
+      .getElementById(sectionId)
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    setActiveSection(sectionId);
+    closeMobile();
+  };
+
+  const isItemActive = (item: (typeof TOP_NAV_LINKS)[number]) =>
+    item.sectionId ? activeSection === item.sectionId : pathname === item.href;
+
+  const renderNavItem = (
+    item: (typeof TOP_NAV_LINKS)[number],
+    mobile = false
+  ) => {
+    const active = isItemActive(item);
+    const Icon = item.icon;
+
+    const content = (
       <motion.div
-        animate={{ top: ["-5%", "105%"] }}
-        transition={{ duration: 4, repeat: Infinity, ease: "linear", repeatDelay: 2 }}
+        whileHover={{ y: mobile ? 0 : -1 }}
+        whileTap={{ scale: 0.98 }}
         style={{
-          position: "absolute", left: 0, right: 0,
-          height: 2,
-          background: "linear-gradient(90deg, transparent, rgba(0,212,255,0.5), transparent)",
-          pointerEvents: "none",
+          position: "relative",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: mobile ? "flex-start" : "center",
+          gap: mobile ? 10 : 7,
+          width: mobile ? "100%" : "auto",
+          minHeight: mobile ? 44 : 34,
+          padding: mobile ? "10px 12px" : "8px 12px",
+          borderRadius: mobile ? 14 : 999,
+          color: active ? ink : mutedInk,
+          fontFamily: "var(--font-sans)",
+          fontSize: mobile ? 14 : 13,
+          fontWeight: active ? 700 : 600,
+          lineHeight: 1,
+          transition: "color 0.25s ease",
         }}
-      />
-    </div>
+      >
+        {active && (
+          <motion.span
+            layoutId={mobile ? "mobile-nav-active" : "top-nav-active"}
+            transition={{ type: "spring", stiffness: 420, damping: 34 }}
+            style={{
+              position: "absolute",
+              inset: mobile ? 0 : 2,
+              borderRadius: mobile ? 14 : 999,
+              background: scrolled
+                ? "rgba(56,130,246,0.1)"
+                : "rgba(255,255,255,0.15)",
+              border: scrolled
+                ? `1px solid ${item.accent}24`
+                : "1px solid rgba(255,255,255,0.16)",
+              boxShadow: scrolled
+                ? `0 8px 22px ${item.accent}14`
+                : "0 8px 24px rgba(255,255,255,0.06)",
+            }}
+          />
+        )}
+
+        <span
+          style={{
+            position: "relative",
+            zIndex: 1,
+            width: mobile ? 28 : 20,
+            height: mobile ? 28 : 20,
+            borderRadius: mobile ? 9 : 999,
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            background: active ? `${item.accent}16` : "transparent",
+            color: active ? item.accent : "currentColor",
+          }}
+        >
+          <Icon size={mobile ? 15 : 13} strokeWidth={2} />
+        </span>
+        <span style={{ position: "relative", zIndex: 1 }}>{item.label}</span>
+      </motion.div>
+    );
+
+    if (item.sectionId) {
+      return (
+        <button
+          key={item.label}
+          type="button"
+          onClick={() => scrollToSection(item.sectionId)}
+          aria-current={active ? "location" : undefined}
+          style={{
+            appearance: "none",
+            background: "transparent",
+            border: "none",
+            cursor: "pointer",
+            padding: 0,
+            width: mobile ? "100%" : "auto",
+            textAlign: "left",
+          }}
+        >
+          {content}
+        </button>
+      );
+    }
+
+    return (
+      <Link
+        key={item.label}
+        href={item.href}
+        onClick={closeMobile}
+        aria-current={active ? "page" : undefined}
+        style={{
+          display: mobile ? "block" : "inline-flex",
+          width: mobile ? "100%" : "auto",
+          textDecoration: "none",
+        }}
+      >
+        {content}
+      </Link>
+    );
+  };
+
+  return (
+    <motion.header
+      initial={{ opacity: 0, y: -16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.65, ease: EASE }}
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 50,
+        padding: "0 20px",
+        pointerEvents: "none",
+      }}
+    >
+      <motion.div
+        animate={{
+          backgroundColor: shellBackground,
+          borderColor: shellBorder,
+          boxShadow: shellShadow,
+        }}
+        transition={{ duration: 0.32, ease: EASE }}
+        style={{
+          maxWidth: 1160,
+          margin: "0 auto",
+          marginTop: 14,
+          padding: "10px 12px",
+          borderRadius: 24,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 12,
+          border: "1px solid",
+          backdropFilter: scrolled
+            ? "blur(26px) saturate(1.2)"
+            : "blur(14px) saturate(1.05)",
+          WebkitBackdropFilter: scrolled
+            ? "blur(26px) saturate(1.2)"
+            : "blur(14px) saturate(1.05)",
+          pointerEvents: "auto",
+          transition: "backdrop-filter 0.32s ease",
+        }}
+      >
+        <Link href="/" onClick={closeMobile} style={{ textDecoration: "none" }}>
+          <motion.div
+            whileHover={{ y: -1 }}
+            whileTap={{ scale: 0.98 }}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              padding: "4px 8px 4px 4px",
+              borderRadius: 18,
+            }}
+          >
+            <div
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: 12,
+                background: "linear-gradient(135deg, #3882f6, #1a4fa8)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                boxShadow: "0 8px 22px rgba(56,130,246,0.34)",
+              }}
+            >
+              <Navigation size={16} color="white" strokeWidth={2} />
+            </div>
+            <div>
+              <div
+                style={{
+                  fontSize: 13,
+                  fontWeight: 800,
+                  color: ink,
+                  fontFamily: "var(--font-sans)",
+                  letterSpacing: "0",
+                  lineHeight: 1.2,
+                  transition: "color 0.3s ease",
+                }}
+              >
+                RIMT Navigator
+              </div>
+              <div
+                style={{
+                  fontSize: 10,
+                  color: mutedInk,
+                  fontFamily: "var(--font-body)",
+                  letterSpacing: "0.2px",
+                  lineHeight: 1,
+                  transition: "color 0.3s ease",
+                }}
+              >
+                Smart Campus
+              </div>
+            </div>
+          </motion.div>
+        </Link>
+
+        {/* Nav links — desktop */}
+        <nav
+          className="hidden lg:flex"
+          style={{
+            alignItems: "center",
+            gap: 2,
+            padding: 4,
+            borderRadius: 999,
+            background: scrolled
+              ? "rgba(13,26,46,0.035)"
+              : "rgba(255,255,255,0.08)",
+            border: scrolled
+              ? "1px solid rgba(13,26,46,0.06)"
+              : "1px solid rgba(255,255,255,0.11)",
+            transition: "background 0.3s ease, border-color 0.3s ease",
+          }}
+        >
+          {TOP_NAV_LINKS.map((item) => renderNavItem(item))}
+        </nav>
+
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <Link
+            href="/navigator"
+            onClick={closeMobile}
+            className="hidden sm:inline-flex"
+            style={{ textDecoration: "none" }}
+          >
+            <motion.div
+              whileHover={{
+                scale: 1.03,
+                y: -1,
+                boxShadow:
+                  "0 12px 34px rgba(56,130,246,0.4), 0 2px 8px rgba(56,130,246,0.22)",
+              }}
+              whileTap={{ scale: 0.97 }}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                minHeight: 40,
+                padding: "10px 16px",
+                borderRadius: 14,
+                fontSize: 13,
+                fontWeight: 800,
+                cursor: "pointer",
+                background: "linear-gradient(135deg, #3882f6, #1a4fa8)",
+                color: "#fff",
+                border: "1px solid rgba(255,255,255,0.18)",
+                boxShadow:
+                  "0 8px 24px rgba(56,130,246,0.34), 0 2px 8px rgba(13,26,46,0.14)",
+                fontFamily: "var(--font-sans)",
+                letterSpacing: "0",
+                whiteSpace: "nowrap",
+              }}
+            >
+              <Navigation size={14} strokeWidth={2} />
+              Open Navigator
+              <ArrowRight size={13} strokeWidth={2.2} />
+            </motion.div>
+          </Link>
+
+          <motion.button
+            type="button"
+            className="lg:hidden"
+            whileTap={{ scale: 0.94 }}
+            onClick={() => setMobileOpen((open) => !open)}
+            aria-label="Toggle navigation menu"
+            aria-expanded={mobileOpen}
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 14,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background: scrolled
+                ? "rgba(13,26,46,0.045)"
+                : "rgba(255,255,255,0.1)",
+              border: scrolled
+                ? "1px solid rgba(13,26,46,0.08)"
+                : "1px solid rgba(255,255,255,0.16)",
+              color: ink,
+              cursor: "pointer",
+            }}
+          >
+            {mobileOpen ? <X size={18} /> : <Menu size={18} />}
+          </motion.button>
+        </div>
+      </motion.div>
+
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            className="lg:hidden"
+            initial={{ opacity: 0, y: -8, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -8, scale: 0.98 }}
+            transition={{ duration: 0.22, ease: EASE }}
+            style={{
+              maxWidth: 1160,
+              margin: "8px auto 0",
+              padding: 8,
+              borderRadius: 22,
+              background: "rgba(255,255,255,0.92)",
+              border: "1px solid rgba(13,26,46,0.08)",
+              boxShadow: "0 22px 60px rgba(13,26,46,0.18)",
+              backdropFilter: "blur(26px) saturate(1.2)",
+              WebkitBackdropFilter: "blur(26px) saturate(1.2)",
+              pointerEvents: "auto",
+            }}
+          >
+            <nav style={{ display: "grid", gap: 4, marginBottom: 8 }}>
+              {TOP_NAV_LINKS.map((item) => renderNavItem(item, true))}
+            </nav>
+
+            <Link
+              href="/navigator"
+              onClick={closeMobile}
+              style={{ textDecoration: "none" }}
+            >
+              <motion.div
+                whileTap={{ scale: 0.98 }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 9,
+                  minHeight: 46,
+                  borderRadius: 16,
+                  background: "linear-gradient(135deg, #3882f6, #1a4fa8)",
+                  color: "#fff",
+                  fontFamily: "var(--font-sans)",
+                  fontSize: 14,
+                  fontWeight: 800,
+                  boxShadow: "0 10px 26px rgba(56,130,246,0.32)",
+                }}
+              >
+                <Navigation size={15} strokeWidth={2} />
+                Open Navigator
+                <ArrowRight size={14} strokeWidth={2.2} />
+              </motion.div>
+            </Link>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.header>
   );
 }
 
 /* ─────────────────────────────────────────
-   MAIN COMPONENT
+   MAIN PAGE
 ───────────────────────────────────────── */
 export function LandingPage() {
   const featuresRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLDivElement>(null);
 
-  const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
-  const heroY    = useTransform(scrollYProgress, [0, 1], [0, 80]);
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
-  const springY  = useSpring(heroY, { stiffness: 60, damping: 20 });
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ["start start", "end start"],
+  });
+  const heroY = useTransform(scrollYProgress, [0, 1], [0, 100]);
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.65], [1, 0]);
+  const springY = useSpring(heroY, { stiffness: 55, damping: 22 });
 
-  const scrollToFeatures = () => featuresRef.current?.scrollIntoView({ behavior: "smooth" });
+  const scrollToFeatures = () =>
+    featuresRef.current?.scrollIntoView({ behavior: "smooth" });
 
   return (
     <div
       className="relative min-h-screen overflow-x-hidden"
       style={{ background: "var(--bg-1)" }}
     >
-      <ParticleBackground />
-      <GridOverlay />
+      <TopNav />
 
-      <div className="fixed inset-0 pointer-events-none z-0" aria-hidden>
-        <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse 90% 70% at 15% 25%, rgba(0,212,255,0.065) 0%, transparent 55%)" }} />
-        <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse 70% 60% at 85% 75%, rgba(139,92,246,0.07) 0%, transparent 50%)" }} />
-        <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse 50% 50% at 50% 50%, rgba(0,212,255,0.018) 0%, transparent 65%)" }} />
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent 60%, rgba(0,0,0,0.4) 100%)" }} />
-      </div>
+      {/* ── HERO ── */}
+      <section
+        id="hero"
+        ref={heroRef}
+        style={{
+          position: "relative",
+          minHeight: "100vh",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          overflow: "hidden",
+        }}
+      >
+        <SkyHero />
 
-      <div className="relative z-10" style={{ paddingTop: "95px" }}>
-
-        {/* HERO */}
-        <section
-          id="hero"
-          ref={heroRef}
-          className="flex flex-col items-center text-center px-6 pt-24 pb-32 relative"
-          style={{ minHeight: "92vh", justifyContent: "center" }}
+        <motion.div
+          style={{ y: springY, opacity: heroOpacity, position: "relative", zIndex: 2 }}
+          className="flex flex-col items-center text-center px-6"
         >
-          <AmbientOrb size={640} top="-5%"  left="-12%"  color="rgba(0,212,255,0.07)"   delay={0} duration={9} />
-          <AmbientOrb size={520} top="18%"  right="-8%"  color="rgba(139,92,246,0.08)"  delay={2} duration={11} />
-          <AmbientOrb size={340} bottom="5%" left="35%"  color="rgba(0,212,255,0.04)"   delay={4} duration={7} />
-
-          <motion.div style={{ y: springY, opacity: heroOpacity }} className="flex flex-col items-center">
-            <motion.div {...fadeUp(0.1)}>
-              <div style={{
+          {/* Badge */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.2, ease: EASE }}
+          >
+            <div
+              style={{
                 display: "inline-flex",
                 alignItems: "center",
-                gap: 10,
+                gap: 8,
                 padding: "8px 20px",
                 borderRadius: 999,
-                fontSize: 10,
-                fontWeight: 700,
-                letterSpacing: "2.5px",
+                fontSize: 11,
+                fontWeight: 600,
+                letterSpacing: "1.5px",
                 textTransform: "uppercase",
-                background: "linear-gradient(135deg, rgba(0,212,255,0.1), rgba(139,92,246,0.07))",
-                border: "1px solid rgba(0,212,255,0.3)",
-                color: "var(--cyan)",
-                fontFamily: "var(--font-display)",
-                boxShadow: "0 0 40px rgba(0,212,255,0.1), inset 0 0 24px rgba(0,212,255,0.05)",
+                background: "rgba(255,255,255,0.15)",
+                border: "1px solid rgba(255,255,255,0.28)",
+                color: "rgba(255,255,255,0.9)",
+                fontFamily: "var(--font-sans)",
                 backdropFilter: "blur(16px)",
                 marginBottom: 36,
-              }}>
-                <motion.span
-                  animate={{ scale: [1, 1.4, 1], opacity: [1, 0.6, 1] }}
-                  transition={{ duration: 1.8, repeat: Infinity }}
-                  style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--cyan)", boxShadow: "0 0 10px var(--cyan)", display: "inline-block" }}
-                />
-                Nikhil-Powered Campus Navigation
-                <motion.span
-                  animate={{ scale: [1, 1.4, 1], opacity: [1, 0.6, 1] }}
-                  transition={{ duration: 1.8, repeat: Infinity, delay: 0.9 }}
-                  style={{ width: 6, height: 6, borderRadius: "50%", background: "#a78bfa", boxShadow: "0 0 10px #a78bfa", display: "inline-block" }}
-                />
-              </div>
-            </motion.div>
-
-            <motion.h1
-              style={{
-                fontSize: "clamp(46px, 8.5vw, 96px)",
-                fontWeight: 900,
-                lineHeight: 1.02,
-                letterSpacing: "-3px",
-                fontFamily: "var(--font-display)",
-                maxWidth: 960,
-                marginBottom: 0,
               }}
-              {...fadeUp(0.18)}
             >
-              <span style={{
-                background: "linear-gradient(135deg, #ffffff 0%, rgba(220,230,255,0.88) 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-              }}>
-                Navigate Your
-              </span>
-              <br />
-              <span style={{
-                background: "linear-gradient(135deg, #ffffff 0%, rgba(220,230,255,0.88) 60%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-              }}>
-                Campus{" "}
-              </span>
               <motion.span
-                animate={{ filter: ["drop-shadow(0 0 20px rgba(0,212,255,0.5))", "drop-shadow(0 0 45px rgba(0,212,255,0.9))", "drop-shadow(0 0 20px rgba(0,212,255,0.5))"] }}
-                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                animate={{ opacity: [1, 0.4, 1] }}
+                transition={{ duration: 2, repeat: Infinity }}
                 style={{
-                  background: "linear-gradient(90deg, #00d4ff 0%, #818cf8 45%, #a78bfa 75%, #8b5cf6 100%)",
+                  width: 6,
+                  height: 6,
+                  borderRadius: "50%",
+                  background: "#0d9e6e",
+                  boxShadow: "0 0 8px rgba(13,158,110,0.8)",
+                  display: "inline-block",
+                }}
+              />
+              RIMT University · Intelligent Campus Ecosystem
+            </div>
+          </motion.div>
+
+          {/* Headline */}
+          <motion.h1
+            initial={{ opacity: 0, y: 28 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.9, delay: 0.3, ease: EASE }}
+            style={{
+              fontSize: "clamp(44px, 8vw, 96px)",
+              fontWeight: 700,
+              lineHeight: 1.04,
+              letterSpacing: "-2.5px",
+              fontFamily: "var(--font-display)",
+              maxWidth: 900,
+              marginBottom: 0,
+              color: "#fff",
+            }}
+          >
+            <span style={{ display: "block", color: "rgba(255,255,255,0.96)" }}>
+              One Campus.
+            </span>
+            <span style={{ display: "block", color: "rgba(255,255,255,0.96)" }}>
+              Every System.{" "}
+              <motion.span
+                style={{
+                  background:
+                    "linear-gradient(90deg, #e8c96a 0%, #f0d98a 40%, #e8c96a 100%)",
                   WebkitBackgroundClip: "text",
                   WebkitTextFillColor: "transparent",
                   display: "inline-block",
+                  backgroundSize: "200% 100%",
                 }}
+                animate={{ backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }}
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
               >
-                Intelligently
+                One Platform.
               </motion.span>
-            </motion.h1>
+            </span>
+          </motion.h1>
 
-            <motion.p
-              style={{
-                fontSize: "clamp(15px, 2vw, 19px)",
-                color: "rgba(240,244,255,0.58)",
-                maxWidth: 480,
-                lineHeight: 1.85,
-                marginTop: 28,
-                marginBottom: 56,
-                fontFamily: "var(--font-body)",
-                fontWeight: 300,
-              }}
-              {...fadeUp(0.3)}
-            >
-              Smart indoor + outdoor navigation for{" "}
-              <strong style={{ color: "rgba(240,244,255,0.92)", fontWeight: 600 }}>RIMT University</strong>
-              {" "}— powered by Nikhil, built for students.
-            </motion.p>
+          {/* Subheading */}
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.5, ease: EASE }}
+            style={{
+              fontSize: "clamp(16px, 2vw, 20px)",
+              color: "rgba(255,255,255,0.65)",
+              maxWidth: 520,
+              lineHeight: 1.8,
+              marginTop: 28,
+              marginBottom: 52,
+              fontFamily: "var(--font-body)",
+              fontWeight: 300,
+            }}
+          >
+            Navigation, safety, alerts, analytics, events, and AI — unified into a
+            living intelligent ecosystem for{" "}
+            <strong style={{ color: "rgba(255,255,255,0.9)", fontWeight: 600 }}>
+              RIMT University
+            </strong>
+            . Powered by Nikhil.
+          </motion.p>
 
-            <div className="flex gap-4 flex-wrap justify-center">
-              <Link href="/navigator">
-                <motion.div
-                  whileHover={{ scale: 1.05, y: -3 }}
-                  whileTap={{ scale: 0.97 }}
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 10,
-                    padding: "14px 32px",
-                    borderRadius: 18,
-                    fontSize: 15,
-                    fontWeight: 700,
-                    cursor: "pointer",
-                    background: "linear-gradient(135deg, rgba(0,212,255,0.22), rgba(0,212,255,0.08))",
-                    border: "1px solid rgba(0,212,255,0.5)",
-                    color: "#00d4ff",
-                    fontFamily: "var(--font-body)",
-                    boxShadow: "0 0 30px rgba(0,212,255,0.22), inset 0 0 20px rgba(0,212,255,0.06)",
-                    backdropFilter: "blur(16px)",
-                    transition: "all 0.3s cubic-bezier(0.16,1,0.3,1)",
-                    letterSpacing: "0.2px",
-                  }}
-                >
-                  <Navigation size={16} strokeWidth={2} />
-                  Start Navigation
-                  <ArrowRight size={14} strokeWidth={2} style={{ opacity: 0.7 }} />
-                </motion.div>
-              </Link>
-
+          {/* CTAs */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.65, ease: EASE }}
+            className="flex gap-4 flex-wrap justify-center"
+          >
+            <Link href="/navigator">
               <motion.div
-                whileHover={{ scale: 1.05, y: -3 }}
+                whileHover={{ scale: 1.04, y: -3 }}
                 whileTap={{ scale: 0.97 }}
-                onClick={scrollToFeatures}
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
                   gap: 10,
-                  padding: "14px 32px",
-                  borderRadius: 18,
+                  padding: "15px 34px",
+                  borderRadius: 16,
                   fontSize: 15,
                   fontWeight: 600,
                   cursor: "pointer",
-                  background: "linear-gradient(135deg, rgba(167,139,250,0.1), rgba(139,92,246,0.04))",
-                  border: "1px solid rgba(167,139,250,0.3)",
-                  color: "#a78bfa",
-                  fontFamily: "var(--font-body)",
-                  backdropFilter: "blur(16px)",
-                  transition: "all 0.3s cubic-bezier(0.16,1,0.3,1)",
-                  letterSpacing: "0.2px",
+                  background: "linear-gradient(135deg, #3882f6, #1a4fa8)",
+                  color: "#fff",
+                  border: "1px solid rgba(255,255,255,0.15)",
+                  boxShadow:
+                    "0 8px 28px rgba(56,130,246,0.45), 0 2px 8px rgba(0,0,0,0.2)",
+                  fontFamily: "var(--font-sans)",
+                  letterSpacing: "0.1px",
                 }}
               >
-                <Map size={16} strokeWidth={2} />
-                Explore Features
+                <Navigation size={16} strokeWidth={2} />
+                Start Navigation
+                <ArrowRight size={14} strokeWidth={2} />
               </motion.div>
-            </div>
+            </Link>
 
             <motion.div
-              style={{ width: "100%", maxWidth: 600, marginTop: 72 }}
-              initial={{ opacity: 0, y: 48, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ duration: 1, delay: 0.7, ease: [0.16, 1, 0.3, 1] }}
-            >
-              <MapPreviewMockup />
-            </motion.div>
-
-            <motion.button
-              className="flex flex-col items-center gap-2 mt-16 cursor-pointer"
-              style={{ color: "rgba(0,212,255,0.4)", background: "none", border: "none" }}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 1.5 }}
+              whileHover={{ scale: 1.04, y: -3 }}
+              whileTap={{ scale: 0.97 }}
               onClick={scrollToFeatures}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 10,
+                padding: "15px 34px",
+                borderRadius: 16,
+                fontSize: 15,
+                fontWeight: 600,
+                cursor: "pointer",
+                background: "rgba(255,255,255,0.14)",
+                color: "#fff",
+                border: "1px solid rgba(255,255,255,0.28)",
+                backdropFilter: "blur(16px)",
+                fontFamily: "var(--font-sans)",
+                letterSpacing: "0.1px",
+              }}
             >
-              <span style={{ fontSize: 9, letterSpacing: "4px", fontFamily: "var(--font-display)", color: "rgba(0,212,255,0.4)" }}>SCROLL</span>
-              <div style={{ width: 1, height: 44, background: "linear-gradient(to bottom, transparent, rgba(0,212,255,0.55), transparent)" }} />
-              <motion.div animate={{ y: [0, 6, 0] }} transition={{ duration: 1.4, repeat: Infinity }}>
-                <ChevronDown size={16} style={{ color: "rgba(0,212,255,0.5)" }} />
-              </motion.div>
-            </motion.button>
+              <Map size={16} strokeWidth={2} />
+              Explore Features
+            </motion.div>
           </motion.div>
-        </section>
 
-        {/* STATS SECTION (Now with Count-up) */}
-        <section id="stats" style={{ padding: "0 24px 96px", maxWidth: 1080, margin: "0 auto" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 48 }}>
-            <div style={{ flex: 1, height: 1, background: "linear-gradient(to right, transparent, rgba(0,212,255,0.2), transparent)" }} />
-            <span style={{ fontSize: 9, letterSpacing: "3px", color: "rgba(0,212,255,0.35)", fontFamily: "var(--font-display)", textTransform: "uppercase" }}>Platform Stats</span>
-            <div style={{ flex: 1, height: 1, background: "linear-gradient(to right, transparent, rgba(0,212,255,0.2), transparent)" }} />
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {STATS.map((s, i) => <StatCard key={s.label} s={s} i={i} />)}
-          </div>
-        </section>
-
-        {/* FEATURES */}
-        <section id="features" ref={featuresRef} style={{ padding: "0 24px 96px", maxWidth: 1080, margin: "0 auto" }}>
+          {/* Map preview */}
           <motion.div
-            style={{ textAlign: "center", marginBottom: 56 }}
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
+            style={{ width: "100%", maxWidth: 680, marginTop: 72 }}
+            initial={{ opacity: 0, y: 56, scale: 0.94 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 1.1, delay: 0.85, ease: EASE }}
           >
-            <SectionLabel color="var(--purple)">Core Capabilities</SectionLabel>
-            <h2 style={{
-              fontSize: "clamp(30px, 5vw, 52px)",
-              fontWeight: 900,
-              fontFamily: "var(--font-display)",
-              background: "linear-gradient(135deg, #fff 20%, rgba(0,212,255,0.85) 100%)",
+            <TopologyMap />
+          </motion.div>
+
+          {/* Scroll hint */}
+          <motion.button
+            className="flex flex-col items-center gap-2 mt-14 cursor-pointer"
+            style={{ color: "rgba(255,255,255,0.4)", background: "none", border: "none" }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.6 }}
+            onClick={scrollToFeatures}
+          >
+            <span
+              style={{
+                fontSize: 9,
+                letterSpacing: "4px",
+                fontFamily: "var(--font-sans)",
+                color: "rgba(255,255,255,0.38)",
+                textTransform: "uppercase",
+              }}
+            >
+              Explore
+            </span>
+            <div
+              style={{
+                width: 1,
+                height: 40,
+                background:
+                  "linear-gradient(to bottom, transparent, rgba(255,255,255,0.4), transparent)",
+              }}
+            />
+            <motion.div
+              animate={{ y: [0, 6, 0] }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+            >
+              <ChevronDown size={15} style={{ color: "rgba(255,255,255,0.45)" }} />
+            </motion.div>
+          </motion.button>
+        </motion.div>
+      </section>
+
+      {/* ── TRANSITION: hero → light ── */}
+      <div
+        aria-hidden
+        style={{
+          height: 120,
+          background:
+            "linear-gradient(to bottom, rgba(13,26,46,0.15), var(--bg-1))",
+          marginTop: -2,
+          position: "relative",
+          zIndex: 2,
+        }}
+      />
+
+      {/* ── PROBLEM → SOLUTION ── */}
+      <section
+        id="story"
+        style={{ padding: "80px 24px 100px", maxWidth: 1080, margin: "0 auto", position: "relative" }}
+      >
+        {/* Section header */}
+        <motion.div
+          style={{ textAlign: "center", marginBottom: 72 }}
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.65, ease: EASE }}
+        >
+          <SectionLabel color="var(--gold)">The Story</SectionLabel>
+          <h2 style={{
+            fontSize: "clamp(30px, 4.5vw, 52px)",
+            fontWeight: 700,
+            fontFamily: "var(--font-display)",
+            color: "var(--navy)",
+            letterSpacing: "-1.5px",
+            lineHeight: 1.1,
+            maxWidth: 600,
+            margin: "0 auto",
+          }}>
+            Campus life is complex.<br/>
+            <span style={{
+              background: "linear-gradient(135deg, #3882f6, #c9922a)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
-              marginBottom: 14,
-              letterSpacing: "-1px",
             }}>
-              Everything You Need
-            </h2>
-            <p style={{
-              color: "rgba(240,244,255,0.45)",
-              fontSize: 15,
+              We made it simple.
+            </span>
+          </h2>
+        </motion.div>
+
+        {/* Problem → Solution two-column */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6" style={{ alignItems: "stretch" }}>
+
+          {/* PROBLEM column */}
+          <motion.div
+            initial={{ opacity: 0, x: -28 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7, ease: EASE }}
+            style={{
+              padding: "40px 36px",
+              borderRadius: 24,
+              background: "linear-gradient(135deg, rgba(217,64,64,0.04), rgba(217,64,64,0.02))",
+              border: "1px solid rgba(217,64,64,0.1)",
+              boxShadow: "var(--shadow-md)",
+            }}
+          >
+            <div style={{
+              display: "inline-flex", alignItems: "center", gap: 8,
+              padding: "5px 14px", borderRadius: 999, marginBottom: 28,
+              background: "rgba(217,64,64,0.08)", border: "1px solid rgba(217,64,64,0.18)",
+            }}>
+              <span style={{ width:5, height:5, borderRadius:"50%", background:"#d94040", display:"inline-block" }}/>
+              <span style={{ fontSize:10, fontWeight:600, letterSpacing:"2px", color:"#d94040", fontFamily:"var(--font-sans)", textTransform:"uppercase" }}>Before</span>
+            </div>
+            <h3 style={{ fontSize: "clamp(20px,2.5vw,28px)", fontWeight:700, fontFamily:"var(--font-display)", color:"var(--navy)", marginBottom:24, letterSpacing:"-0.8px", lineHeight:1.2 }}>
+              Lost on a sprawling campus
+            </h3>
+            {[
+              "Students wander for 15+ minutes finding a classroom or office",
+              "No single place to see fees, notices, and events together",
+              "Emergency situations with no fast way to reach help",
+              "Admin teams have zero visibility into campus movement patterns",
+              "Accessibility routes are guesswork — no ramp or lift guidance",
+            ].map((p, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, x: -12 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.1 + i * 0.08, duration: 0.5, ease: EASE }}
+                style={{ display:"flex", gap:12, alignItems:"flex-start", marginBottom:14 }}
+              >
+                <div style={{
+                  width:20, height:20, borderRadius:"50%", flexShrink:0, marginTop:1,
+                  background:"rgba(217,64,64,0.1)", border:"1px solid rgba(217,64,64,0.2)",
+                  display:"flex", alignItems:"center", justifyContent:"center",
+                }}>
+                  <span style={{ fontSize:10, color:"#d94040", fontWeight:700 }}>✕</span>
+                </div>
+                <p style={{ fontSize:14, color:"var(--text-2)", fontFamily:"var(--font-body)", lineHeight:1.65, margin:0 }}>{p}</p>
+              </motion.div>
+            ))}
+          </motion.div>
+
+          {/* SOLUTION column */}
+          <motion.div
+            initial={{ opacity: 0, x: 28 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7, delay: 0.1, ease: EASE }}
+            style={{
+              padding: "40px 36px",
+              borderRadius: 24,
+              background: "linear-gradient(135deg, rgba(56,130,246,0.06), rgba(13,158,110,0.03))",
+              border: "1px solid rgba(56,130,246,0.12)",
+              boxShadow: "var(--shadow-md)",
+              position: "relative",
+              overflow: "hidden",
+            }}
+          >
+            {/* Sunrise accent */}
+            <div aria-hidden style={{
+              position:"absolute", bottom:"-20%", right:"-10%",
+              width:"50%", height:"50%",
+              background:"radial-gradient(ellipse, rgba(201,146,42,0.08) 0%, transparent 70%)",
+              pointerEvents:"none",
+            }}/>
+            <div style={{
+              display: "inline-flex", alignItems: "center", gap: 8,
+              padding: "5px 14px", borderRadius: 999, marginBottom: 28,
+              background: "rgba(13,158,110,0.08)", border: "1px solid rgba(13,158,110,0.2)",
+            }}>
+              <span style={{ width:5, height:5, borderRadius:"50%", background:"#0d9e6e", display:"inline-block" }}/>
+              <span style={{ fontSize:10, fontWeight:600, letterSpacing:"2px", color:"#0d9e6e", fontFamily:"var(--font-sans)", textTransform:"uppercase" }}>After Nikhil</span>
+            </div>
+            <h3 style={{ fontSize:"clamp(20px,2.5vw,28px)", fontWeight:700, fontFamily:"var(--font-display)", color:"var(--navy)", marginBottom:24, letterSpacing:"-0.8px", lineHeight:1.2 }}>
+              One intelligent campus platform
+            </h3>
+            {[
+              "AI-powered routing guides you floor-by-floor in under 30 seconds",
+              "Unified dashboard: navigation, fees, notices, events — all in one",
+              "One-tap SOS routes you to the medical centre instantly",
+              "Admin analytics surface footfall heatmaps and usage patterns",
+              "Dedicated accessibility mode with ramp and lift-aware routing",
+            ].map((s, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, x: 12 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.15 + i * 0.08, duration: 0.5, ease: EASE }}
+                style={{ display:"flex", gap:12, alignItems:"flex-start", marginBottom:14 }}
+              >
+                <div style={{
+                  width:20, height:20, borderRadius:"50%", flexShrink:0, marginTop:1,
+                  background:"rgba(13,158,110,0.12)", border:"1px solid rgba(13,158,110,0.25)",
+                  display:"flex", alignItems:"center", justifyContent:"center",
+                }}>
+                  <span style={{ fontSize:10, color:"#0d9e6e", fontWeight:700 }}>✓</span>
+                </div>
+                <p style={{ fontSize:14, color:"var(--text-2)", fontFamily:"var(--font-body)", lineHeight:1.65, margin:0 }}>{s}</p>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ── STATS ── */}
+      <section
+        id="stats"
+        style={{
+          padding: "0 24px 100px",
+          maxWidth: 1080,
+          margin: "0 auto",
+          position: "relative",
+          zIndex: 2,
+        }}
+      >
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 16,
+            marginBottom: 52,
+          }}
+        >
+          <div className="divider" style={{ flex: 1 }} />
+          <span
+            style={{
+              fontSize: 10,
+              letterSpacing: "3px",
+              color: "var(--text-3)",
+              fontFamily: "var(--font-sans)",
+              textTransform: "uppercase",
+            }}
+          >
+            Platform at a Glance
+          </span>
+          <div className="divider" style={{ flex: 1 }} />
+        </motion.div>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {STATS.map((s, i) => (
+            <StatCard key={s.label} s={s} i={i} />
+          ))}
+        </div>
+      </section>
+
+      {/* ── FEATURES ── */}
+      <section
+        id="features"
+        ref={featuresRef}
+        style={{
+          padding: "0 24px 120px",
+          maxWidth: 1080,
+          margin: "0 auto",
+          position: "relative",
+        }}
+      >
+        {/* Subtle background */}
+        <div
+          aria-hidden
+          style={{
+            position: "absolute",
+            top: "10%",
+            left: "50%",
+            transform: "translateX(-50%)",
+            width: "80%",
+            height: "60%",
+            background:
+              "radial-gradient(ellipse 70% 50% at 50% 40%, rgba(56,130,246,0.05) 0%, transparent 70%)",
+            pointerEvents: "none",
+          }}
+        />
+
+        <motion.div
+          style={{ textAlign: "center", marginBottom: 64, position: "relative" }}
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.65, ease: EASE }}
+        >
+          <SectionLabel color="var(--sky)">Core Capabilities</SectionLabel>
+          <h2
+            style={{
+              fontSize: "clamp(32px, 5vw, 56px)",
+              fontWeight: 700,
+              fontFamily: "var(--font-display)",
+              color: "var(--navy)",
+              marginBottom: 16,
+              letterSpacing: "-1.5px",
+              lineHeight: 1.1,
+            }}
+          >
+            Everything Your Campus Needs
+          </h2>
+          <p
+            style={{
+              color: "var(--text-2)",
+              fontSize: 16,
               fontFamily: "var(--font-body)",
-              fontWeight: 300,
-              maxWidth: 360,
+              fontWeight: 400,
+              maxWidth: 400,
               margin: "0 auto",
-              lineHeight: 1.7,
-            }}>
-              Advanced algorithms meet beautiful design — built for every student
+              lineHeight: 1.75,
+            }}
+          >
+            Advanced AI meets elegant design — built for every student at RIMT
+          </p>
+        </motion.div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {FEATURES.map((f, i) => (
+            <FeatureCard key={f.title} f={f} i={i} />
+          ))}
+        </div>
+      </section>
+
+      {/* ── ECOSYSTEM STRIP ── */}
+      <section
+        id="ecosystem"
+        style={{
+          padding: "80px 24px",
+          background: "var(--navy)",
+          position: "relative",
+          overflow: "hidden",
+        }}
+      >
+        {/* Atmospheric overlay */}
+        <div
+          aria-hidden
+          style={{
+            position: "absolute",
+            inset: 0,
+            background:
+              "radial-gradient(ellipse 80% 60% at 20% 50%, rgba(56,130,246,0.1) 0%, transparent 55%), radial-gradient(ellipse 60% 50% at 80% 50%, rgba(201,146,42,0.07) 0%, transparent 55%)",
+            pointerEvents: "none",
+          }}
+        />
+
+        <div style={{ maxWidth: 1080, margin: "0 auto", position: "relative" }}>
+          <motion.div
+            style={{ textAlign: "center", marginBottom: 56 }}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.65, ease: EASE }}
+          >
+            <SectionLabel color="#6ea8ff">AI Ecosystem</SectionLabel>
+            <h2
+              style={{
+                fontSize: "clamp(28px, 4.5vw, 48px)",
+                fontWeight: 700,
+                fontFamily: "var(--font-display)",
+                color: "#fff",
+                marginBottom: 12,
+                letterSpacing: "-1.2px",
+              }}
+            >
+              A Living Campus Universe
+            </h2>
+            <p
+              style={{
+                color: "rgba(255,255,255,0.45)",
+                fontSize: 15,
+                fontFamily: "var(--font-body)",
+                maxWidth: 380,
+                margin: "0 auto",
+                lineHeight: 1.75,
+              }}
+            >
+              Nikhil-powered intelligence woven through every layer of campus life
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {FEATURES.map((f, i) => <FeatureCard key={f.title} f={f} i={i} />)}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {ECOSYSTEM.map((e, i) => {
+              const IconComp = e.icon;
+              return (
+                <motion.div
+                  key={e.label}
+                  initial={{ opacity: 0, y: 24 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.1, duration: 0.6, ease: EASE }}
+                  whileHover={{ y: -4 }}
+                  style={{
+                    padding: "28px 24px",
+                    borderRadius: 20,
+                    background: "rgba(255,255,255,0.05)",
+                    border: "1px solid rgba(255,255,255,0.09)",
+                    backdropFilter: "blur(12px)",
+                    textAlign: "center",
+                    cursor: "default",
+                    transition: "all 0.3s ease",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 44,
+                      height: 44,
+                      borderRadius: 12,
+                      background: "rgba(56,130,246,0.15)",
+                      border: "1px solid rgba(56,130,246,0.25)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      margin: "0 auto 16px",
+                    }}
+                  >
+                    <IconComp size={18} color="#6ea8ff" strokeWidth={1.75} />
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 14,
+                      fontWeight: 600,
+                      color: "rgba(255,255,255,0.88)",
+                      fontFamily: "var(--font-sans)",
+                      marginBottom: 6,
+                    }}
+                  >
+                    {e.label}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 12,
+                      color: "rgba(255,255,255,0.38)",
+                      fontFamily: "var(--font-body)",
+                    }}
+                  >
+                    {e.desc}
+                  </div>
+                </motion.div>
+              );
+            })}
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* CTA BANNER */}
-        <section id="cta" style={{ padding: "0 24px 96px" }}>
-          <motion.div
-            style={{ maxWidth: 760, margin: "0 auto" }}
-            initial={{ opacity: 0, y: 28 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <div style={{
-              padding: "64px 48px",
+      {/* ── ADMIN INTELLIGENCE ── */}
+      <section
+        id="admin"
+        style={{ padding: "100px 24px", background: "var(--bg-2)", position: "relative", overflow: "hidden" }}
+      >
+        <div aria-hidden style={{
+          position:"absolute", inset:0,
+          background:"radial-gradient(ellipse 60% 50% at 80% 50%, rgba(201,146,42,0.06) 0%, transparent 65%), radial-gradient(ellipse 50% 60% at 10% 50%, rgba(56,130,246,0.05) 0%, transparent 65%)",
+          pointerEvents:"none",
+        }}/>
+        <div style={{ maxWidth:1080, margin:"0 auto", position:"relative" }}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-16" style={{ alignItems:"center" }}>
+
+            {/* Left: copy */}
+            <motion.div
+              initial={{ opacity:0, x:-32 }}
+              whileInView={{ opacity:1, x:0 }}
+              viewport={{ once:true }}
+              transition={{ duration:0.75, ease:EASE }}
+            >
+              <SectionLabel color="var(--gold)">Admin Intelligence</SectionLabel>
+              <h2 style={{
+                fontSize:"clamp(28px,4vw,48px)", fontWeight:700,
+                fontFamily:"var(--font-display)", color:"var(--navy)",
+                letterSpacing:"-1.5px", lineHeight:1.1, marginBottom:20,
+              }}>
+                Complete campus visibility.<br/>
+                <span style={{ background:"linear-gradient(135deg,#c9922a,#3882f6)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>
+                  From one dashboard.
+                </span>
+              </h2>
+              <p style={{ fontSize:16, color:"var(--text-2)", fontFamily:"var(--font-body)", lineHeight:1.8, marginBottom:36, maxWidth:420 }}>
+                The admin system gives faculty and management a live window into every layer of campus activity — movement, alerts, fees, and analytics in real time.
+              </p>
+              {[
+                { label:"Footfall Heatmaps", desc:"See where students move in real time across buildings and floors" },
+                { label:"Alert Broadcast",  desc:"Push emergency or notice alerts to all students in seconds"     },
+                { label:"Fee & Notice Control", desc:"Manage reminders, deadlines, and announcements from one panel" },
+                { label:"Route Analytics", desc:"Understand which routes are used most — optimise campus flow"   },
+              ].map((item, i) => (
+                <motion.div
+                  key={item.label}
+                  initial={{ opacity:0, y:12 }}
+                  whileInView={{ opacity:1, y:0 }}
+                  viewport={{ once:true }}
+                  transition={{ delay: i*0.1, duration:0.5, ease:EASE }}
+                  style={{ display:"flex", gap:14, alignItems:"flex-start", marginBottom:20 }}
+                >
+                  <div style={{
+                    width:8, height:8, borderRadius:"50%", flexShrink:0, marginTop:7,
+                    background:"var(--gold)", boxShadow:"0 0 10px rgba(201,146,42,0.4)",
+                  }}/>
+                  <div>
+                    <div style={{ fontSize:14, fontWeight:600, color:"var(--navy)", fontFamily:"var(--font-sans)", marginBottom:3 }}>{item.label}</div>
+                    <div style={{ fontSize:13, color:"var(--text-2)", fontFamily:"var(--font-body)", lineHeight:1.65 }}>{item.desc}</div>
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
+
+            {/* Right: mock admin panel */}
+            <motion.div
+              initial={{ opacity:0, x:32 }}
+              whileInView={{ opacity:1, x:0 }}
+              viewport={{ once:true }}
+              transition={{ duration:0.75, delay:0.15, ease:EASE }}
+            >
+              <div style={{
+                borderRadius:24, overflow:"hidden",
+                background:"var(--navy)",
+                border:"1px solid rgba(56,130,246,0.15)",
+                boxShadow:"var(--shadow-xl)",
+              }}>
+                {/* Panel titlebar */}
+                <div style={{
+                  padding:"14px 20px", borderBottom:"1px solid rgba(56,130,246,0.1)",
+                  display:"flex", alignItems:"center", justifyContent:"space-between",
+                  background:"rgba(56,130,246,0.06)",
+                }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                    <Shield size={13} color="#c9922a"/>
+                    <span style={{ fontSize:11, fontWeight:600, color:"rgba(255,255,255,0.7)", fontFamily:"var(--font-sans)", letterSpacing:"0.8px" }}>ADMIN DASHBOARD · LIVE</span>
+                  </div>
+                  <motion.div
+                    animate={{ opacity:[1,0.3,1] }}
+                    transition={{ duration:2, repeat:Infinity }}
+                    style={{ width:6, height:6, borderRadius:"50%", background:"#0d9e6e", boxShadow:"0 0 8px rgba(13,158,110,0.7)" }}
+                  />
+                </div>
+
+                {/* Metric row */}
+                <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:1, background:"rgba(56,130,246,0.06)" }}>
+                  {[
+                    { val:"2,418", label:"Online Now",    color:"#3882f6" },
+                    { val:"7",     label:"Active Alerts", color:"#d94040" },
+                    { val:"99.2%", label:"Uptime",        color:"#0d9e6e" },
+                  ].map((m, i) => (
+                    <div key={i} style={{
+                      padding:"18px 16px", textAlign:"center",
+                      background:"rgba(13,26,46,0.8)",
+                      borderRight: i < 2 ? "1px solid rgba(56,130,246,0.08)" : "none",
+                    }}>
+                      <div style={{ fontSize:"clamp(18px,2.5vw,24px)", fontWeight:700, color:m.color, fontFamily:"var(--font-display)", letterSpacing:"-0.5px" }}>{m.val}</div>
+                      <div style={{ fontSize:10, color:"rgba(255,255,255,0.38)", fontFamily:"var(--font-body)", marginTop:3, letterSpacing:"0.4px" }}>{m.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Activity feed */}
+                <div style={{ padding:"16px 20px" }}>
+                  <div style={{ fontSize:10, fontWeight:600, color:"rgba(255,255,255,0.3)", fontFamily:"var(--font-sans)", letterSpacing:"2px", marginBottom:12, textTransform:"uppercase" }}>
+                    Live Activity
+                  </div>
+                  {[
+                    { time:"2s ago",  event:"Fee reminder sent · 3rd year batch",    dot:"#c9922a", type:"notice"    },
+                    { time:"14s ago", event:"Emergency cleared · Medical centre",     dot:"#0d9e6e", type:"alert"     },
+                    { time:"1m ago",  event:"New route optimised · Library → Admin",  dot:"#3882f6", type:"route"     },
+                    { time:"3m ago",  event:"Event posted · Annual Tech Fest 2025",   dot:"#6b4fcf", type:"event"     },
+                    { time:"5m ago",  event:"Peak footfall detected · Main Block F2", dot:"#c9922a", type:"analytics" },
+                  ].map((a, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity:0, x:10 }}
+                      whileInView={{ opacity:1, x:0 }}
+                      viewport={{ once:true }}
+                      transition={{ delay: 0.4 + i*0.08, duration:0.4, ease:EASE }}
+                      style={{
+                        display:"flex", alignItems:"center", gap:12,
+                        padding:"10px 0",
+                        borderBottom: i < 4 ? "1px solid rgba(255,255,255,0.04)" : "none",
+                      }}
+                    >
+                      <div style={{ width:7, height:7, borderRadius:"50%", flexShrink:0, background:a.dot, boxShadow:`0 0 6px ${a.dot}80` }}/>
+                      <div style={{ flex:1, fontSize:12, color:"rgba(255,255,255,0.65)", fontFamily:"var(--font-body)", lineHeight:1.4 }}>{a.event}</div>
+                      <div style={{ fontSize:10, color:"rgba(255,255,255,0.25)", fontFamily:"var(--font-body)", flexShrink:0 }}>{a.time}</div>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── ECOSYSTEM ARCHITECTURE ── */}
+      <section
+        id="architecture"
+        style={{ padding:"100px 24px", maxWidth:1080, margin:"0 auto", position:"relative" }}
+      >
+        <div aria-hidden style={{
+          position:"absolute", top:"20%", left:"50%", transform:"translateX(-50%)",
+          width:"70%", height:"60%",
+          background:"radial-gradient(ellipse 70% 50% at 50% 50%, rgba(56,130,246,0.05) 0%, transparent 70%)",
+          pointerEvents:"none",
+        }}/>
+
+        <motion.div
+          style={{ textAlign:"center", marginBottom:64, position:"relative" }}
+          initial={{ opacity:0, y:20 }}
+          whileInView={{ opacity:1, y:0 }}
+          viewport={{ once:true }}
+          transition={{ duration:0.65, ease:EASE }}
+        >
+          <SectionLabel color="var(--sky)">Architecture</SectionLabel>
+          <h2 style={{
+            fontSize:"clamp(28px,4vw,50px)", fontWeight:700,
+            fontFamily:"var(--font-display)", color:"var(--navy)",
+            letterSpacing:"-1.5px", lineHeight:1.1, marginBottom:14,
+          }}>
+            How the ecosystem connects
+          </h2>
+          <p style={{ fontSize:15, color:"var(--text-2)", fontFamily:"var(--font-body)", maxWidth:380, margin:"0 auto", lineHeight:1.75 }}>
+            Every module talks to every other — unified under one AI layer
+          </p>
+        </motion.div>
+
+        {/* Architecture SVG diagram */}
+        <motion.div
+          initial={{ opacity:0, y:32 }}
+          whileInView={{ opacity:1, y:0 }}
+          viewport={{ once:true }}
+          transition={{ duration:0.85, ease:EASE }}
+          style={{
+            borderRadius:28, overflow:"hidden",
+            background:"linear-gradient(135deg,rgba(255,255,255,0.88),rgba(240,246,255,0.82))",
+            border:"1px solid rgba(56,130,246,0.1)",
+            boxShadow:"var(--shadow-xl)",
+            padding:"40px 24px",
+          }}
+        >
+          <svg viewBox="0 0 900 440" style={{ width:"100%", display:"block" }}>
+            <defs>
+              <marker id="arrowBlue" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                <path d="M 0 0 L 6 3 L 0 6 Z" fill="rgba(56,130,246,0.5)"/>
+              </marker>
+              <marker id="arrowGold" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                <path d="M 0 0 L 6 3 L 0 6 Z" fill="rgba(201,146,42,0.5)"/>
+              </marker>
+              <linearGradient id="coreGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#3882f6"/>
+                <stop offset="100%" stopColor="#1a4fa8"/>
+              </linearGradient>
+            </defs>
+
+            {/* Central AI core */}
+            <motion.g
+              initial={{ opacity:0, scale:0.7 }}
+              animate={{ opacity:1, scale:1 }}
+              transition={{ duration:0.6, ease:EASE }}
+            >
+              <circle cx="450" cy="220" r="62" fill="url(#coreGrad)" opacity="0.12"/>
+              <circle cx="450" cy="220" r="50" fill="url(#coreGrad)" opacity="0.18"/>
+              <circle cx="450" cy="220" r="38" fill="url(#coreGrad)" opacity="0.9"/>
+              <motion.circle
+                cx="450" cy="220" r="62"
+                fill="none" stroke="rgba(56,130,246,0.3)" strokeWidth="1.5"
+                strokeDasharray="8 6"
+                animate={{ rotate:[0,360] }}
+                transition={{ duration:18, repeat:Infinity, ease:"linear" }}
+                style={{ transformOrigin:"450px 220px" }}
+              />
+              <text x="450" y="215" textAnchor="middle" fill="#fff" fontSize="12" fontWeight="700" fontFamily="var(--font-sans)" letterSpacing="1">NIKHIL</text>
+              <text x="450" y="230" textAnchor="middle" fill="rgba(255,255,255,0.6)" fontSize="9" fontFamily="var(--font-body)">AI Core</text>
+            </motion.g>
+
+            {/* Satellite modules */}
+            {[
+              { x:120,  y:80,  label:"Navigation",   sub:"GPS + Indoor",     color:"#3882f6", angle: -140 },
+              { x:280,  y:50,  label:"Emergency",    sub:"SOS + Alerts",     color:"#d94040", angle: -110 },
+              { x:580,  y:50,  label:"Analytics",    sub:"Heatmaps + Stats", color:"#c9922a", angle: -70  },
+              { x:740,  y:80,  label:"Admin",        sub:"Control Panel",    color:"#6b4fcf", angle: -40  },
+              { x:740,  y:360, label:"Events",       sub:"Calendar + Maps",  color:"#3882f6", angle:  40  },
+              { x:580,  y:390, label:"Fees",         sub:"Reminders + Pay",  color:"#c9922a", angle:  70  },
+              { x:280,  y:390, label:"Notices",      sub:"Push + In-app",    color:"#0d9e6e", angle:  110 },
+              { x:120,  y:360, label:"Accessibility",sub:"Ramps + Lifts",    color:"#6b4fcf", angle:  140 },
+            ].map((node, i) => {
+              // connection line endpoint on core circle edge
+              const dx = node.x + 60 - 450;
+              const dy = node.y + 26 - 220;
+              const dist = Math.sqrt(dx*dx + dy*dy);
+              const nx = dx/dist; const ny = dy/dist;
+              const x2 = 450 + nx*40; const y2 = 220 + ny*40;
+              const x1 = node.x + 60 - nx*8; const y1 = node.y + 26 - ny*8;
+              return (
+                <motion.g
+                  key={node.label}
+                  initial={{ opacity:0 }}
+                  animate={{ opacity:1 }}
+                  transition={{ delay: 0.3 + i*0.1, duration:0.5 }}
+                >
+                  {/* Connector */}
+                  <motion.line
+                    x1={x1} y1={y1} x2={x2} y2={y2}
+                    stroke={`${node.color}40`}
+                    strokeWidth="1.5"
+                    strokeDasharray="6 5"
+                    initial={{ pathLength:0 }}
+                    animate={{ pathLength:1 }}
+                    transition={{ delay: 0.4 + i*0.1, duration:0.8, ease:EASE }}
+                  />
+                  {/* Animated pulse dot along connector */}
+                  <motion.circle
+                    r="3"
+                    fill={node.color}
+                    opacity="0.8"
+                    animate={{
+                      cx: [x1, x2, x1],
+                      cy: [y1, y2, y1],
+                      opacity:[0.8, 0.2, 0.8],
+                    }}
+                    transition={{ duration: 2.5 + i*0.3, repeat:Infinity, ease:"easeInOut", delay: i*0.35 }}
+                  />
+                  {/* Node box */}
+                  <rect
+                    x={node.x} y={node.y} width={118} height={50} rx="12"
+                    fill="rgba(255,255,255,0.88)"
+                    stroke={`${node.color}28`}
+                    strokeWidth="1"
+                    style={{ filter:"drop-shadow(0 4px 12px rgba(13,26,46,0.08))" }}
+                  />
+                  <rect x={node.x+10} y={node.y+14} width={6} height={22} rx="3" fill={node.color} opacity="0.8"/>
+                  <text x={node.x+24} y={node.y+23} fill="var(--navy)" fontSize="11" fontWeight="700" fontFamily="var(--font-sans)">{node.label}</text>
+                  <text x={node.x+24} y={node.y+36} fill="var(--text-3)" fontSize="9.5" fontFamily="var(--font-body)">{node.sub}</text>
+                </motion.g>
+              );
+            })}
+          </svg>
+
+          {/* Caption */}
+          <p style={{ textAlign:"center", fontSize:13, color:"var(--text-3)", fontFamily:"var(--font-body)", marginTop:12 }}>
+            All 8 modules communicate bidirectionally through the Nikhil AI Core
+          </p>
+        </motion.div>
+      </section>
+
+      {/* ── CTA ── */}
+      <section
+        id="cta"
+        style={{ padding: "100px 24px", position: "relative", overflow: "hidden" }}
+      >
+        {/* Atmospheric sky glow */}
+        <div
+          aria-hidden
+          style={{
+            position: "absolute",
+            inset: 0,
+            background:
+              "radial-gradient(ellipse 80% 70% at 50% 50%, rgba(56,130,246,0.07) 0%, transparent 65%)",
+            pointerEvents: "none",
+          }}
+        />
+
+        <motion.div
+          style={{ maxWidth: 760, margin: "0 auto", position: "relative" }}
+          initial={{ opacity: 0, y: 28 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8, ease: EASE }}
+        >
+          <div
+            style={{
+              padding: "72px 56px",
               textAlign: "center",
-              borderRadius: 28,
+              borderRadius: 32,
+              background:
+                "linear-gradient(135deg, rgba(255,255,255,0.9), rgba(240,246,255,0.85))",
+              border: "1px solid rgba(56,130,246,0.12)",
+              boxShadow:
+                "var(--shadow-xl), 0 0 0 1px rgba(56,130,246,0.06)",
+              backdropFilter: "blur(24px)",
               position: "relative",
               overflow: "hidden",
-              background: "linear-gradient(135deg, rgba(0,212,255,0.07), rgba(139,92,246,0.05), rgba(255,255,255,0.02))",
-              border: "1px solid rgba(0,212,255,0.22)",
-              backdropFilter: "blur(28px)",
-              boxShadow: "0 0 80px rgba(0,212,255,0.08), 0 0 140px rgba(139,92,246,0.05), inset 0 0 50px rgba(0,212,255,0.03), 0 24px 64px rgba(0,0,0,0.4)",
-            }}>
-              <motion.div
-                animate={{ scale: [1, 1.15, 1], opacity: [0.7, 1, 0.7] }}
-                transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                style={{ position: "absolute", top: "-40%", left: "-15%", width: 360, height: 360, borderRadius: "50%", background: "radial-gradient(circle, rgba(0,212,255,0.12) 0%, transparent 70%)", pointerEvents: "none" }}
-              />
-              <motion.div
-                animate={{ scale: [1, 1.12, 1], opacity: [0.7, 1, 0.7] }}
-                transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
-                style={{ position: "absolute", bottom: "-40%", right: "-15%", width: 320, height: 320, borderRadius: "50%", background: "radial-gradient(circle, rgba(139,92,246,0.12) 0%, transparent 70%)", pointerEvents: "none" }}
-              />
+            }}
+          >
+            {/* Gold sunrise accent */}
+            <div
+              aria-hidden
+              style={{
+                position: "absolute",
+                bottom: "-30%",
+                left: "50%",
+                transform: "translateX(-50%)",
+                width: "80%",
+                height: "60%",
+                background:
+                  "radial-gradient(ellipse 70% 50% at 50% 100%, rgba(201,146,42,0.1) 0%, transparent 70%)",
+                pointerEvents: "none",
+              }}
+            />
 
-              <div style={{ position: "relative", zIndex: 1 }}>
-                <SectionLabel color="var(--cyan)">Get Started</SectionLabel>
-                <h2 style={{
-                  fontSize: "clamp(28px, 4.5vw, 46px)",
-                  fontWeight: 900,
+            <div style={{ position: "relative", zIndex: 1 }}>
+              <SectionLabel color="var(--sky)">Get Started</SectionLabel>
+              <h2
+                style={{
+                  fontSize: "clamp(30px, 4.5vw, 50px)",
+                  fontWeight: 700,
                   fontFamily: "var(--font-display)",
-                  background: "linear-gradient(135deg, #fff 15%, #00d4ff 55%, #8b5cf6 100%)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
+                  color: "var(--navy)",
                   marginBottom: 16,
-                  letterSpacing: "-1px",
-                }}>
-                  Ready to Navigate?
-                </h2>
-                <p style={{
+                  letterSpacing: "-1.5px",
+                  lineHeight: 1.1,
+                }}
+              >
+                Ready to Navigate?
+              </h2>
+              <p
+                style={{
                   fontSize: 16,
-                  color: "rgba(240,244,255,0.5)",
+                  color: "var(--text-2)",
                   fontFamily: "var(--font-body)",
-                  fontWeight: 300,
-                  lineHeight: 1.75,
-                  marginBottom: 44,
-                  maxWidth: 380,
-                  margin: "0 auto 44px",
-                }}>
-                  Join 2,400+ RIMT students already navigating smarter with AI
-                </p>
+                  fontWeight: 400,
+                  lineHeight: 1.8,
+                  marginBottom: 48,
+                  maxWidth: 360,
+                  margin: "0 auto 48px",
+                }}
+              >
+                Join 2,400+ RIMT students already navigating smarter with AI
+              </p>
+
+              <div
+                className="flex gap-4 flex-wrap justify-center"
+              >
                 <Link href="/navigator">
                   <motion.div
-                    whileHover={{ scale: 1.06, y: -3 }}
+                    whileHover={{ scale: 1.04, y: -3 }}
                     whileTap={{ scale: 0.97 }}
                     style={{
                       display: "inline-flex",
                       alignItems: "center",
                       gap: 10,
                       padding: "16px 40px",
-                      borderRadius: 18,
+                      borderRadius: 16,
                       fontSize: 16,
-                      fontWeight: 700,
+                      fontWeight: 600,
                       cursor: "pointer",
-                      background: "linear-gradient(135deg, rgba(0,212,255,0.25), rgba(0,212,255,0.1))",
-                      border: "1px solid rgba(0,212,255,0.55)",
-                      color: "#00d4ff",
-                      fontFamily: "var(--font-body)",
-                      boxShadow: "0 0 30px rgba(0,212,255,0.22), inset 0 0 24px rgba(0,212,255,0.07)",
-                      backdropFilter: "blur(12px)",
-                      transition: "all 0.3s cubic-bezier(0.16,1,0.3,1)",
-                      letterSpacing: "0.3px",
+                      background: "linear-gradient(135deg, #3882f6, #1a4fa8)",
+                      color: "#fff",
+                      border: "none",
+                      boxShadow:
+                        "0 8px 28px rgba(56,130,246,0.35), 0 2px 8px rgba(56,130,246,0.2)",
+                      fontFamily: "var(--font-sans)",
+                      letterSpacing: "0.2px",
                     }}
                   >
                     <Navigation size={17} strokeWidth={2} />
@@ -855,61 +2411,120 @@ export function LandingPage() {
                     <ArrowRight size={15} strokeWidth={2} />
                   </motion.div>
                 </Link>
+
+                <motion.div
+                  whileHover={{ scale: 1.04, y: -3 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={scrollToFeatures}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 10,
+                    padding: "16px 40px",
+                    borderRadius: 16,
+                    fontSize: 16,
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    background: "rgba(56,130,246,0.07)",
+                    color: "var(--sky-deep)",
+                    border: "1px solid rgba(56,130,246,0.18)",
+                    fontFamily: "var(--font-sans)",
+                    letterSpacing: "0.2px",
+                    backdropFilter: "blur(8px)",
+                  }}
+                >
+                  <Map size={17} strokeWidth={2} />
+                  Explore Features
+                </motion.div>
               </div>
             </div>
-          </motion.div>
-        </section>
+          </div>
+        </motion.div>
+      </section>
 
-        {/* FOOTER */}
-        <footer style={{
-          padding: "36px 24px",
-          borderTop: "1px solid rgba(255,255,255,0.06)",
-          background: "linear-gradient(to top, rgba(0,212,255,0.025), transparent)",
-        }}>
-          <div style={{ maxWidth: 1080, margin: "0 auto", display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 20 }}>
+      {/* ── FOOTER ── */}
+      <footer
+        style={{
+          padding: "40px 24px",
+          borderTop: "1px solid rgba(13,26,46,0.07)",
+          background: "rgba(255,255,255,0.5)",
+        }}
+      >
+        <div
+          style={{
+            maxWidth: 1080,
+            margin: "0 auto",
+            display: "flex",
+            flexWrap: "wrap",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: 20,
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div
+              style={{
+                width: 30,
+                height: 30,
+                borderRadius: 9,
+                background: "linear-gradient(135deg, #3882f6, #1a4fa8)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Navigation size={13} color="white" strokeWidth={2} />
+            </div>
             <div>
-              <div style={{
-                fontWeight: 800,
-                fontSize: 13,
-                marginBottom: 5,
-                fontFamily: "var(--font-display)",
-                background: "linear-gradient(90deg, #fff, #00d4ff)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                letterSpacing: "-0.2px",
-              }}>
+              <div
+                style={{
+                  fontWeight: 700,
+                  fontSize: 13,
+                  color: "var(--navy)",
+                  fontFamily: "var(--font-sans)",
+                  letterSpacing: "-0.2px",
+                }}
+              >
                 RIMT Smart Campus Navigator
               </div>
-              <div style={{
-                fontSize: 11,
-                color: "rgba(240,244,255,0.28)",
-                fontFamily: "var(--font-body)",
-                letterSpacing: "0.3px",
-              }}>
+              <div
+                style={{
+                  fontSize: 11,
+                  color: "var(--text-3)",
+                  fontFamily: "var(--font-body)",
+                  letterSpacing: "0.2px",
+                }}
+              >
                 Built with ❤️ · Presented by Nikhil
               </div>
             </div>
-
-            <div style={{ display: "flex", gap: 28 }}>
-              {["Privacy", "Terms", "Support"].map((l) => (
-                <span
-                  key={l}
-                  style={{
-                    fontSize: 13,
-                    cursor: "pointer",
-                    color: "rgba(240,244,255,0.35)",
-                    fontFamily: "var(--font-body)",
-                    transition: "color 0.2s ease",
-                    letterSpacing: "0.2px",
-                  }}
-                >
-                  {l}
-                </span>
-              ))}
-            </div>
           </div>
-        </footer>
-      </div>
+
+          <div style={{ display: "flex", gap: 24 }}>
+            {["Privacy", "Terms", "Support"].map((l) => (
+              <span
+                key={l}
+                style={{
+                  fontSize: 13,
+                  cursor: "pointer",
+                  color: "var(--text-3)",
+                  fontFamily: "var(--font-body)",
+                  transition: "color 0.2s ease",
+                  letterSpacing: "0.2px",
+                }}
+                onMouseEnter={(e) =>
+                  ((e.target as HTMLElement).style.color = "var(--sky)")
+                }
+                onMouseLeave={(e) =>
+                  ((e.target as HTMLElement).style.color = "var(--text-3)")
+                }
+              >
+                {l}
+              </span>
+            ))}
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
