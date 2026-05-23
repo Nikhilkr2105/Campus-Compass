@@ -30,17 +30,17 @@ interface SidebarProps {
 }
 
 // ─────────────────────────────────────────────────────────────
-// OCCUPANCY — mirrors CampusMap logic (no shared import needed)
+// OCCUPANCY
 // ─────────────────────────────────────────────────────────────
 
 type OccupancyLevel = "low" | "moderate" | "high" | "peak" | "closed";
 
 const OCC_COLOR: Record<OccupancyLevel, string> = {
-  low:      "#22c55e",
-  moderate: "#eab308",
-  high:     "#f97316",
-  peak:     "#ef4444",
-  closed:   "#475569",
+  low:      "#0d9e6e",
+  moderate: "#c9922a",
+  high:     "#d97706",
+  peak:     "#d94040",
+  closed:   "#8a9ab8",
 };
 const OCC_LABEL: Record<OccupancyLevel, string> = {
   low:      "Quiet",
@@ -81,7 +81,7 @@ function getOccupancyPct(id: string): number {
 }
 
 // ─────────────────────────────────────────────────────────────
-// BUILDING HOURS — simple time-aware open/close
+// BUILDING HOURS
 // ─────────────────────────────────────────────────────────────
 
 type BuildingHours = { open: number; close: number; label: string };
@@ -107,13 +107,12 @@ function isBuildingOpen(id: string): boolean {
 }
 
 // ─────────────────────────────────────────────────────────────
-// SYSTEM STATUS — header indicators
+// SYSTEM STATUS
 // ─────────────────────────────────────────────────────────────
 
 type SysStatus = { gps: boolean; wifi: boolean; signal: number };
 
 function useSystemStatus(): SysStatus {
-  // Stable mock — always "healthy" during daytime, degraded at night
   return useMemo(() => {
     const h = new Date().getHours();
     return {
@@ -125,7 +124,7 @@ function useSystemStatus(): SysStatus {
 }
 
 // ─────────────────────────────────────────────────────────────
-// SIGNAL BARS
+// SIGNAL BARS — sky palette
 // ─────────────────────────────────────────────────────────────
 
 function SignalBars({ level }: { level: number }) {
@@ -139,8 +138,8 @@ function SignalBars({ level }: { level: number }) {
             height:       4 + i * 3,
             borderRadius: 1,
             background:   i <= level
-              ? "#22c55e"
-              : "rgba(255,255,255,0.12)",
+              ? "var(--sky)"
+              : "rgba(13,26,46,0.12)",
             transition:   "background 0.3s ease",
           }}
         />
@@ -162,38 +161,38 @@ function LiveClock() {
   }, []);
 
   return (
-    <span className="font-mono text-[10px]" style={{ color: "rgba(240,244,255,0.45)" }}>
-      {time.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+    <span
+      className="font-mono text-[10px]"
+      style={{ color: "var(--text-3)", fontFamily: "var(--font-body)" }}
+    >
+      {time.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
     </span>
   );
 }
 
 // ─────────────────────────────────────────────────────────────
-// OCCUPANCY BAR
+// OCCUPANCY BAR — light theme
 // ─────────────────────────────────────────────────────────────
 
 function OccupancyBar({ pct, color }: { pct: number; color: string }) {
   return (
     <div
       className="h-1.5 rounded-full overflow-hidden"
-      style={{ background: "rgba(255,255,255,0.07)" }}
+      style={{ background: "rgba(13,26,46,0.07)" }}
     >
       <motion.div
         className="h-full rounded-full"
         initial={{ width: 0 }}
         animate={{ width: `${pct}%` }}
         transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.15 }}
-        style={{
-          background: color,
-          boxShadow:  `0 0 6px ${color}88`,
-        }}
+        style={{ background: color }}
       />
     </div>
   );
 }
 
 // ─────────────────────────────────────────────────────────────
-// FACILITY TAG — with subtle availability state
+// FACILITY TAG — light theme
 // ─────────────────────────────────────────────────────────────
 
 function FacilityTag({
@@ -209,9 +208,9 @@ function FacilityTag({
     <span
       className="text-[10px] px-2.5 py-1 rounded-lg flex items-center gap-1.5"
       style={{
-        background: available ? `${color}10` : "rgba(255,255,255,0.03)",
-        border:     `1px solid ${available ? `${color}28` : "rgba(255,255,255,0.06)"}`,
-        color:      available ? color : "rgba(240,244,255,0.3)",
+        background: available ? `${color}10` : "rgba(13,26,46,0.04)",
+        border:     `1px solid ${available ? `${color}30` : "rgba(13,26,46,0.08)"}`,
+        color:      available ? color : "var(--text-3)",
         fontFamily: "var(--font-body)",
         transition: "all 0.2s ease",
       }}
@@ -221,10 +220,9 @@ function FacilityTag({
           width:        5,
           height:       5,
           borderRadius: "50%",
-          background:   available ? color : "rgba(255,255,255,0.15)",
+          background:   available ? color : "rgba(13,26,46,0.18)",
           display:      "inline-block",
           flexShrink:   0,
-          boxShadow:    available ? `0 0 4px ${color}` : "none",
         }}
       />
       {label}
@@ -233,7 +231,7 @@ function FacilityTag({
 }
 
 // ─────────────────────────────────────────────────────────────
-// ROUTE SUMMARY BAR — shown when route is active
+// ROUTE SUMMARY BAR — light theme, sky accent
 // ─────────────────────────────────────────────────────────────
 
 function RouteSummaryBar({
@@ -254,69 +252,72 @@ function RouteSummaryBar({
       animate={{ opacity: 1, y: 0 }}
       exit={{    opacity: 0, y: -6 }}
       transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-      className="rounded-xl px-3.5 py-3"
+      className="rounded-2xl px-4 py-3.5"
       style={{
-        background: "rgba(0,212,255,0.04)",
-        border:     "1px solid rgba(0,212,255,0.14)",
+        background:     "rgba(255,255,255,0.85)",
+        border:         "1px solid var(--border-sky)",
+        backdropFilter: "blur(20px)",
+        boxShadow:      "var(--shadow-sm), 0 0 0 1px rgba(56,130,246,0.04)",
       }}
     >
       {/* Top row */}
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-1.5">
+      <div className="flex items-center justify-between mb-2.5">
+        <div className="flex items-center gap-2">
           {isNavigating && (
             <span
-              className="w-1.5 h-1.5 rounded-full"
+              className="w-1.5 h-1.5 rounded-full inline-block"
               style={{
-                background: "#00d4ff",
-                boxShadow:  "0 0 5px #00d4ff",
-                animation:  "live-blink 1.8s ease-in-out infinite",
+                background: "var(--green)",
+                animation:  "sunrise-pulse 1.8s ease-in-out infinite",
               }}
             />
           )}
           <span
-            className="text-[9.5px] font-semibold tracking-wider"
+            className="text-[10px] font-semibold tracking-wider"
             style={{
-              color:      isNavigating ? "var(--cyan)" : "rgba(240,244,255,0.5)",
+              color:      isNavigating ? "var(--sky)" : "var(--text-3)",
               fontFamily: "var(--font-display)",
+              letterSpacing: "1.5px",
             }}
           >
             {isNavigating ? "EN ROUTE" : "ROUTE READY"}
           </span>
         </div>
         <span
-          className="text-[9px] font-mono"
-          style={{ color: "rgba(240,244,255,0.4)" }}
+          className="text-[10px]"
+          style={{ color: "var(--text-3)", fontFamily: "var(--font-body)" }}
         >
-          ~{minsLeft}m · {route.buildings.length} stops
+          ~{minsLeft} min · {route.buildings.length} stops
         </span>
       </div>
 
       {/* Progress bar */}
       <div
-        className="h-1 rounded-full overflow-hidden"
-        style={{ background: "rgba(255,255,255,0.06)" }}
+        className="h-1 rounded-full overflow-hidden mb-2.5"
+        style={{ background: "rgba(13,26,46,0.07)" }}
       >
         <motion.div
           animate={{ width: `${pct}%` }}
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
           className="h-full rounded-full"
           style={{
-            background: "linear-gradient(90deg, #00d4ff, #8b5cf6)",
-            boxShadow:  "0 0 8px rgba(0,212,255,0.4)",
+            background: "linear-gradient(90deg, var(--sky), var(--sky-deep))",
           }}
         />
       </div>
 
       {/* From → To */}
-      <div className="flex items-center justify-between mt-2">
-        <span className="text-[9px] truncate max-w-[100px]"
-          style={{ color: "rgba(240,244,255,0.45)", fontFamily: "var(--font-body)" }}
+      <div className="flex items-center justify-between">
+        <span
+          className="text-[10px] truncate max-w-[100px]"
+          style={{ color: "var(--text-2)", fontFamily: "var(--font-body)" }}
         >
           {route.buildings[0]?.shortName}
         </span>
-        <span className="text-[8px]" style={{ color: "rgba(0,212,255,0.3)" }}>→</span>
-        <span className="text-[9px] truncate max-w-[100px] text-right"
-          style={{ color: "rgba(240,244,255,0.45)", fontFamily: "var(--font-body)" }}
+        <span style={{ color: "var(--sky)", fontSize: 10, opacity: 0.5 }}>→</span>
+        <span
+          className="text-[10px] truncate max-w-[100px] text-right"
+          style={{ color: "var(--text-2)", fontFamily: "var(--font-body)" }}
         >
           {route.buildings[route.buildings.length - 1]?.shortName}
         </span>
@@ -326,7 +327,7 @@ function RouteSummaryBar({
 }
 
 // ─────────────────────────────────────────────────────────────
-// SELECTED BUILDING PANEL
+// SELECTED BUILDING PANEL — light glass
 // ─────────────────────────────────────────────────────────────
 
 function BuildingPanel({
@@ -344,10 +345,9 @@ function BuildingPanel({
   const hours        = getBuildingHours(building.id);
   const isOpen       = isBuildingOpen(building.id);
 
-  // Facilities with pseudo-availability (seeded per facility + time)
   const facilitiesWithAvail = useMemo(() => {
     const h = new Date().getHours();
-    return building.facilities.slice(0, 5).map((f, i) => ({
+    return building.facilities.slice(0, 5).map((f) => ({
       label:     f,
       available: isOpen && (hashId(f + building.id) % 10) > (h >= 12 && h < 14 ? 4 : 2),
     }));
@@ -363,43 +363,52 @@ function BuildingPanel({
       <div
         className="rounded-2xl overflow-hidden"
         style={{
-          background:     `linear-gradient(135deg, ${building.color}0a, rgba(255,255,255,0.02))`,
-          border:         `1px solid ${building.color}30`,
-          backdropFilter: "blur(20px)",
-          boxShadow:      `0 0 24px ${building.color}10, inset 0 0 20px ${building.color}05`,
+          background:     "rgba(255,255,255,0.88)",
+          border:         "1px solid var(--border)",
+          backdropFilter: "blur(24px)",
+          boxShadow:      "var(--shadow-md)",
         }}
       >
         {/* ── Panel header ── */}
         <div
-          className="px-4 pt-3.5 pb-2.5 flex items-center justify-between"
-          style={{ borderBottom: `1px solid ${building.color}18` }}
+          className="px-4 pt-4 pb-3 flex items-center justify-between"
+          style={{ borderBottom: "1px solid var(--border)" }}
         >
           <div className="flex items-center gap-2">
             <span
-              className="text-[8.5px] font-semibold tracking-[2px]"
-              style={{ color: building.color, fontFamily: "var(--font-display)", opacity: 0.75 }}
-            >
-              SELECTED BUILDING
-            </span>
-            {/* Open / closed pill */}
-            <span
-              className="text-[8px] px-1.5 py-0.5 rounded font-semibold"
+              className="text-[9px] font-semibold tracking-[2px]"
               style={{
-                background: isOpen ? "rgba(34,197,94,0.12)" : "rgba(71,85,105,0.2)",
-                border:     `1px solid ${isOpen ? "rgba(34,197,94,0.25)" : "rgba(71,85,105,0.3)"}`,
-                color:      isOpen ? "#22c55e" : "#94a3b8",
+                color:      "var(--text-3)",
                 fontFamily: "var(--font-display)",
-                letterSpacing: "0.5px",
+                letterSpacing: "1.5px",
               }}
             >
-              {isOpen ? "OPEN" : "CLOSED"}
+              BUILDING DETAILS
+            </span>
+            <span
+              className="text-[9px] px-2 py-0.5 rounded-full font-semibold"
+              style={{
+                background: isOpen ? "rgba(13,158,110,0.1)" : "rgba(138,154,184,0.12)",
+                border:     `1px solid ${isOpen ? "rgba(13,158,110,0.25)" : "rgba(138,154,184,0.2)"}`,
+                color:      isOpen ? "var(--green)" : "var(--silver)",
+                fontFamily: "var(--font-body)",
+              }}
+            >
+              {isOpen ? "Open" : "Closed"}
             </span>
           </div>
           <motion.button
-            whileHover={{ scale: 1.15, rotate: 90 }}
+            whileHover={{ scale: 1.12, rotate: 90 }}
             whileTap={{ scale: 0.9 }}
             onClick={onClose}
-            style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-3)" }}
+            style={{
+              background: "none",
+              border:     "none",
+              cursor:     "pointer",
+              color:      "var(--text-3)",
+              padding:    4,
+              borderRadius: 6,
+            }}
             transition={{ duration: 0.15 }}
           >
             <X className="w-3.5 h-3.5" />
@@ -407,21 +416,17 @@ function BuildingPanel({
         </div>
 
         {/* ── Building identity ── */}
-        <div className="px-4 pt-3.5 pb-3">
-          <div className="flex items-center gap-3 mb-3">
+        <div className="px-4 pt-4 pb-4">
+
+          {/* Icon + name */}
+          <div className="flex items-center gap-3 mb-4">
             <motion.div
-              animate={{
-                boxShadow: [
-                  `0 0 10px ${building.color}44`,
-                  `0 0 20px ${building.color}66`,
-                  `0 0 10px ${building.color}44`,
-                ],
-              }}
-              transition={{ duration: 2.2, repeat: Infinity }}
+              whileHover={{ scale: 1.05 }}
               className="w-11 h-11 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
               style={{
-                background: `linear-gradient(135deg, ${building.color}22, ${building.color}0a)`,
-                border:     `1.5px solid ${building.color}44`,
+                background: `${building.color}12`,
+                border:     `1.5px solid ${building.color}28`,
+                boxShadow:  `0 2px 12px ${building.color}18`,
               }}
             >
               {building.icon}
@@ -429,20 +434,19 @@ function BuildingPanel({
 
             <div className="min-w-0 flex-1">
               <div
-                className="text-[13px] font-semibold truncate mb-1"
+                className="text-[14px] font-semibold truncate mb-1"
                 style={{ fontFamily: "var(--font-display)", color: "var(--text-1)" }}
               >
                 {building.name}
               </div>
               <span
-                className="text-[10px] px-2 py-0.5 rounded-full inline-block"
+                className="text-[10px] px-2 py-0.5 rounded-full inline-block capitalize"
                 style={{
-                  background:    `${building.color}18`,
-                  border:        `1px solid ${building.color}30`,
-                  color:          building.color,
-                  fontFamily:    "var(--font-body)",
-                  fontWeight:    500,
-                  textTransform: "capitalize",
+                  background: `${building.color}10`,
+                  border:     `1px solid ${building.color}22`,
+                  color:      building.color,
+                  fontFamily: "var(--font-body)",
+                  fontWeight: 500,
                 }}
               >
                 {building.type}
@@ -450,27 +454,27 @@ function BuildingPanel({
             </div>
           </div>
 
-          {/* ── Occupancy row ── */}
+          {/* ── Occupancy ── */}
           <div
-            className="rounded-xl px-3 py-2.5 mb-3"
+            className="rounded-xl px-3.5 py-3 mb-3"
             style={{
-              background: "rgba(255,255,255,0.025)",
-              border:     "1px solid rgba(255,255,255,0.06)",
+              background: "var(--bg-1)",
+              border:     "1px solid var(--border)",
             }}
           >
-            <div className="flex items-center justify-between mb-1.5">
+            <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-1.5">
-                <Users className="w-3 h-3" style={{ color: occColor, opacity: 0.8 }} />
+                <Users className="w-3 h-3" style={{ color: occColor }} />
                 <span
-                  className="text-[9.5px] font-semibold"
-                  style={{ color: occColor, fontFamily: "var(--font-display)" }}
+                  className="text-[10px] font-semibold"
+                  style={{ color: occColor, fontFamily: "var(--font-body)" }}
                 >
                   {OCC_LABEL[occupancy]}
                 </span>
               </div>
               <span
-                className="text-[9px] font-mono"
-                style={{ color: "rgba(240,244,255,0.4)" }}
+                className="text-[10px]"
+                style={{ color: "var(--text-3)", fontFamily: "var(--font-body)" }}
               >
                 {occupancyPct}% capacity
               </span>
@@ -478,82 +482,81 @@ function BuildingPanel({
             <OccupancyBar pct={occupancyPct} color={occColor} />
           </div>
 
-          {/* ── Hours row ── */}
+          {/* ── Hours ── */}
           <div
-            className="flex items-center gap-2 rounded-xl px-3 py-2 mb-3"
+            className="flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 mb-3"
             style={{
-              background: "rgba(255,255,255,0.025)",
-              border:     "1px solid rgba(255,255,255,0.06)",
+              background: "var(--bg-1)",
+              border:     "1px solid var(--border)",
             }}
           >
-            <Clock className="w-3 h-3 flex-shrink-0" style={{ color: "rgba(240,244,255,0.35)" }} />
+            <Clock className="w-3.5 h-3.5 flex-shrink-0" style={{ color: "var(--text-3)" }} />
             <div className="flex-1 min-w-0">
               <div
                 className="text-[8.5px] tracking-wider mb-0.5"
-                style={{ color: "rgba(240,244,255,0.3)", fontFamily: "var(--font-display)" }}
+                style={{ color: "var(--text-3)", fontFamily: "var(--font-display)", letterSpacing: "1px" }}
               >
                 HOURS
               </div>
               <div
                 className="text-[11px]"
-                style={{ color: "rgba(240,244,255,0.65)", fontFamily: "var(--font-body)" }}
+                style={{ color: "var(--text-2)", fontFamily: "var(--font-body)" }}
               >
                 {hours.label}
               </div>
             </div>
-            {/* countdown to close if open */}
             {isOpen && (
-              <div
-                className="text-[9px] px-2 py-0.5 rounded flex-shrink-0"
+              <span
+                className="text-[9px] px-2 py-0.5 rounded-full flex-shrink-0"
                 style={{
-                  background: "rgba(34,197,94,0.08)",
-                  border:     "1px solid rgba(34,197,94,0.18)",
-                  color:      "#22c55e",
+                  background: "rgba(13,158,110,0.08)",
+                  border:     "1px solid rgba(13,158,110,0.2)",
+                  color:      "var(--green)",
                   fontFamily: "var(--font-body)",
                 }}
               >
                 {hours.close - new Date().getHours()}h left
-              </div>
+              </span>
             )}
           </div>
 
           {/* ── Description ── */}
           <p
-            className="text-[11.5px] leading-relaxed mb-3"
+            className="text-[11.5px] leading-relaxed mb-4"
             style={{
-              color:      "rgba(240,244,255,0.48)",
+              color:      "var(--text-2)",
               fontFamily: "var(--font-body)",
-              fontWeight: 300,
+              fontWeight: 400,
             }}
           >
             {building.description}
           </p>
 
           {/* ── Stats grid ── */}
-          <div className="grid grid-cols-2 gap-2 mb-3">
+          <div className="grid grid-cols-2 gap-2 mb-4">
             {[
-              { label: "FLOORS",    value: building.floors,       icon: Layers    },
-              { label: "LOCATION",  value: building.type,         icon: MapPin    },
+              { label: "FLOORS",   value: building.floors, icon: Layers  },
+              { label: "LOCATION", value: building.type,   icon: MapPin  },
             ].map(({ label, value, icon: Icon }) => (
               <div
                 key={label}
                 className="rounded-xl px-3 py-2.5 flex items-start gap-2"
                 style={{
-                  background: "rgba(255,255,255,0.03)",
-                  border:     "1px solid rgba(255,255,255,0.07)",
+                  background: "var(--bg-1)",
+                  border:     "1px solid var(--border)",
                 }}
               >
-                <Icon className="w-3 h-3 mt-0.5 flex-shrink-0" style={{ color: "rgba(240,244,255,0.25)" }} />
+                <Icon className="w-3 h-3 mt-0.5 flex-shrink-0" style={{ color: "var(--text-3)" }} />
                 <div>
                   <div
-                    className="text-[8px] mb-0.5 tracking-[1px]"
-                    style={{ color: "rgba(240,244,255,0.28)", fontFamily: "var(--font-display)" }}
+                    className="text-[8px] mb-0.5"
+                    style={{ color: "var(--text-3)", fontFamily: "var(--font-display)", letterSpacing: "1px" }}
                   >
                     {label}
                   </div>
                   <div
                     className="text-[12px] font-semibold capitalize"
-                    style={{ fontFamily: "var(--font-display)", color: "var(--text-1)" }}
+                    style={{ fontFamily: "var(--font-sans)", color: "var(--text-1)" }}
                   >
                     {value}
                   </div>
@@ -563,10 +566,10 @@ function BuildingPanel({
           </div>
 
           {/* ── Facilities ── */}
-          <div className="mb-3">
+          <div className="mb-4">
             <div
-              className="text-[8.5px] tracking-[1.5px] mb-2"
-              style={{ color: "rgba(240,244,255,0.28)", fontFamily: "var(--font-display)" }}
+              className="text-[8.5px] tracking-widest mb-2"
+              style={{ color: "var(--text-3)", fontFamily: "var(--font-display)" }}
             >
               FACILITIES
             </div>
@@ -583,8 +586,8 @@ function BuildingPanel({
                 <span
                   className="text-[10px] px-2.5 py-1 rounded-lg"
                   style={{
-                    background: "rgba(255,255,255,0.04)",
-                    border:     "1px solid rgba(255,255,255,0.07)",
+                    background: "var(--bg-2)",
+                    border:     "1px solid var(--border)",
                     color:      "var(--text-3)",
                     fontFamily: "var(--font-body)",
                   }}
@@ -597,17 +600,17 @@ function BuildingPanel({
 
           {/* ── Navigate button ── */}
           <motion.button
-            whileHover={{ scale: 1.02, boxShadow: "0 0 20px rgba(0,212,255,0.22)" }}
+            whileHover={{ scale: 1.02, boxShadow: "0 8px 32px rgba(56,130,246,0.28)" }}
             whileTap={{ scale: 0.98 }}
             onClick={() => onNavigateTo(building.name)}
-            className="w-full py-2.5 rounded-xl text-[12px] font-semibold flex items-center justify-center gap-2"
+            className="w-full py-3 rounded-xl text-[13px] font-semibold flex items-center justify-center gap-2"
             style={{
-              background: "linear-gradient(135deg, rgba(0,212,255,0.15), rgba(0,212,255,0.06))",
-              border:     "1px solid rgba(0,212,255,0.32)",
-              color:      "var(--cyan)",
+              background: "linear-gradient(135deg, var(--sky), var(--sky-deep))",
+              border:     "none",
+              color:      "#fff",
               cursor:     "pointer",
-              fontFamily: "var(--font-body)",
-              boxShadow:  "0 0 12px rgba(0,212,255,0.08)",
+              fontFamily: "var(--font-sans)",
+              boxShadow:  "0 4px 20px rgba(56,130,246,0.28), 0 1px 4px rgba(56,130,246,0.2)",
               transition: "all 0.25s ease",
             }}
           >
@@ -640,17 +643,17 @@ export function Sidebar({
       {/* ── Collapse toggle ── */}
       <motion.button
         onClick={() => setCollapsed((c) => !c)}
-        whileHover={{ scale: 1.12, boxShadow: "0 0 20px rgba(0,212,255,0.35)" }}
+        whileHover={{ scale: 1.1, boxShadow: "var(--shadow-md)" }}
         whileTap={{ scale: 0.93 }}
         className="absolute -right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full z-30
                    flex items-center justify-center"
         style={{
-          background:     "linear-gradient(135deg, rgba(0,212,255,0.18), rgba(139,92,246,0.12))",
-          border:         "1.5px solid rgba(0,212,255,0.4)",
-          color:          "var(--cyan)",
+          background:     "rgba(255,255,255,0.92)",
+          border:         "1px solid var(--border-sky)",
+          color:          "var(--sky)",
           cursor:         "pointer",
           backdropFilter: "blur(16px)",
-          boxShadow:      "0 0 16px rgba(0,212,255,0.2), 0 4px 16px rgba(0,0,0,0.4)",
+          boxShadow:      "var(--shadow-md)",
           transition:     "all 0.25s ease",
         }}
         title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
@@ -667,52 +670,52 @@ export function Sidebar({
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
         className="flex flex-col overflow-hidden h-full flex-shrink-0"
         style={{
-          borderRight:    "1px solid rgba(0,212,255,0.1)",
-          background:     "linear-gradient(180deg, rgba(6,13,24,0.96) 0%, rgba(2,4,8,0.98) 100%)",
+          borderRight:    "1px solid var(--border)",
+          background:     "rgba(248,249,252,0.94)",
           backdropFilter: "blur(24px)",
-          boxShadow:      "4px 0 24px rgba(0,0,0,0.4), inset -1px 0 0 rgba(0,212,255,0.07)",
+          boxShadow:      "4px 0 24px rgba(13,26,46,0.07)",
         }}
       >
         {!collapsed && (
           <>
             {/* ── Header ── */}
-            <div
+            <motion.div
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
               className="px-5 py-4 flex-shrink-0"
               style={{
-                borderBottom: "1px solid rgba(0,212,255,0.09)",
-                background:   "linear-gradient(135deg, rgba(0,212,255,0.05), rgba(139,92,246,0.025))",
+                borderBottom: "1px solid var(--border)",
+                background:   "rgba(255,255,255,0.7)",
               }}
             >
-              {/* Top row — brand + live */}
-              <div className="flex items-center gap-3 mb-3">
+              {/* Brand row */}
+              <div className="flex items-center gap-3 mb-3.5">
                 <div
-                  className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
+                  className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
                   style={{
-                    background: "linear-gradient(135deg, rgba(0,212,255,0.2), rgba(139,92,246,0.1))",
-                    border:     "1.5px solid rgba(0,212,255,0.3)",
-                    boxShadow:  "0 0 14px rgba(0,212,255,0.18)",
+                    background: "linear-gradient(135deg, var(--sky), var(--sky-deep))",
+                    boxShadow:  "0 4px 16px rgba(56,130,246,0.28)",
                   }}
                 >
-                  <Layers className="w-3.5 h-3.5" style={{ color: "var(--cyan)" }} />
+                  <Layers className="w-4 h-4" style={{ color: "#fff" }} />
                 </div>
 
                 <div className="flex-1 min-w-0">
                   <div
-                    className="text-[13px] font-bold leading-tight"
+                    className="text-[15px] font-semibold leading-tight"
                     style={{
-                      fontFamily:           "var(--font-display)",
-                      background:           "linear-gradient(90deg, #fff 30%, #00d4ff)",
-                      WebkitBackgroundClip: "text",
-                      WebkitTextFillColor:  "transparent",
+                      fontFamily: "var(--font-display)",
+                      color:      "var(--text-1)",
                     }}
                   >
                     Campus Navigator
                   </div>
                   <div
-                    className="text-[8.5px] tracking-[1.5px] mt-0.5"
-                    style={{ color: "rgba(0,212,255,0.4)", fontFamily: "var(--font-display)" }}
+                    className="text-[9.5px] tracking-widest mt-0.5"
+                    style={{ color: "var(--text-3)", fontFamily: "var(--font-display)" }}
                   >
-                    SMART ROUTING SYSTEM
+                    SMART ROUTING
                   </div>
                 </div>
 
@@ -720,98 +723,87 @@ export function Sidebar({
                 <div
                   className="flex items-center gap-1.5 px-2.5 py-1 rounded-full flex-shrink-0"
                   style={{
-                    background: "rgba(16,185,129,0.09)",
-                    border:     "1px solid rgba(16,185,129,0.22)",
+                    background: "rgba(13,158,110,0.08)",
+                    border:     "1px solid rgba(13,158,110,0.2)",
                   }}
                 >
                   <span
                     className="w-[5px] h-[5px] rounded-full inline-block"
                     style={{
-                      background: "#22c55e",
-                      boxShadow:  "0 0 6px #22c55e",
-                      animation:  "live-blink 1.8s ease-in-out infinite",
+                      background: "var(--green)",
+                      animation:  "sunrise-pulse 1.8s ease-in-out infinite",
                     }}
                   />
                   <span
                     className="text-[9px] font-semibold"
-                    style={{ color: "#22c55e", fontFamily: "var(--font-display)" }}
+                    style={{ color: "var(--green)", fontFamily: "var(--font-body)" }}
                   >
-                    LIVE
+                    Live
                   </span>
                 </div>
               </div>
 
               {/* ── System status row ── */}
               <div
-                className="flex items-center justify-between px-2.5 py-2 rounded-xl"
+                className="flex items-center justify-between px-3 py-2 rounded-xl"
                 style={{
-                  background: "rgba(255,255,255,0.025)",
-                  border:     "1px solid rgba(255,255,255,0.055)",
+                  background: "var(--bg-1)",
+                  border:     "1px solid var(--border)",
                 }}
               >
                 {/* GPS */}
                 <div className="flex items-center gap-1.5">
                   <Navigation2
                     className="w-3 h-3"
-                    style={{ color: sys.gps ? "#22c55e" : "#ef4444", opacity: 0.85 }}
+                    style={{ color: sys.gps ? "var(--green)" : "var(--red)" }}
                   />
                   <span
-                    className="text-[9px]"
-                    style={{
-                      color:      sys.gps ? "rgba(34,197,94,0.75)" : "rgba(239,68,68,0.75)",
-                      fontFamily: "var(--font-body)",
-                    }}
+                    className="text-[9.5px]"
+                    style={{ color: "var(--text-2)", fontFamily: "var(--font-body)" }}
                   >
                     GPS
                   </span>
                 </div>
 
-                {/* Divider */}
-                <div style={{ width: 1, height: 12, background: "rgba(255,255,255,0.07)" }} />
+                <div style={{ width: 1, height: 12, background: "var(--border)" }} />
 
                 {/* Wi-Fi */}
                 <div className="flex items-center gap-1.5">
                   <Wifi
                     className="w-3 h-3"
-                    style={{ color: sys.wifi ? "#22c55e" : "#94a3b8", opacity: 0.85 }}
+                    style={{ color: sys.wifi ? "var(--sky)" : "var(--silver)" }}
                   />
                   <span
-                    className="text-[9px]"
-                    style={{
-                      color:      sys.wifi ? "rgba(34,197,94,0.75)" : "rgba(148,163,184,0.6)",
-                      fontFamily: "var(--font-body)",
-                    }}
+                    className="text-[9.5px]"
+                    style={{ color: "var(--text-2)", fontFamily: "var(--font-body)" }}
                   >
                     Wi-Fi
                   </span>
                 </div>
 
-                {/* Divider */}
-                <div style={{ width: 1, height: 12, background: "rgba(255,255,255,0.07)" }} />
+                <div style={{ width: 1, height: 12, background: "var(--border)" }} />
 
                 {/* Signal */}
                 <div className="flex items-center gap-1.5">
                   <SignalBars level={sys.signal} />
                   <span
-                    className="text-[9px]"
-                    style={{ color: "rgba(240,244,255,0.4)", fontFamily: "var(--font-body)" }}
+                    className="text-[9.5px]"
+                    style={{ color: "var(--text-2)", fontFamily: "var(--font-body)" }}
                   >
                     {sys.signal === 3 ? "Strong" : sys.signal === 2 ? "Good" : "Weak"}
                   </span>
                 </div>
 
-                {/* Divider */}
-                <div style={{ width: 1, height: 12, background: "rgba(255,255,255,0.07)" }} />
+                <div style={{ width: 1, height: 12, background: "var(--border)" }} />
 
-                {/* Clock */}
                 <LiveClock />
               </div>
-            </div>
+            </motion.div>
 
             {/* ── Scrollable content ── */}
             <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3 no-scrollbar">
 
-              {/* Route summary bar — shown when route exists */}
+              {/* Route summary */}
               <AnimatePresence>
                 {route && (
                   <RouteSummaryBar
