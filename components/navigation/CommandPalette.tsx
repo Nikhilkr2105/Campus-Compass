@@ -54,66 +54,26 @@ interface SearchResult {
 // ─────────────────────────────────────────────────────────────
 
 const QUICK_ACTIONS = [
-  {
-    id: "qa-library",
-    label: "Central Library",
-    icon: "📚",
-    color: "#10b981",
-  },
-  {
-    id: "qa-canteen",
-    label: "Main Canteen",
-    icon: "🍽️",
-    color: "#f59e0b",
-  },
-  {
-    id: "qa-medical",
-    label: "Medical Center",
-    icon: "🏥",
-    color: "#ef4444",
-  },
-  {
-    id: "qa-admin",
-    label: "Admin Block",
-    icon: "🏢",
-    color: "#3b82f6",
-  },
-  {
-    id: "qa-sports",
-    label: "Sports Complex",
-    icon: "⚽",
-    color: "#f97316",
-  },
-  {
-    id: "qa-parking",
-    label: "Parking Zone",
-    icon: "🅿️",
-    color: "#6b7280",
-  },
+  { id: "qa-library",  label: "Central Library", icon: "📚", color: "#0ea5e9" },
+  { id: "qa-canteen",  label: "Main Canteen",     icon: "🍽️", color: "#f59e0b" },
+  { id: "qa-medical",  label: "Medical Center",   icon: "🏥", color: "#ef4444" },
+  { id: "qa-admin",    label: "Admin Block",      icon: "🏢", color: "#6366f1" },
+  { id: "qa-sports",   label: "Sports Complex",   icon: "⚽", color: "#10b981" },
+  { id: "qa-parking",  label: "Parking Zone",     icon: "🅿️", color: "#64748b" },
 ];
 
 function fuzzyScore(query: string, target: string): number {
   const q = query.toLowerCase().trim();
   const t = target.toLowerCase();
-
   if (!q) return 0;
   if (t === q) return 100;
   if (t.startsWith(q)) return 90;
   if (t.includes(q)) return 75;
-
-  let qi = 0;
-  let score = 0;
-
+  let qi = 0, score = 0;
   for (let i = 0; i < t.length && qi < q.length; i++) {
-    if (t[i] === q[qi]) {
-      score += 1;
-      qi++;
-    }
+    if (t[i] === q[qi]) { score += 1; qi++; }
   }
-
-  return qi === q.length
-    ? Math.round((score / t.length) * 60)
-    : 0;
+  return qi === q.length ? Math.round((score / t.length) * 60) : 0;
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -122,69 +82,40 @@ function fuzzyScore(query: string, target: string): number {
 
 function useRecentSearches() {
   const KEY = "rimt-recent-searches";
-
   const get = (): string[] => {
     if (typeof window === "undefined") return [];
-
-    try {
-      return JSON.parse(localStorage.getItem(KEY) || "[]");
-    } catch {
-      return [];
-    }
+    try { return JSON.parse(localStorage.getItem(KEY) || "[]"); }
+    catch { return []; }
   };
-
   const add = useCallback((term: string) => {
     const prev = get().filter((t) => t !== term);
     const next = [term, ...prev].slice(0, 6);
-
-    try {
-      localStorage.setItem(KEY, JSON.stringify(next));
-    } catch {}
+    try { localStorage.setItem(KEY, JSON.stringify(next)); } catch {}
   }, []);
-
   return { get, add };
 }
 
 // ─────────────────────────────────────────────────────────────
-// TYPE TAG
+// TYPE TAG  — premium glass pill
 // ─────────────────────────────────────────────────────────────
 
 function TypeTag({ type }: { type: ResultType }) {
-  const map: Record<
-    ResultType,
-    { label: string; color: string }
-  > = {
-    building: {
-      label: "Building",
-      color: "rgba(0,212,255,0.7)",
-    },
-
-    route: {
-      label: "Route",
-      color: "rgba(139,92,246,0.7)",
-    },
-
-    recent: {
-      label: "Recent",
-      color: "rgba(245,158,11,0.7)",
-    },
-
-    quick: {
-      label: "Quick",
-      color: "rgba(16,185,129,0.7)",
-    },
+  const map: Record<ResultType, { label: string; bg: string; text: string; border: string }> = {
+    building: { label: "Building", bg: "rgba(14,165,233,0.08)",  text: "#0369a1", border: "rgba(14,165,233,0.2)"  },
+    route:    { label: "Route",    bg: "rgba(99,102,241,0.08)",  text: "#4338ca", border: "rgba(99,102,241,0.2)"  },
+    recent:   { label: "Recent",   bg: "rgba(245,158,11,0.08)",  text: "#b45309", border: "rgba(245,158,11,0.2)"  },
+    quick:    { label: "Quick",    bg: "rgba(16,185,129,0.08)",  text: "#047857", border: "rgba(16,185,129,0.2)"  },
   };
-
   const cfg = map[type];
-
   return (
     <span
-      className="text-[9px] px-1.5 py-0.5 rounded-md font-semibold tracking-wide flex-shrink-0"
+      className="text-[9px] px-2 py-0.5 rounded-full font-semibold tracking-wide flex-shrink-0"
       style={{
-        background: `${cfg.color}18`,
-        border: `1px solid ${cfg.color}44`,
-        color: cfg.color,
-        fontFamily: "var(--font-display)",
+        background: cfg.bg,
+        border: `1px solid ${cfg.border}`,
+        color: cfg.text,
+        fontFamily: "var(--font-display, 'Plus Jakarta Sans', sans-serif)",
+        letterSpacing: "0.06em",
       }}
     >
       {cfg.label.toUpperCase()}
@@ -193,7 +124,7 @@ function TypeTag({ type }: { type: ResultType }) {
 }
 
 // ─────────────────────────────────────────────────────────────
-// RESULT ROW
+// RESULT ROW  — premium card with lift hover
 // ─────────────────────────────────────────────────────────────
 
 interface ResultRowProps {
@@ -204,76 +135,53 @@ interface ResultRowProps {
   onMouseEnter: () => void;
 }
 
-function ResultRow({
-  result,
-  isActive,
-  onSelect,
-  onNavigate,
-  onMouseEnter,
-}: ResultRowProps) {
+function ResultRow({ result, isActive, onSelect, onNavigate, onMouseEnter }: ResultRowProps) {
   return (
     <motion.div
       layout
-      initial={{
-        opacity: 0,
-        x: -12,
-        filter: "blur(2px)",
-      }}
-      animate={{
-        opacity: 1,
-        x: 0,
-        filter: "blur(0px)",
-      }}
-      exit={{
-        opacity: 0,
-        x: 12,
-        filter: "blur(2px)",
-      }}
-      transition={{
-        duration: 0.18,
-        ease: [0.25, 0.46, 0.45, 0.94],
-      }}
-      whileHover={{ x: 3 }}
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -4 }}
+      transition={{ duration: 0.16, ease: [0.25, 0.46, 0.45, 0.94] }}
+      whileHover={{ y: -1 }}
       onMouseEnter={onMouseEnter}
       onClick={onSelect}
-      className="relative flex items-center gap-3 px-4 py-3 cursor-pointer"
+      className="relative flex items-center gap-3 mx-2 my-0.5 px-3 py-2.5 rounded-xl cursor-pointer"
       style={{
         background: isActive
-          ? "linear-gradient(90deg, rgba(0,212,255,0.09), rgba(139,92,246,0.04))"
+          ? "linear-gradient(135deg, rgba(14,165,233,0.07) 0%, rgba(99,102,241,0.04) 100%)"
           : "transparent",
-
-        borderLeft: `2px solid ${
-          isActive ? result.color : "transparent"
-        }`,
-
-        transition:
-          "background 0.15s ease, border-color 0.15s ease",
-
-        willChange: "transform",
+        border: `1px solid ${isActive ? "rgba(14,165,233,0.18)" : "transparent"}`,
+        boxShadow: isActive
+          ? "0 2px 12px rgba(14,165,233,0.08), 0 1px 3px rgba(0,0,0,0.04)"
+          : "none",
+        transition: "background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease",
       }}
     >
+      {/* Left accent bar */}
+      {isActive && (
+        <div
+          style={{
+            position: "absolute",
+            left: 0,
+            top: "20%",
+            bottom: "20%",
+            width: 2.5,
+            borderRadius: 99,
+            background: "linear-gradient(180deg, #38bdf8, #6366f1)",
+          }}
+        />
+      )}
+
       {/* Icon */}
       <div
         className="w-8 h-8 rounded-lg flex items-center justify-center text-base flex-shrink-0"
         style={{
           background: isActive
-            ? `${result.color}28`
-            : `${result.color}10`,
-
-          border: `1px solid ${
-            isActive
-              ? `${result.color}66`
-              : `${result.color}22`
-          }`,
-
-          boxShadow: isActive
-            ? `0 0 12px ${result.color}44, inset 0 0 8px ${result.color}18`
-            : "none",
-
-          transition:
-            "all 0.2s cubic-bezier(0.25,0.46,0.45,0.94)",
-
-          willChange: "box-shadow",
+            ? `${result.color}14`
+            : "rgba(241,245,249,0.8)",
+          border: `1px solid ${isActive ? `${result.color}30` : "rgba(226,232,240,0.9)"}`,
+          transition: "all 0.18s ease",
         }}
       >
         {result.icon}
@@ -284,22 +192,18 @@ function ResultRow({
         <div
           className="text-[13px] font-medium truncate"
           style={{
-            color: isActive
-              ? "var(--text-1)"
-              : "var(--text-2)",
-
-            fontFamily: "var(--font-body)",
+            color: isActive ? "#0f172a" : "#334155",
+            fontFamily: "var(--font-body, 'Plus Jakarta Sans', sans-serif)",
           }}
         >
           {result.label}
         </div>
-
         {result.sublabel && (
           <div
             className="text-[11px] truncate mt-0.5"
             style={{
-              color: "var(--text-3)",
-              fontFamily: "var(--font-body)",
+              color: "#94a3b8",
+              fontFamily: "var(--font-body, 'DM Sans', sans-serif)",
             }}
           >
             {result.sublabel}
@@ -310,31 +214,21 @@ function ResultRow({
       {/* Actions */}
       <div className="flex items-center gap-2 flex-shrink-0">
         <TypeTag type={result.type} />
-
         {isActive && (
           <motion.button
-            initial={{ opacity: 0, scale: 0.8 }}
+            initial={{ opacity: 0, scale: 0.85 }}
             animate={{ opacity: 1, scale: 1 }}
             whileHover={{ scale: 1.04 }}
             whileTap={{ scale: 0.95 }}
-            transition={{
-              type: "spring",
-              stiffness: 300,
-              damping: 20,
-            }}
-            onClick={(e) => {
-              e.stopPropagation();
-              onNavigate();
-            }}
-            className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-semibold"
+            transition={{ type: "spring", stiffness: 340, damping: 22 }}
+            onClick={(e) => { e.stopPropagation(); onNavigate(); }}
+            className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-semibold"
             style={{
-              background:
-                "rgba(0,212,255,0.12)",
-              border:
-                "1px solid rgba(0,212,255,0.3)",
-              color: "var(--cyan)",
+              background: "rgba(14,165,233,0.1)",
+              border: "1px solid rgba(14,165,233,0.25)",
+              color: "#0284c7",
               cursor: "pointer",
-              fontFamily: "var(--font-body)",
+              fontFamily: "var(--font-body, 'Plus Jakarta Sans', sans-serif)",
             }}
           >
             <Navigation className="w-2.5 h-2.5" />
@@ -347,36 +241,21 @@ function ResultRow({
 }
 
 // ─────────────────────────────────────────────────────────────
-// SECTION HEADER
+// SECTION HEADER  — refined label
 // ─────────────────────────────────────────────────────────────
 
-function SectionHeader({
-  label,
-  icon: Icon,
-}: {
-  label: string;
-  icon: React.ElementType;
-}) {
+function SectionHeader({ label, icon: Icon }: { label: string; icon: React.ElementType }) {
   return (
     <div
-      className="flex items-center gap-2 px-4 pt-3 pb-1.5"
-      style={{
-        borderTop:
-          "1px solid rgba(255,255,255,0.04)",
-      }}
+      className="flex items-center gap-2 px-5 pt-3 pb-1.5"
+      style={{ borderTop: "1px solid rgba(226,232,240,0.7)" }}
     >
-      <Icon
-        className="w-3 h-3 flex-shrink-0"
-        style={{
-          color: "rgba(0,212,255,0.45)",
-        }}
-      />
-
+      <Icon className="w-3 h-3 flex-shrink-0" style={{ color: "#94a3b8" }} />
       <span
         className="text-[9px] font-semibold tracking-[2px]"
         style={{
-          color: "rgba(240,244,255,0.3)",
-          fontFamily: "var(--font-display)",
+          color: "#94a3b8",
+          fontFamily: "var(--font-display, 'Plus Jakarta Sans', sans-serif)",
         }}
       >
         {label}
@@ -396,400 +275,156 @@ export function CommandPalette({
   currentSource = "",
 }: CommandPaletteProps) {
   const [open, setOpen] = useState(false);
-
   const [query, setQuery] = useState("");
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [mode, setMode] = useState<"destination" | "source">("destination");
 
-  const [activeIndex, setActiveIndex] =
-    useState(0);
-
-  const [mode, setMode] = useState<
-    "destination" | "source"
-  >("destination");
-
-  const inputRef =
-    useRef<HTMLInputElement>(null);
-
-  const listRef =
-    useRef<HTMLDivElement>(null);
-
+  const inputRef = useRef<HTMLInputElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
   const recentStore = useRecentSearches();
 
-  // Open
   const openPalette = useCallback(() => {
-    setOpen(true);
-    setQuery("");
-    setActiveIndex(0);
+    setOpen(true); setQuery(""); setActiveIndex(0);
   }, []);
 
-  // Close
   const closePalette = useCallback(() => {
-    setOpen(false);
-    setQuery("");
-    setActiveIndex(0);
+    setOpen(false); setQuery(""); setActiveIndex(0);
   }, []);
 
-  // Autofocus
   useEffect(() => {
-    if (open) {
-      setTimeout(() => {
-        inputRef.current?.focus();
-      }, 50);
-    }
+    if (open) setTimeout(() => inputRef.current?.focus(), 50);
   }, [open]);
 
-  // Shortcut
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (
-        (e.metaKey || e.ctrlKey) &&
-        e.key === "k"
-      ) {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
-
-        open
-          ? closePalette()
-          : openPalette();
+        open ? closePalette() : openPalette();
       }
-
-      if (e.key === "Escape" && open) {
-        closePalette();
-      }
+      if (e.key === "Escape" && open) closePalette();
     };
-
-    window.addEventListener(
-      "keydown",
-      handler
-    );
-
-    return () =>
-      window.removeEventListener(
-        "keydown",
-        handler
-      );
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
   }, [open, openPalette, closePalette]);
 
-  // Results
   const results: SearchResult[] = useMemo(() => {
     const q = query.trim();
-
     if (!q) {
-      const recents = recentStore
-        .get()
-        .map((term, i): SearchResult => {
-          const b = BUILDINGS.find(
-            (b) => b.name === term
-          );
-
-          return {
-            id: `recent-${i}`,
-            label: term,
-            sublabel: b
-              ? `${b.floors}F · ${b.type}`
-              : "Recent search",
-            icon: b?.icon ?? "🕐",
-            type: "recent",
-            color: b?.color ?? "#f59e0b",
-            building: b,
-            score: 100 - i,
-          };
-        });
-
-      const quicks = QUICK_ACTIONS.map(
-        (qa, i): SearchResult => ({
-          id: qa.id,
-          label: qa.label,
-          sublabel: "Quick destination",
-          icon: qa.icon,
-          type: "quick",
-          color: qa.color,
-          building: BUILDINGS.find(
-            (b) => b.name === qa.label
-          ),
-          score: 80 - i,
-        })
-      );
-
-      return [...recents, ...quicks].slice(
-        0,
-        10
-      );
-    }
-
-    return BUILDINGS.map(
-      (b): SearchResult => {
-        const nameScore = fuzzyScore(
-          q,
-          b.name
-        );
-
-        const typeScore =
-          fuzzyScore(q, b.type) * 0.5;
-
-        const facilityScore = Math.max(
-          0,
-          ...b.facilities.map(
-            (f) => fuzzyScore(q, f) * 0.4
-          )
-        );
-
-        const best = Math.max(
-          nameScore,
-          typeScore,
-          facilityScore
-        );
-
+      const recents = recentStore.get().map((term, i): SearchResult => {
+        const b = BUILDINGS.find((b) => b.name === term);
         return {
-          id: b.id,
-          label: b.name,
-          sublabel: `${b.floors} floor${
-            b.floors > 1 ? "s" : ""
-          } · ${b.type}`,
-
-          icon: b.icon,
-          type: "building",
-          color: b.color,
-          building: b,
-          score: best,
+          id: `recent-${i}`, label: term,
+          sublabel: b ? `${b.floors}F · ${b.type}` : "Recent search",
+          icon: b?.icon ?? "🕐", type: "recent",
+          color: b?.color ?? "#f59e0b", building: b, score: 100 - i,
         };
-      }
-    )
-      .filter((r) => r.score > 0)
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 8);
+      });
+      const quicks = QUICK_ACTIONS.map((qa, i): SearchResult => ({
+        id: qa.id, label: qa.label, sublabel: "Quick destination",
+        icon: qa.icon, type: "quick", color: qa.color,
+        building: BUILDINGS.find((b) => b.name === qa.label),
+        score: 80 - i,
+      }));
+      return [...recents, ...quicks].slice(0, 10);
+    }
+    return BUILDINGS.map((b): SearchResult => {
+      const nameScore = fuzzyScore(q, b.name);
+      const typeScore = fuzzyScore(q, b.type) * 0.5;
+      const facilityScore = Math.max(0, ...b.facilities.map((f) => fuzzyScore(q, f) * 0.4));
+      const best = Math.max(nameScore, typeScore, facilityScore);
+      return {
+        id: b.id, label: b.name,
+        sublabel: `${b.floors} floor${b.floors > 1 ? "s" : ""} · ${b.type}`,
+        icon: b.icon, type: "building", color: b.color, building: b, score: best,
+      };
+    }).filter((r) => r.score > 0).sort((a, b) => b.score - a.score).slice(0, 8);
   }, [query, recentStore]);
 
-  // Groups
   const groups = useMemo(() => {
     if (query.trim()) {
-      return [
-        {
-          key: "results",
-          label: "SEARCH RESULTS",
-          icon: Search,
-          items: results,
-        },
-      ];
+      return [{ key: "results", label: "SEARCH RESULTS", icon: Search, items: results }];
     }
-
-    const recents = results.filter(
-      (r) => r.type === "recent"
-    );
-
-    const quicks = results.filter(
-      (r) => r.type === "quick"
-    );
-
-    const groups = [];
-
-    if (recents.length) {
-      groups.push({
-        key: "recents",
-        label: "RECENT SEARCHES",
-        icon: Clock,
-        items: recents,
-      });
-    }
-
-    if (quicks.length) {
-      groups.push({
-        key: "quicks",
-        label: "QUICK NAVIGATE",
-        icon: Zap,
-        items: quicks,
-      });
-    }
-
-    return groups;
+    const recents = results.filter((r) => r.type === "recent");
+    const quicks = results.filter((r) => r.type === "quick");
+    const out = [];
+    if (recents.length) out.push({ key: "recents", label: "RECENT SEARCHES", icon: Clock, items: recents });
+    if (quicks.length) out.push({ key: "quicks", label: "QUICK NAVIGATE", icon: Zap, items: quicks });
+    return out;
   }, [results, query]);
 
-  const flat = useMemo(
-    () => groups.flatMap((g) => g.items),
-    [groups]
-  );
+  const flat = useMemo(() => groups.flatMap((g) => g.items), [groups]);
 
-  // Keyboard nav
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
-      if (!open) return;
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (!open) return;
+    switch (e.key) {
+      case "ArrowDown": e.preventDefault(); setActiveIndex((i) => Math.min(i + 1, results.length - 1)); break;
+      case "ArrowUp":   e.preventDefault(); setActiveIndex((i) => Math.max(i - 1, 0)); break;
+      case "Enter":     e.preventDefault(); if (results[activeIndex]) handleSelect(results[activeIndex]); break;
+      case "Escape":    closePalette(); break;
+    }
+  }, [open, results, activeIndex]);
 
-      switch (e.key) {
-        case "ArrowDown":
-          e.preventDefault();
-
-          setActiveIndex((i) =>
-            Math.min(i + 1, results.length - 1)
-          );
-
-          break;
-
-        case "ArrowUp":
-          e.preventDefault();
-
-          setActiveIndex((i) =>
-            Math.max(i - 1, 0)
-          );
-
-          break;
-
-        case "Enter":
-          e.preventDefault();
-
-          if (results[activeIndex]) {
-            handleSelect(results[activeIndex]);
-          }
-
-          break;
-
-        case "Escape":
-          closePalette();
-          break;
-      }
-    },
-    [open, results, activeIndex]
-  );
-
-  // Scroll active into view
   useEffect(() => {
-    const el = listRef.current
-      ?.children[
-        activeIndex
-      ] as HTMLElement | undefined;
-
-    el?.scrollIntoView({
-      block: "nearest",
-      behavior: "instant",
-    });
+    const el = listRef.current?.children[activeIndex] as HTMLElement | undefined;
+    el?.scrollIntoView({ block: "nearest", behavior: "instant" });
   }, [activeIndex]);
 
-  // Actions
-  const handleSelect = useCallback(
-    (r: SearchResult) => {
-      recentStore.add(r.label);
+  const handleSelect = useCallback((r: SearchResult) => {
+    recentStore.add(r.label);
+    if (r.building) onSelectBuilding(r.building);
+    if (mode === "destination") onSelectDestination(r.label);
+    else onSetSource(r.label);
+    closePalette();
+  }, [mode, onSelectDestination, onSetSource, onSelectBuilding]);
 
-      if (r.building) {
-        onSelectBuilding(r.building);
-      }
-
-      if (mode === "destination") {
-        onSelectDestination(r.label);
-      } else {
-        onSetSource(r.label);
-      }
-
-      closePalette();
-    },
-    [
-      mode,
-      onSelectDestination,
-      onSetSource,
-      onSelectBuilding,
-    ]
-  );
-
-  const handleNavigate = useCallback(
-    (r: SearchResult) => {
-      recentStore.add(r.label);
-
-      onSelectDestination(r.label);
-
-      if (r.building) {
-        onSelectBuilding(r.building);
-      }
-
-      closePalette();
-    },
-    [onSelectDestination, onSelectBuilding]
-  );
+  const handleNavigate = useCallback((r: SearchResult) => {
+    recentStore.add(r.label);
+    onSelectDestination(r.label);
+    if (r.building) onSelectBuilding(r.building);
+    closePalette();
+  }, [onSelectDestination, onSelectBuilding]);
 
   return (
     <>
-      {/* Floating trigger */}
-      <div
-        className="fixed z-40"
-        style={{
-          bottom: 140,
-          right: 100,
-        }}
-      >
-        <motion.div
-          animate={{
-            scale: [1, 1.5, 1],
-            opacity: [0.4, 0, 0.4],
-          }}
-          transition={{
-            duration: 3,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-          style={{
-            position: "absolute",
-            inset: 0,
-            borderRadius: 12,
-            border:
-              "1px solid rgba(0,212,255,0.4)",
-            pointerEvents: "none",
-          }}
-        />
-
+      {/* ── Floating trigger ── */}
+      <div className="fixed z-40" style={{ bottom: 140, right: 100 }}>
         <motion.button
           onClick={openPalette}
-          whileHover={{
-            scale: 1.06,
-            boxShadow:
-              "0 0 32px rgba(0,212,255,0.5)",
-          }}
-          whileTap={{ scale: 0.93 }}
+          whileHover={{ scale: 1.03, boxShadow: "0 8px 32px rgba(14,165,233,0.18), 0 2px 8px rgba(0,0,0,0.08)" }}
+          whileTap={{ scale: 0.96 }}
           className="relative flex items-center gap-2.5 px-4 py-2.5 rounded-xl"
           style={{
-            background:
-              "linear-gradient(135deg, rgba(0,212,255,0.14), rgba(139,92,246,0.08))",
-
-            border:
-              "1px solid rgba(0,212,255,0.35)",
-
-            backdropFilter: "blur(20px)",
-
-            boxShadow:
-              "0 0 20px rgba(0,212,255,0.15), 0 4px 24px rgba(0,0,0,0.5)",
-
-            color: "var(--cyan)",
+            background: "rgba(255,255,255,0.92)",
+            border: "1px solid rgba(226,232,240,0.9)",
+            backdropFilter: "blur(16px)",
+            WebkitBackdropFilter: "blur(16px)",
+            boxShadow: "0 4px 20px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.06)",
+            color: "#0284c7",
             cursor: "pointer",
           }}
         >
           <Search className="w-4 h-4 flex-shrink-0" />
-
           <span
             className="text-[12px] font-semibold hidden sm:inline"
-            style={{
-              fontFamily: "var(--font-body)",
-            }}
+            style={{ color: "#334155", fontFamily: "var(--font-body, 'Plus Jakarta Sans', sans-serif)" }}
           >
             Search campus
           </span>
-
           <kbd
             className="hidden sm:flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[9px] font-semibold"
             style={{
-              background:
-                "rgba(255,255,255,0.07)",
-
-              border:
-                "1px solid rgba(255,255,255,0.12)",
-
-              color:
-                "rgba(240,244,255,0.5)",
-
-              fontFamily:
-                "var(--font-mono, monospace)",
+              background: "rgba(241,245,249,0.9)",
+              border: "1px solid rgba(203,213,225,0.8)",
+              color: "#94a3b8",
+              fontFamily: "var(--font-mono, monospace)",
             }}
           >
-            <Command className="w-2.5 h-2.5" />
-            K
+            <Command className="w-2.5 h-2.5" />K
           </kbd>
         </motion.button>
       </div>
 
-      {/* Modal */}
+      {/* ── Modal ── */}
       <AnimatePresence>
         {open && (
           <>
@@ -799,19 +434,12 @@ export function CommandPalette({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{
-                duration: 0.25,
-                ease: "easeOut",
-              }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
               className="fixed inset-0 z-50"
               style={{
-                background:
-                  "rgba(2,4,8,0.82)",
-
-                backdropFilter: "blur(12px)",
-
-                WebkitBackdropFilter:
-                  "blur(12px)",
+                background: "rgba(15,23,42,0.45)",
+                backdropFilter: "blur(8px)",
+                WebkitBackdropFilter: "blur(8px)",
               }}
               onClick={closePalette}
             />
@@ -819,214 +447,95 @@ export function CommandPalette({
             {/* Panel */}
             <motion.div
               key="cp-panel"
-              initial={{
-                opacity: 0,
-                scale: 0.94,
-                y: -32,
-                filter: "blur(8px)",
-              }}
-              animate={{
-                opacity: 1,
-                scale: 1,
-                y: 0,
-                filter: "blur(0px)",
-              }}
-              exit={{
-                opacity: 0,
-                scale: 0.97,
-                y: -12,
-                filter: "blur(6px)",
-              }}
-              transition={{
-                type: "spring",
-                stiffness: 460,
-                damping: 36,
-                mass: 0.8,
-              }}
+              initial={{ opacity: 0, scale: 0.96, y: -20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.97, y: -10 }}
+              transition={{ type: "spring", stiffness: 480, damping: 38, mass: 0.75 }}
               className="fixed z-50 left-1/2 overflow-hidden"
               style={{
-                top:
-                  "clamp(5vh, 8vh, 64px)",
-
-                width:
-                  "min(640px, calc(100vw - 24px))",
-
-                transform:
-                  "translateX(-50%)",
-
-                background:
-                  "linear-gradient(160deg, rgba(8,18,36,0.97) 0%, rgba(3,6,14,0.99) 100%)",
-
-                border:
-                  "1px solid rgba(0,212,255,0.18)",
-
-                borderRadius: 24,
-
+                top: "clamp(5vh, 8vh, 64px)",
+                width: "min(640px, calc(100vw - 24px))",
+                transform: "translateX(-50%)",
+                background: "rgba(255,255,255,0.97)",
+                border: "1px solid rgba(203,213,225,0.7)",
+                borderRadius: 20,
                 boxShadow:
-                  "0 0 0 1px rgba(0,212,255,0.06), " +
-                  "0 40px 100px rgba(0,0,0,0.8), " +
-                  "0 0 80px rgba(0,212,255,0.07), " +
-                  "0 0 30px rgba(139,92,246,0.05), " +
-                  "inset 0 1px 0 rgba(0,212,255,0.12), " +
-                  "inset 0 0 60px rgba(0,212,255,0.015)",
-
-                backdropFilter:
-                  "blur(40px) saturate(180%)",
-
-                WebkitBackdropFilter:
-                  "blur(40px) saturate(180%)",
-
-                maxHeight:
-                  "clamp(60vh, 80vh, 700px)",
-
+                  "0 0 0 1px rgba(14,165,233,0.06), " +
+                  "0 32px 80px rgba(15,23,42,0.18), " +
+                  "0 8px 24px rgba(15,23,42,0.08), " +
+                  "inset 0 1px 0 rgba(255,255,255,1)",
+                backdropFilter: "blur(40px) saturate(180%)",
+                WebkitBackdropFilter: "blur(40px) saturate(180%)",
+                maxHeight: "clamp(60vh, 80vh, 700px)",
                 display: "flex",
-
                 flexDirection: "column",
               }}
             >
-              {/* Glow line */}
+              {/* Subtle top shimmer — replaces neon glow line */}
               <div
                 style={{
                   position: "absolute",
                   top: 0,
-                  left: "10%",
-                  right: "10%",
+                  left: "15%",
+                  right: "15%",
                   height: 1,
-
                   background:
-                    "linear-gradient(90deg, transparent, rgba(0,212,255,0.6), rgba(139,92,246,0.4), transparent)",
-
+                    "linear-gradient(90deg, transparent, rgba(14,165,233,0.35), rgba(99,102,241,0.2), transparent)",
                   pointerEvents: "none",
+                  borderRadius: 99,
                 }}
               />
 
-              {/* Header */}
+              {/* ── Header ── */}
               <div
                 className="flex items-center gap-3 px-4 pt-4 pb-3 flex-shrink-0"
-                style={{
-                  borderBottom:
-                    "1px solid rgba(255,255,255,0.06)",
-
-                  position: "relative",
-                }}
+                style={{ borderBottom: "1px solid rgba(226,232,240,0.8)", position: "relative" }}
               >
-                {/* Icon */}
-                <motion.div
-                  animate={{
-                    boxShadow: [
-                      "0 0 6px rgba(0,212,255,0.3)",
-                      "0 0 14px rgba(0,212,255,0.6)",
-                      "0 0 6px rgba(0,212,255,0.3)",
-                    ],
-                  }}
-                  transition={{
-                    duration: 2.5,
-                    repeat: Infinity,
-                  }}
+                {/* Compass badge — static, no pulsing */}
+                <div
                   className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
                   style={{
-                    background:
-                      "linear-gradient(135deg, rgba(0,212,255,0.2), rgba(139,92,246,0.12))",
-
-                    border:
-                      "1.5px solid rgba(0,212,255,0.4)",
+                    background: "linear-gradient(135deg, rgba(14,165,233,0.12), rgba(99,102,241,0.08))",
+                    border: "1px solid rgba(14,165,233,0.2)",
                   }}
                 >
-                  <Compass
-                    className="w-4 h-4"
-                    style={{
-                      color: "var(--cyan)",
-                    }}
-                  />
-                </motion.div>
+                  <Compass className="w-4 h-4" style={{ color: "#0284c7" }} />
+                </div>
 
                 {/* Input */}
                 <input
                   ref={inputRef}
                   value={query}
-                  onChange={(e) =>
-                    setQuery(e.target.value)
-                  }
+                  onChange={(e) => setQuery(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder={
                     mode === "destination"
                       ? "Where do you want to go?"
                       : "Set your starting point..."
                   }
-                  className="flex-1 bg-transparent outline-none text-[14px]"
+                  className="flex-1 bg-transparent outline-none text-[15px]"
                   style={{
-                    color: "var(--text-1)",
-                    fontFamily:
-                      "var(--font-body)",
-                    caretColor: "var(--cyan)",
+                    color: "#0f172a",
+                    fontFamily: "var(--font-body, 'Plus Jakarta Sans', sans-serif)",
+                    caretColor: "#0284c7",
                   }}
                   autoComplete="off"
                   spellCheck={false}
-                />
-
-                {/* Underline */}
-                <motion.div
-                  animate={{
-                    scaleX:
-                      query.length > 0
-                        ? 1
-                        : 0.3,
-
-                    opacity:
-                      query.length > 0
-                        ? 1
-                        : 0.4,
-                  }}
-                  transition={{
-                    duration: 0.2,
-                  }}
-                  style={{
-                    position: "absolute",
-                    bottom: 0,
-                    left: "50%",
-                    transform:
-                      "translateX(-50%)",
-
-                    height: 1,
-                    width: "60%",
-
-                    background:
-                      "linear-gradient(90deg, transparent, var(--cyan), transparent)",
-
-                    pointerEvents: "none",
-                  }}
                 />
 
                 {/* Actions */}
                 <div className="flex items-center gap-2 flex-shrink-0">
                   {query && (
                     <motion.button
-                      initial={{
-                        opacity: 0,
-                        scale: 0.7,
-                      }}
-                      animate={{
-                        opacity: 1,
-                        scale: 1,
-                      }}
-                      exit={{
-                        opacity: 0,
-                        scale: 0.7,
-                      }}
-                      onClick={() =>
-                        setQuery("")
-                      }
+                      initial={{ opacity: 0, scale: 0.75 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.75 }}
+                      onClick={() => setQuery("")}
                       className="w-6 h-6 rounded-lg flex items-center justify-center"
                       style={{
-                        background:
-                          "rgba(255,255,255,0.06)",
-
-                        border:
-                          "1px solid rgba(255,255,255,0.1)",
-
-                        color:
-                          "var(--text-3)",
-
+                        background: "rgba(241,245,249,0.9)",
+                        border: "1px solid rgba(203,213,225,0.8)",
+                        color: "#94a3b8",
                         cursor: "pointer",
                       }}
                     >
@@ -1036,170 +545,71 @@ export function CommandPalette({
                 </div>
               </div>
 
-              {/* Current Source */}
-              {currentSource &&
-                mode === "destination" && (
-                  <div
-                    className="flex items-center gap-2 px-4 py-2 flex-shrink-0"
-                    style={{
-                      background:
-                        "rgba(0,212,255,0.04)",
-
-                      borderBottom:
-                        "1px solid rgba(0,212,255,0.08)",
-                    }}
+              {/* ── Current Source banner ── */}
+              {currentSource && mode === "destination" && (
+                <div
+                  className="flex items-center gap-2 px-4 py-2 flex-shrink-0"
+                  style={{
+                    background: "rgba(14,165,233,0.04)",
+                    borderBottom: "1px solid rgba(14,165,233,0.1)",
+                  }}
+                >
+                  <MapPin className="w-3 h-3 flex-shrink-0" style={{ color: "#0284c7" }} />
+                  <span
+                    className="text-[11px]"
+                    style={{ color: "#64748b", fontFamily: "var(--font-body, 'DM Sans', sans-serif)" }}
                   >
-                    <MapPin
-                      className="w-3 h-3 flex-shrink-0"
-                      style={{
-                        color: "var(--cyan)",
-                      }}
-                    />
+                    From:{" "}
+                    <span style={{ color: "#0284c7", fontWeight: 600 }}>{currentSource}</span>
+                  </span>
+                  <ArrowRight className="w-3 h-3 flex-shrink-0" style={{ color: "rgba(14,165,233,0.4)" }} />
+                </div>
+              )}
 
-                    <span
-                      className="text-[11px]"
-                      style={{
-                        color:
-                          "var(--text-3)",
-
-                        fontFamily:
-                          "var(--font-body)",
-                      }}
-                    >
-                      From:{" "}
-                      <span
-                        style={{
-                          color:
-                            "var(--cyan)",
-
-                          fontWeight: 500,
-                        }}
-                      >
-                        {currentSource}
-                      </span>
-                    </span>
-
-                    <ArrowRight
-                      className="w-3 h-3 flex-shrink-0"
-                      style={{
-                        color:
-                          "rgba(0,212,255,0.4)",
-                      }}
-                    />
-                  </div>
-                )}
-
-              {/* Results */}
-              <div
-                ref={listRef}
-                className="flex-1 overflow-y-auto no-scrollbar pb-2"
-              >
+              {/* ── Results ── */}
+              <div ref={listRef} className="flex-1 overflow-y-auto no-scrollbar pb-2">
                 <AnimatePresence mode="popLayout">
-                  {flat.length === 0 &&
-                  query ? (
+                  {flat.length === 0 && query ? (
                     <motion.div
                       key="empty"
-                      initial={{
-                        opacity: 0,
-                        y: 8,
-                      }}
-                      animate={{
-                        opacity: 1,
-                        y: 0,
-                      }}
-                      exit={{
-                        opacity: 0,
-                        y: -4,
-                      }}
-                      transition={{
-                        duration: 0.2,
-                      }}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -4 }}
+                      transition={{ duration: 0.2 }}
                       className="flex flex-col items-center justify-center py-14 gap-3"
                     >
-                      <motion.div
-                        animate={{
-                          rotate: [
-                            0,
-                            -10,
-                            10,
-                            0,
-                          ],
-                        }}
-                        transition={{
-                          duration: 1.5,
-                          repeat: Infinity,
-                          repeatDelay: 2,
-                        }}
-                        className="text-3xl opacity-30"
-                      >
-                        🔍
-                      </motion.div>
-
+                      <div className="text-3xl opacity-25">🔍</div>
                       <div
                         style={{
-                          color:
-                            "var(--text-3)",
-
+                          color: "#94a3b8",
                           fontSize: 13,
-
-                          fontFamily:
-                            "var(--font-body)",
+                          fontFamily: "var(--font-body, 'DM Sans', sans-serif)",
                         }}
                       >
-                        No buildings found for "
-                        {query}"
+                        No buildings found for &ldquo;{query}&rdquo;
                       </div>
                     </motion.div>
                   ) : (
                     groups.map((group) => (
                       <div key={group.key}>
-                        <SectionHeader
-                          label={group.label}
-                          icon={group.icon}
-                        />
-
+                        <SectionHeader label={group.label} icon={group.icon} />
                         <motion.div
                           initial="hidden"
                           animate="visible"
                           variants={{
-                            visible: {
-                              transition: {
-                                staggerChildren:
-                                  0.03,
-                              },
-                            },
+                            visible: { transition: { staggerChildren: 0.03 } },
                           }}
                         >
                           {group.items.map((r) => {
-                            const flatIndex =
-                              flat.findIndex(
-                                (f) =>
-                                  f.id === r.id
-                              );
-
+                            const flatIndex = flat.findIndex((f) => f.id === r.id);
                             return (
                               <ResultRow
                                 key={r.id}
                                 result={r}
-                                isActive={
-                                  flatIndex ===
-                                  activeIndex
-                                }
-                                onMouseEnter={() =>
-                                  setActiveIndex(
-                                    flatIndex
-                                  )
-                                }
-                                onSelect={() =>
-                                  handleSelect(
-                                    r
-                                  )
-                                }
-                                onNavigate={() =>
-                                  handleNavigate(
-                                    r
-                                  )
-                                }
+                                isActive={flatIndex === activeIndex}
+                                onMouseEnter={() => setActiveIndex(flatIndex)}
+                                onSelect={() => handleSelect(r)}
+                                onNavigate={() => handleNavigate(r)}
                               />
                             );
                           })}
@@ -1208,6 +618,67 @@ export function CommandPalette({
                     ))
                   )}
                 </AnimatePresence>
+              </div>
+
+              {/* ── Footer hint ── */}
+              <div
+                className="flex items-center justify-between px-4 py-2.5 flex-shrink-0"
+                style={{
+                  borderTop: "1px solid rgba(226,232,240,0.8)",
+                  background: "rgba(248,250,252,0.8)",
+                }}
+              >
+                <div className="flex items-center gap-3">
+                  {[
+                    { keys: ["↑", "↓"], label: "navigate" },
+                    { keys: ["↵"],      label: "select"   },
+                    { keys: ["esc"],     label: "close"    },
+                  ].map(({ keys, label }) => (
+                    <span key={label} className="flex items-center gap-1">
+                      {keys.map((k) => (
+                        <kbd
+                          key={k}
+                          className="px-1.5 py-0.5 rounded-md text-[9px] font-semibold"
+                          style={{
+                            background: "rgba(255,255,255,0.9)",
+                            border: "1px solid rgba(203,213,225,0.9)",
+                            color: "#64748b",
+                            fontFamily: "var(--font-mono, monospace)",
+                            boxShadow: "0 1px 2px rgba(0,0,0,0.06)",
+                          }}
+                        >
+                          {k}
+                        </kbd>
+                      ))}
+                      <span
+                        className="text-[10px]"
+                        style={{ color: "#94a3b8", fontFamily: "var(--font-body, 'DM Sans', sans-serif)" }}
+                      >
+                        {label}
+                      </span>
+                    </span>
+                  ))}
+                </div>
+                <div className="flex items-center gap-1">
+                  <kbd
+                    className="px-1.5 py-0.5 rounded-md text-[9px] font-semibold flex items-center gap-0.5"
+                    style={{
+                      background: "rgba(255,255,255,0.9)",
+                      border: "1px solid rgba(203,213,225,0.9)",
+                      color: "#64748b",
+                      fontFamily: "var(--font-mono, monospace)",
+                      boxShadow: "0 1px 2px rgba(0,0,0,0.06)",
+                    }}
+                  >
+                    <Command className="w-2.5 h-2.5" />K
+                  </kbd>
+                  <span
+                    className="text-[10px]"
+                    style={{ color: "#94a3b8", fontFamily: "var(--font-body, 'DM Sans', sans-serif)" }}
+                  >
+                    open
+                  </span>
+                </div>
               </div>
             </motion.div>
           </>
