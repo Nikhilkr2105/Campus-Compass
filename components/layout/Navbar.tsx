@@ -1,230 +1,523 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Compass, Menu, X, Bot } from "lucide-react";
+import {
+  AnimatePresence,
+  motion,
+} from "framer-motion";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
+import {
+  Navigation,
+  BarChart3,
+  AlertTriangle,
+  Shield,
+  Sparkles,
+  Menu,
+  X,
+  ArrowRight,
+} from "lucide-react";
+import { useState, useEffect } from "react";
 
+/* ─────────────────────────────────────────
+   EASING
+───────────────────────────────────────── */
+const EASE = [0.16, 1, 0.3, 1] as const;
+
+/* ─────────────────────────────────────────
+   NAV LINKS
+   Matches all routes in the application.
+   "Features" is home-page section scroll only.
+───────────────────────────────────────── */
 const NAV_LINKS = [
-  { label: "Home",      href: "/",          section: "hero"     },
-  { label: "Navigate",  href: "/navigator", section: null       },
-  { label: "Analytics", href: "/analytics", section: null       },
-  { label: "Emergency", href: "/emergency", section: null       },
-  { label: "Admin",     href: "/admin",     section: null       },
-];
+  {
+    label: "Features",
+    href: "#features",
+    sectionId: "features",
+    icon: Sparkles,
+    accent: "#6b4fcf",
+    homeOnly: true, // only rendered when on "/"
+  },
+  {
+    label: "Home",
+    href: "/",
+    sectionId: null,
+    icon: Navigation,
+    accent: "#3882f6",
+    homeOnly: false,
+  },
+  {
+    label: "Navigate",
+    href: "/navigator",
+    sectionId: null,
+    icon: Navigation,
+    accent: "#3882f6",
+    homeOnly: false,
+  },
+  {
+    label: "Analytics",
+    href: "/analytics",
+    sectionId: null,
+    icon: BarChart3,
+    accent: "#c9922a",
+    homeOnly: false,
+  },
+  {
+    label: "Emergency",
+    href: "/emergency",
+    sectionId: null,
+    icon: AlertTriangle,
+    accent: "#d94040",
+    homeOnly: false,
+  },
+  {
+    label: "Admin",
+    href: "/admin",
+    sectionId: null,
+    icon: Shield,
+    accent: "#0d9e6e",
+    homeOnly: false,
+  },
+] as const;
 
-const TICKER_ITEMS = [
-  "🟢 Navigation System: ONLINE",
-  "📍 22 Buildings Mapped",
-  "⚡ AI Assistant: Active",
-  "🔵 342 Students Online",
-  "🗺️ Dijkstra Routing: Ready",
-  "🏥 Medical Center: 24/7",
-];
+type NavLink = (typeof NAV_LINKS)[number];
 
-const CHAT_TOGGLE_EVENT = "rimt-ai-chat:toggle";
-const CHAT_STATE_EVENT = "rimt-ai-chat:state";
-
+/* ─────────────────────────────────────────
+   NAVBAR
+   - On "/":  transparent over hero, frosted on scroll
+   - Elsewhere: always frosted (scrolled = true)
+───────────────────────────────────────── */
 export function Navbar() {
-  const [scrolled,   setScrolled]   = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [chatOpen,   setChatOpen]   = useState(false);
+  const [activeSection, setActiveSection] = useState<string | null>(null);
   const pathname = usePathname();
-  const router   = useRouter();
+
+  const isHome = pathname === "/";
+
+  // On internal pages we always show the frosted state
+  const frosted = isHome ? scrolled : true;
 
   useEffect(() => {
-    const fn = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", fn, { passive: true });
-    return () => window.removeEventListener("scroll", fn);
-  }, []);
+    if (!isHome) {
+      setScrolled(true); // internal pages: always frosted
+      return;
+    }
 
-  // close mobile menu on route change
-  useEffect(() => { setMobileOpen(false); }, [pathname]);
+    let frame = 0;
+    const updateNavState = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        setScrolled(window.scrollY > 36);
 
-  useEffect(() => {
-    const handleChatState = (event: Event) => {
-      const detail = (event as CustomEvent<{ open: boolean }>).detail;
-      setChatOpen(Boolean(detail?.open));
+        const featuresEl = document.getElementById("features");
+        if (!featuresEl) return;
+        const marker = 136;
+        const rect = featuresEl.getBoundingClientRect();
+        setActiveSection(
+          rect.top <= marker && rect.bottom > marker ? "features" : null
+        );
+      });
     };
 
-    window.addEventListener(CHAT_STATE_EVENT, handleChatState);
-    return () => window.removeEventListener(CHAT_STATE_EVENT, handleChatState);
-  }, []);
+    updateNavState();
+    window.addEventListener("scroll", updateNavState, { passive: true });
+    window.addEventListener("resize", updateNavState);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", updateNavState);
+      window.removeEventListener("resize", updateNavState);
+    };
+  }, [isHome]);
 
-  const handleNavClick = useCallback((href: string, section: string | null) => {
-    if (href === "/" && section && pathname === "/") {
-      document.getElementById(section)?.scrollIntoView({ behavior: "smooth" });
-    } else {
-      router.push(href);
+  // Close mobile menu on route change
+  useEffect(() => { setMobileOpen(false); }, [pathname]);
+
+  const closeMobile = () => setMobileOpen(false);
+
+  const scrollToSection = (sectionId: string) => {
+    document
+      .getElementById(sectionId)
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    setActiveSection(sectionId);
+    closeMobile();
+  };
+
+  // Visual tokens that switch between transparent (hero) and frosted
+  const shellBackground = frosted
+    ? "rgba(255,255,255,0.84)"
+    : "rgba(255,255,255,0.08)";
+  const shellBorder = frosted
+    ? "rgba(13,26,46,0.1)"
+    : "rgba(255,255,255,0.18)";
+  const shellShadow = frosted
+    ? "0 18px 48px rgba(13,26,46,0.14), 0 1px 0 rgba(255,255,255,0.7) inset"
+    : "0 12px 36px rgba(13,26,46,0.12), 0 1px 0 rgba(255,255,255,0.16) inset";
+  const ink = frosted ? "var(--navy)" : "rgba(255,255,255,0.94)";
+  const mutedInk = frosted ? "var(--text-2)" : "rgba(255,255,255,0.68)";
+
+  const isItemActive = (item: NavLink) => {
+    if (item.sectionId) return activeSection === item.sectionId;
+    if (item.href === "/") return pathname === "/";
+    return pathname.startsWith(item.href);
+  };
+
+  // Filter: on home page show all links; on internal pages hide homeOnly links
+  const visibleLinks = NAV_LINKS.filter((l) => isHome || !l.homeOnly);
+
+  const renderNavItem = (item: NavLink, mobile = false) => {
+    const active = isItemActive(item);
+    const Icon = item.icon;
+
+    const content = (
+      <motion.div
+        whileHover={{ y: mobile ? 0 : -1 }}
+        whileTap={{ scale: 0.98 }}
+        style={{
+          position: "relative",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: mobile ? "flex-start" : "center",
+          gap: mobile ? 10 : 7,
+          width: mobile ? "100%" : "auto",
+          minHeight: mobile ? 44 : 34,
+          padding: mobile ? "10px 12px" : "8px 12px",
+          borderRadius: mobile ? 14 : 999,
+          color: active ? ink : mutedInk,
+          fontFamily: "var(--font-sans)",
+          fontSize: mobile ? 14 : 13,
+          fontWeight: active ? 700 : 600,
+          lineHeight: 1,
+          transition: "color 0.25s ease",
+        }}
+      >
+        {active && (
+          <motion.span
+            layoutId={mobile ? "mobile-nav-active" : "top-nav-active"}
+            transition={{ type: "spring", stiffness: 420, damping: 34 }}
+            style={{
+              position: "absolute",
+              inset: mobile ? 0 : 2,
+              borderRadius: mobile ? 14 : 999,
+              background: frosted
+                ? "rgba(56,130,246,0.1)"
+                : "rgba(255,255,255,0.15)",
+              border: frosted
+                ? `1px solid ${item.accent}24`
+                : "1px solid rgba(255,255,255,0.16)",
+              boxShadow: frosted
+                ? `0 8px 22px ${item.accent}14`
+                : "0 8px 24px rgba(255,255,255,0.06)",
+            }}
+          />
+        )}
+
+        <span
+          style={{
+            position: "relative",
+            zIndex: 1,
+            width: mobile ? 28 : 20,
+            height: mobile ? 28 : 20,
+            borderRadius: mobile ? 9 : 999,
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            background: active ? `${item.accent}16` : "transparent",
+            color: active ? item.accent : "currentColor",
+          }}
+        >
+          <Icon size={mobile ? 15 : 13} strokeWidth={2} />
+        </span>
+        <span style={{ position: "relative", zIndex: 1 }}>{item.label}</span>
+      </motion.div>
+    );
+
+    // Section scroll links (home page only)
+    if (item.sectionId) {
+      return (
+        <button
+          key={item.label}
+          type="button"
+          onClick={() => scrollToSection(item.sectionId!)}
+          aria-current={active ? "location" : undefined}
+          style={{
+            appearance: "none",
+            background: "transparent",
+            border: "none",
+            cursor: "pointer",
+            padding: 0,
+            width: mobile ? "100%" : "auto",
+            textAlign: "left",
+          }}
+        >
+          {content}
+        </button>
+      );
     }
-    setMobileOpen(false);
-  }, [pathname, router]);
 
-  const isActive = (href: string) =>
-    href === "/" ? pathname === "/" : pathname.startsWith(href);
-
-  const handleChatToggle = useCallback(() => {
-    window.dispatchEvent(new Event(CHAT_TOGGLE_EVENT));
-  }, []);
+    // Route links
+    return (
+      <Link
+        key={item.label}
+        href={item.href}
+        onClick={closeMobile}
+        aria-current={active ? "page" : undefined}
+        style={{
+          display: mobile ? "block" : "inline-flex",
+          width: mobile ? "100%" : "auto",
+          textDecoration: "none",
+        }}
+      >
+        {content}
+      </Link>
+    );
+  };
 
   return (
-    <>
-      <motion.header
-        initial={{ y: -80, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-        className="fixed top-0 left-0 right-0 z-50 h-[68px] flex items-center justify-between px-5 md:px-8"
+    <motion.header
+      initial={{ opacity: 0, y: -16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.65, ease: EASE }}
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 50,
+        padding: "0 20px",
+        pointerEvents: "none",
+      }}
+    >
+      {/* ── MAIN BAR ── */}
+      <motion.div
+        animate={{
+          backgroundColor: shellBackground,
+          borderColor: shellBorder,
+          boxShadow: shellShadow,
+        }}
+        transition={{ duration: 0.32, ease: EASE }}
         style={{
-          background:     scrolled ? "rgba(2,4,8,0.95)" : "rgba(2,4,8,0.80)",
-          borderBottom:   `1px solid ${scrolled ? "rgba(0,212,255,0.15)" : "rgba(255,255,255,0.06)"}`,
-          backdropFilter: "blur(28px)",
-          transition:     "background 0.3s ease, border-color 0.3s ease",
+          maxWidth: 1160,
+          margin: "0 auto",
+          marginTop: 14,
+          padding: "10px 12px",
+          borderRadius: 24,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 12,
+          border: "1px solid",
+          backdropFilter: frosted
+            ? "blur(26px) saturate(1.2)"
+            : "blur(14px) saturate(1.05)",
+          WebkitBackdropFilter: frosted
+            ? "blur(26px) saturate(1.2)"
+            : "blur(14px) saturate(1.05)",
+          pointerEvents: "auto",
+          transition: "backdrop-filter 0.32s ease",
         }}
       >
         {/* Logo */}
-        <button
-          onClick={() => handleNavClick("/", "hero")}
-          className="flex items-center gap-3"
-          style={{ background: "none", border: "none", cursor: "pointer" }}
-        >
-          <div
-            className="w-9 h-9 rounded-[10px] flex items-center justify-center"
-            style={{ background: "linear-gradient(135deg, rgba(0,212,255,0.2), rgba(139,92,246,0.2))", border: "1px solid rgba(0,212,255,0.35)" }}
+        <Link href="/" onClick={closeMobile} style={{ textDecoration: "none" }}>
+          <motion.div
+            whileHover={{ y: -1 }}
+            whileTap={{ scale: 0.98 }}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              padding: "4px 8px 4px 4px",
+              borderRadius: 18,
+            }}
           >
-            <Compass className="w-4 h-4" style={{ color: "var(--cyan)" }} />
-          </div>
-          <div className="hidden sm:block">
-            <div className="text-sm font-bold gradient-text-cyan leading-none" style={{ fontFamily: "var(--font-display)" }}>
-              RIMT Navigator
+            <div
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: 12,
+                background: "linear-gradient(135deg, #3882f6, #1a4fa8)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                boxShadow: "0 8px 22px rgba(56,130,246,0.34)",
+              }}
+            >
+              <Navigation size={16} color="white" strokeWidth={2} />
             </div>
-            <div className="text-[9px] tracking-[2px] mt-0.5" style={{ color: "var(--text-3)", fontFamily: "var(--font-display)" }}>
-              SMART CAMPUS SYSTEM
-            </div>
-          </div>
-        </button>
-
-        {/* Desktop nav */}
-        <nav className="hidden md:flex items-center gap-0.5">
-          {NAV_LINKS.map(({ label, href, section }) => {
-            const active = isActive(href);
-            return (
-              <button
-                key={href}
-                onClick={() => handleNavClick(href, section)}
-                className="relative px-4 py-2 rounded-lg text-[13px] transition-all duration-200"
+            <div>
+              <div
                 style={{
-                  color:        active ? "var(--cyan)"          : "var(--text-2)",
-                  background:   active ? "rgba(0,212,255,0.08)" : "transparent",
-                  fontFamily:   "var(--font-body)",
-                  fontWeight:   active ? 600 : 400,
-                  borderBottom: `2px solid ${active ? "var(--cyan)" : "transparent"}`,
-                  border:       "none",
-                  cursor:       "pointer",
+                  fontSize: 13,
+                  fontWeight: 800,
+                  color: ink,
+                  fontFamily: "var(--font-sans)",
+                  lineHeight: 1.2,
+                  transition: "color 0.3s ease",
                 }}
               >
-                {active && (
-                  <motion.div
-                    layoutId="nav-active"
-                    className="absolute inset-0 rounded-lg"
-                    style={{ background: "rgba(0,212,255,0.08)", border: "1px solid rgba(0,212,255,0.2)" }}
-                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                  />
-                )}
-                <span className="relative z-10">{label}</span>
-              </button>
-            );
-          })}
+                RIMT Navigator
+              </div>
+              <div
+                style={{
+                  fontSize: 10,
+                  color: mutedInk,
+                  fontFamily: "var(--font-body)",
+                  letterSpacing: "0.2px",
+                  lineHeight: 1,
+                  transition: "color 0.3s ease",
+                }}
+              >
+                Smart Campus
+              </div>
+            </div>
+          </motion.div>
+        </Link>
+
+        {/* Desktop nav */}
+        <nav
+          className="hidden lg:flex"
+          style={{
+            alignItems: "center",
+            gap: 2,
+            padding: 4,
+            borderRadius: 999,
+            background: frosted
+              ? "rgba(13,26,46,0.035)"
+              : "rgba(255,255,255,0.08)",
+            border: frosted
+              ? "1px solid rgba(13,26,46,0.06)"
+              : "1px solid rgba(255,255,255,0.11)",
+            transition: "background 0.3s ease, border-color 0.3s ease",
+          }}
+        >
+          {visibleLinks.map((item) => renderNavItem(item))}
         </nav>
 
-        {/* Right side */}
-        <div className="flex items-center gap-2.5">
-          <span
-            className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold"
-            style={{ background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.3)", color: "var(--green)" }}
+        {/* Right: CTA + hamburger */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <Link
+            href="/navigator"
+            onClick={closeMobile}
+            className="hidden sm:inline-flex"
+            style={{ textDecoration: "none" }}
           >
-            <span className="w-[5px] h-[5px] rounded-full inline-block animate-glow" style={{ background: "var(--green)" }} />
-            LIVE
-          </span>
+            <motion.div
+              whileHover={{
+                scale: 1.03,
+                y: -1,
+                boxShadow:
+                  "0 12px 34px rgba(56,130,246,0.4), 0 2px 8px rgba(56,130,246,0.22)",
+              }}
+              whileTap={{ scale: 0.97 }}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                minHeight: 40,
+                padding: "10px 16px",
+                borderRadius: 14,
+                fontSize: 13,
+                fontWeight: 800,
+                cursor: "pointer",
+                background: "linear-gradient(135deg, #3882f6, #1a4fa8)",
+                color: "#fff",
+                border: "1px solid rgba(255,255,255,0.18)",
+                boxShadow:
+                  "0 8px 24px rgba(56,130,246,0.34), 0 2px 8px rgba(13,26,46,0.14)",
+                fontFamily: "var(--font-sans)",
+                whiteSpace: "nowrap",
+              }}
+            >
+              <Navigation size={14} strokeWidth={2} />
+              Open Navigator
+              <ArrowRight size={13} strokeWidth={2.2} />
+            </motion.div>
+          </Link>
 
           <motion.button
-            whileHover={{ scale: 1.08, boxShadow: "0 0 16px rgba(0,212,255,0.3)" }}
+            type="button"
+            className="lg:hidden"
             whileTap={{ scale: 0.94 }}
-            onClick={handleChatToggle}
-            className="w-9 h-9 rounded-[10px] flex items-center justify-center cursor-pointer"
-            style={{
-              background: chatOpen ? "rgba(0,212,255,0.15)" : "rgba(0,212,255,0.08)",
-              border:     `1px solid ${chatOpen ? "rgba(0,212,255,0.45)" : "rgba(0,212,255,0.25)"}`,
-            }}
-            title="AI Assistant"
-          >
-            <Bot className="w-4 h-4" style={{ color: "var(--cyan)" }} />
-          </motion.button>
-
-          <div
-            className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold cursor-pointer select-none"
-            style={{ background: "linear-gradient(135deg, rgba(0,212,255,0.15), rgba(139,92,246,0.15))", border: "1.5px solid rgba(0,212,255,0.35)", color: "var(--cyan)" }}
-            title="Profile"
-          >
-            N
-          </div>
-
-          <button
-            className="md:hidden p-1.5 rounded-lg"
-            style={{ color: "var(--text-2)", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", cursor: "pointer" }}
             onClick={() => setMobileOpen((o) => !o)}
-            aria-label="Toggle menu"
+            aria-label="Toggle navigation menu"
+            aria-expanded={mobileOpen}
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 14,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background: frosted
+                ? "rgba(13,26,46,0.045)"
+                : "rgba(255,255,255,0.1)",
+              border: frosted
+                ? "1px solid rgba(13,26,46,0.08)"
+                : "1px solid rgba(255,255,255,0.16)",
+              color: ink,
+              cursor: "pointer",
+            }}
           >
-            {mobileOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
-          </button>
+            {mobileOpen ? <X size={18} /> : <Menu size={18} />}
+          </motion.button>
         </div>
-      </motion.header>
+      </motion.div>
 
-      {/* Mobile menu */}
+      {/* ── MOBILE MENU ── */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.2 }}
-            className="fixed top-[68px] left-0 right-0 z-40 md:hidden"
-            style={{ background: "rgba(6,13,24,0.98)", borderBottom: "1px solid rgba(0,212,255,0.1)", backdropFilter: "blur(20px)" }}
+            className="lg:hidden"
+            initial={{ opacity: 0, y: -8, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -8, scale: 0.98 }}
+            transition={{ duration: 0.22, ease: EASE }}
+            style={{
+              maxWidth: 1160,
+              margin: "8px auto 0",
+              padding: 8,
+              borderRadius: 22,
+              background: "rgba(255,255,255,0.92)",
+              border: "1px solid rgba(13,26,46,0.08)",
+              boxShadow: "0 22px 60px rgba(13,26,46,0.18)",
+              backdropFilter: "blur(26px) saturate(1.2)",
+              WebkitBackdropFilter: "blur(26px) saturate(1.2)",
+              pointerEvents: "auto",
+            }}
           >
-            {NAV_LINKS.map(({ label, href, section }) => (
-              <button
-                key={href}
-                onClick={() => handleNavClick(href, section)}
-                className="w-full flex items-center gap-3 px-6 py-4 text-sm text-left transition-colors"
+            <nav style={{ display: "grid", gap: 4, marginBottom: 8 }}>
+              {visibleLinks.map((item) => renderNavItem(item, true))}
+            </nav>
+
+            <Link
+              href="/navigator"
+              onClick={closeMobile}
+              style={{ textDecoration: "none" }}
+            >
+              <motion.div
+                whileTap={{ scale: 0.98 }}
                 style={{
-                  color:        isActive(href) ? "var(--cyan)" : "var(--text-2)",
-                  borderBottom: "1px solid rgba(255,255,255,0.04)",
-                  fontFamily:   "var(--font-body)",
-                  background:   isActive(href) ? "rgba(0,212,255,0.05)" : "transparent",
-                  border:       "none",
-                  cursor:       "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 9,
+                  minHeight: 46,
+                  borderRadius: 16,
+                  background: "linear-gradient(135deg, #3882f6, #1a4fa8)",
+                  color: "#fff",
+                  fontFamily: "var(--font-sans)",
+                  fontSize: 14,
+                  fontWeight: 800,
+                  boxShadow: "0 10px 26px rgba(56,130,246,0.32)",
                 }}
               >
-                {label}
-              </button>
-            ))}
+                <Navigation size={15} strokeWidth={2} />
+                Open Navigator
+                <ArrowRight size={14} strokeWidth={2.2} />
+              </motion.div>
+            </Link>
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Ticker */}
-      <div
-        className="fixed z-40 left-0 right-0 h-7 overflow-hidden flex items-center"
-        style={{ top: "68px", background: "rgba(0,212,255,0.03)", borderBottom: "1px solid rgba(0,212,255,0.08)" }}
-      >
-        <div className="flex gap-14 whitespace-nowrap animate-ticker" style={{ fontFamily: "var(--font-display)" }}>
-          {[...TICKER_ITEMS, ...TICKER_ITEMS].map((item, i) => (
-            <span key={i} className="text-[10px] tracking-[0.5px]" style={{ color: "rgba(0,212,255,0.55)" }}>
-              {item}
-            </span>
-          ))}
-        </div>
-      </div>
-    </>
+    </motion.header>
   );
 }

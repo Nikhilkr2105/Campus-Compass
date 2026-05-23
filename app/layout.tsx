@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { AIChat } from "@/components/chat/AiChat";
+import { Navbar } from "@/components/layout/Navbar";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -47,14 +48,11 @@ export default function RootLayout({
         className="min-h-screen antialiased"
         style={{ background: "var(--bg-1)" }}
       >
-        {/*
-          Navbar removed from layout — LandingPage has its own TopNav
-          that is scroll-aware (transparent over hero → frosted on scroll).
-          If other routes need a nav, add a separate layout inside /app/(routes)/layout.tsx
-        */}
+        <Navbar />
         {children}
         <AIChat />
-      </body>
+      </body
+>
     </html>
   );
 }
