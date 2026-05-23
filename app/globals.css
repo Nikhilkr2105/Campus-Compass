@@ -123,6 +123,16 @@ h1, h2, h3, h4, h5, h6 {
     -webkit-backdrop-filter: blur(20px);
   }
 
+  /* No scroll bar */
+  .no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
   /* Glass card — sky accent */
   .glass-sky {
     background: rgba(255,255,255,0.75);
@@ -296,4 +306,16 @@ h1, h2, h3, h4, h5, h6 {
 @keyframes badge-appear {
   from { opacity: 0; transform: translateY(4px) scale(0.97); }
   to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes badge-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.5;
+    transform: scale(1.4);
+  }
 }

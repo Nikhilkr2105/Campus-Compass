@@ -2,11 +2,17 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Pencil, Trash2, X, Check, DoorOpen } from "lucide-react";
-import { GlassCard } from "@/components/ui/GlassCard";
-import { NeonButton } from "@/components/ui/NeonButton";
+import { Plus, Pencil, Trash2, X, Check, DoorOpen, Users, Hash } from "lucide-react";
 import { BUILDINGS } from "@/data/buildings";
 import { RoomType, ROOM_COLORS } from "@/data/floors";
+import {
+  FormField, FormInput, FormSelect,
+  SectionLabel, PageHeader, AdminCard, IconButton, StatusBadge,
+} from "@/components/admin/ui/FormField";
+
+/* ══════════════════════════════════════════════════════════
+   TYPES + SEED DATA
+══════════════════════════════════════════════════════════ */
 
 interface AdminRoom {
   id:         string;
@@ -19,96 +25,242 @@ interface AdminRoom {
 }
 
 const SEED_ROOMS: AdminRoom[] = [
-  { id: "r1",  buildingId: "block-a", floor: 1, name: "CSE Lab 1",      number: "101", type: "lab",       capacity: 40 },
-  { id: "r2",  buildingId: "block-a", floor: 1, name: "CSE Lab 2",      number: "102", type: "lab",       capacity: 40 },
-  { id: "r3",  buildingId: "block-a", floor: 2, name: "AI/ML Lab",      number: "201", type: "lab",       capacity: 30 },
-  { id: "r4",  buildingId: "block-a", floor: 3, name: "HOD CSE Office", number: "301", type: "office",    capacity: 5  },
-  { id: "r5",  buildingId: "block-b", floor: 1, name: "ECE Lab",        number: "101", type: "lab",       capacity: 35 },
-  { id: "r6",  buildingId: "block-b", floor: 2, name: "PCB Lab",        number: "201", type: "lab",       capacity: 25 },
-  { id: "r7",  buildingId: "library", floor: 1, name: "Reading Hall",   number: "G01", type: "hall",      capacity: 200},
-  { id: "r8",  buildingId: "library", floor: 2, name: "Digital Library",number: "201", type: "lab",       capacity: 60 },
-  { id: "r9",  buildingId: "seminar", floor: 1, name: "Main Seminar Hall", number: "G01", type: "hall",   capacity: 500},
+  { id: "r1",  buildingId: "block-a", floor: 1, name: "CSE Lab 1",        number: "101", type: "lab",       capacity: 40  },
+  { id: "r2",  buildingId: "block-a", floor: 1, name: "CSE Lab 2",        number: "102", type: "lab",       capacity: 40  },
+  { id: "r3",  buildingId: "block-a", floor: 2, name: "AI/ML Lab",        number: "201", type: "lab",       capacity: 30  },
+  { id: "r4",  buildingId: "block-a", floor: 3, name: "HOD CSE Office",   number: "301", type: "office",    capacity: 5   },
+  { id: "r5",  buildingId: "block-b", floor: 1, name: "ECE Lab",          number: "101", type: "lab",       capacity: 35  },
+  { id: "r6",  buildingId: "block-b", floor: 2, name: "PCB Lab",          number: "201", type: "lab",       capacity: 25  },
+  { id: "r7",  buildingId: "library", floor: 1, name: "Reading Hall",     number: "G01", type: "hall",      capacity: 200 },
+  { id: "r8",  buildingId: "library", floor: 2, name: "Digital Library",  number: "201", type: "lab",       capacity: 60  },
+  { id: "r9",  buildingId: "seminar", floor: 1, name: "Main Seminar Hall",number: "G01", type: "hall",      capacity: 500 },
 ];
 
 const ROOM_TYPES: RoomType[] = [
   "lab","classroom","office","hall","staircase","lift","washroom","corridor","entrance",
 ];
 
+const ROOM_TYPE_LABELS: Partial<Record<RoomType, string>> = {
+  lab:       "Laboratory",
+  classroom: "Classroom",
+  office:    "Office",
+  hall:      "Hall",
+};
+
 const EMPTY: AdminRoom = {
   id: "", buildingId: "block-a", floor: 1,
   name: "", number: "", type: "lab", capacity: 30,
 };
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div>
-      <div
-        className="text-[10px] font-semibold tracking-[1px] mb-1.5"
-        style={{ color: "var(--text-3)", fontFamily: "var(--font-display)" }}
-      >
-        {label}
-      </div>
-      {children}
-    </div>
-  );
-}
+/* ══════════════════════════════════════════════════════════
+   PRIMARY BUTTON (local — matches BuildingForm)
+══════════════════════════════════════════════════════════ */
 
-function Input({
-  value, onChange, placeholder, type = "text",
+function PrimaryButton({
+  onClick, children, icon, variant = "primary", size = "md",
 }: {
-  value: string | number;
-  onChange: (v: string) => void;
-  placeholder?: string;
-  type?: string;
-}) {
-  return (
-    <input
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      placeholder={placeholder}
-      type={type}
-      className="w-full px-3 py-2 rounded-lg text-[13px] outline-none transition-all"
-      style={{
-        background: "rgba(255,255,255,0.04)",
-        border:     "1px solid rgba(255,255,255,0.08)",
-        color:      "var(--text-1)",
-        fontFamily: "var(--font-body)",
-      }}
-      onFocus={(e) => {
-        e.currentTarget.style.borderColor = "rgba(0,212,255,0.4)";
-        e.currentTarget.style.boxShadow   = "0 0 0 3px rgba(0,212,255,0.07)";
-      }}
-      onBlur={(e) => {
-        e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)";
-        e.currentTarget.style.boxShadow   = "none";
-      }}
-    />
-  );
-}
-
-function StyledSelect({
-  value, onChange, children,
-}: {
-  value: string | number;
-  onChange: (v: string) => void;
+  onClick:  () => void;
   children: React.ReactNode;
+  icon?:    React.ReactNode;
+  variant?: "primary" | "ghost" | "danger";
+  size?:    "sm" | "md";
 }) {
+  const styles = {
+    primary: { bg: "linear-gradient(135deg,#0ea5e9,#0284c7)", color: "#ffffff", border: "none",            shadow: "0 2px 8px rgba(14,165,233,0.3)" },
+    ghost:   { bg: "#f8fafc",                                  color: "#64748b", border: "1px solid #e2e8f0", shadow: "none"                          },
+    danger:  { bg: "#fef2f2",                                  color: "#ef4444", border: "1px solid #fecaca", shadow: "none"                          },
+  }[variant];
+  const p = size === "sm" ? "px-3 py-2" : "px-4 py-2.5";
   return (
-    <select
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className="w-full px-3 py-2 rounded-lg text-[13px] outline-none"
+    <motion.button
+      onClick={onClick}
+      whileTap={{ scale: 0.97 }}
+      whileHover={{ opacity: 0.9 }}
+      className={`inline-flex items-center gap-2 ${p} rounded-lg text-[13px] font-medium`}
+      style={{ background: styles.bg, color: styles.color, border: styles.border, boxShadow: styles.shadow, cursor: "pointer" }}
+    >
+      {icon}{children}
+    </motion.button>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════
+   ROOM FORM PANEL
+══════════════════════════════════════════════════════════ */
+
+function RoomFormPanel({
+  form, editing, onClose, onSave, setField,
+}: {
+  form:     AdminRoom;
+  editing:  string | null;
+  onClose:  () => void;
+  onSave:   () => void;
+  setField: <K extends keyof AdminRoom>(k: K, v: AdminRoom[K]) => void;
+}) {
+  const maxFloor = BUILDINGS.find((b) => b.id === form.buildingId)?.floors ?? 5;
+  const typeColor = ROOM_COLORS[form.type] ?? "#0ea5e9";
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -8, scale: 0.99 }}
+      animate={{ opacity: 1, y: 0,  scale: 1    }}
+      exit={{    opacity: 0, y: -6             }}
+      transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+    >
+      <AdminCard className="overflow-hidden">
+        {/* Header */}
+        <div
+          className="flex items-center justify-between px-5 py-4"
+          style={{ borderBottom: "1px solid #f1f5f9" }}
+        >
+          <div className="flex items-center gap-3">
+            <div
+              className="w-8 h-8 rounded-lg flex items-center justify-center"
+              style={{ background: `${typeColor}15`, border: `1px solid ${typeColor}30` }}
+            >
+              <DoorOpen className="w-4 h-4" style={{ color: typeColor }} />
+            </div>
+            <div>
+              <div className="text-[14px] font-semibold" style={{ color: "#0f172a" }}>
+                {editing ? "Edit Room" : "Add New Room"}
+              </div>
+              <div className="text-[11px]" style={{ color: "#94a3b8" }}>
+                {editing ? "Update room details and assignment" : "Register a room in a campus building"}
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors"
+            style={{ background: "#f8fafc", border: "1px solid #e2e8f0", cursor: "pointer" }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = "#f1f5f9")}
+            onMouseLeave={(e) => (e.currentTarget.style.background = "#f8fafc")}
+          >
+            <X className="w-4 h-4" style={{ color: "#64748b" }} />
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="p-5">
+          {/* Identity */}
+          <SectionLabel>Room Identity</SectionLabel>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+            <FormField label="Room Name" required hint="Descriptive name shown to students">
+              <FormInput
+                value={form.name}
+                onChange={(v) => setField("name", v)}
+                placeholder="e.g. CSE Lab 3"
+              />
+            </FormField>
+            <FormField label="Room Number" hint="Door / corridor number">
+              <FormInput
+                value={form.number}
+                onChange={(v) => setField("number", v)}
+                placeholder="e.g. 201"
+                prefix={<Hash className="w-3.5 h-3.5" />}
+              />
+            </FormField>
+          </div>
+
+          {/* Location */}
+          <SectionLabel>Location</SectionLabel>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+            <FormField label="Building" required>
+              <FormSelect
+                value={form.buildingId}
+                onChange={(v) => setField("buildingId", v)}
+              >
+                {BUILDINGS.map((b) => (
+                  <option key={b.id} value={b.id}>{b.name}</option>
+                ))}
+              </FormSelect>
+            </FormField>
+            <FormField label="Floor" hint={`This building has ${maxFloor} floor(s)`}>
+              <FormSelect
+                value={form.floor}
+                onChange={(v) => setField("floor", Number(v))}
+              >
+                {Array.from({ length: maxFloor }, (_, i) => i + 1).map((f) => (
+                  <option key={f} value={f}>Floor {f}</option>
+                ))}
+              </FormSelect>
+            </FormField>
+          </div>
+
+          {/* Configuration */}
+          <SectionLabel>Configuration</SectionLabel>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <FormField label="Room Type" required>
+              <FormSelect
+                value={form.type}
+                onChange={(v) => setField("type", v as RoomType)}
+              >
+                {ROOM_TYPES.map((t) => (
+                  <option key={t} value={t}>
+                    {ROOM_TYPE_LABELS[t] ?? t.charAt(0).toUpperCase() + t.slice(1)}
+                  </option>
+                ))}
+              </FormSelect>
+            </FormField>
+            <FormField label="Seating Capacity" hint="Maximum occupancy">
+              <FormInput
+                value={form.capacity}
+                onChange={(v) => setField("capacity", Number(v))}
+                type="number"
+                placeholder="40"
+                prefix={<Users className="w-3.5 h-3.5" />}
+                suffix={<span className="text-[11px]">seats</span>}
+              />
+            </FormField>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div
+          className="flex items-center justify-between px-5 py-4"
+          style={{ borderTop: "1px solid #f1f5f9", background: "#fafafa" }}
+        >
+          <div className="text-[11px]" style={{ color: "#94a3b8" }}>
+            Fields marked <span style={{ color: "#0ea5e9" }}>*</span> are required
+          </div>
+          <div className="flex items-center gap-2.5">
+            <PrimaryButton variant="ghost" size="sm" onClick={onClose}>Cancel</PrimaryButton>
+            <PrimaryButton size="sm" onClick={onSave} icon={<Check className="w-3.5 h-3.5" />}>
+              {editing ? "Update Room" : "Save Room"}
+            </PrimaryButton>
+          </div>
+        </div>
+      </AdminCard>
+    </motion.div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════
+   FILTER PILL
+══════════════════════════════════════════════════════════ */
+
+function FilterPill({
+  active, onClick, children,
+}: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      onClick={onClick}
+      className="px-3 py-1.5 rounded-full text-[12px] font-medium transition-all duration-150"
       style={{
-        background: "rgba(255,255,255,0.04)",
-        border:     "1px solid rgba(255,255,255,0.08)",
-        color:      "var(--text-1)",
-        fontFamily: "var(--font-body)",
+        background: active ? "#0ea5e9"  : "#f8fafc",
+        color:      active ? "#ffffff"  : "#64748b",
+        border:     active ? "1px solid #0ea5e9" : "1px solid #e2e8f0",
+        cursor:     "pointer",
       }}
     >
       {children}
-    </select>
+    </button>
   );
 }
+
+/* ══════════════════════════════════════════════════════════
+   MAIN EXPORT
+══════════════════════════════════════════════════════════ */
 
 export function RoomForm() {
   const [rooms,    setRooms]    = useState<AdminRoom[]>(SEED_ROOMS);
@@ -141,7 +293,7 @@ export function RoomForm() {
     );
     setShowForm(false);
     setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+    setTimeout(() => setSaved(false), 2500);
   };
 
   const remove = (id: string) =>
@@ -151,306 +303,176 @@ export function RoomForm() {
     ? rooms
     : rooms.filter((r) => r.buildingId === filter);
 
-  // Max floor for selected building
-  const maxFloor = BUILDINGS.find((b) => b.id === form.buildingId)?.floors ?? 5;
-
   return (
     <div className="flex flex-col gap-5">
 
-      {/* Header */}
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div>
-          <h2
-            className="text-[20px] font-bold gradient-text-cyan"
-            style={{ fontFamily: "var(--font-display)" }}
-          >
-            Rooms & Labs
-          </h2>
-          <p
-            className="text-[12px] mt-0.5"
-            style={{ color: "var(--text-3)", fontFamily: "var(--font-body)" }}
-          >
-            {rooms.length} rooms registered across all buildings
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
+      {/* ── Header ── */}
+      <PageHeader
+        title="Rooms & Labs"
+        subtitle={`${rooms.length} rooms registered across all buildings`}
+        badge={
           <AnimatePresence>
             {saved && (
               <motion.div
-                initial={{ opacity: 0, x: 8 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0 }}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px]"
-                style={{
-                  background: "rgba(16,185,129,0.1)",
-                  border:     "1px solid rgba(16,185,129,0.25)",
-                  color:      "var(--green)",
-                  fontFamily: "var(--font-body)",
-                }}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1   }}
+                exit={{    opacity: 0, scale: 0.9 }}
               >
-                <Check className="w-3 h-3" /> Saved
+                <StatusBadge variant="success">
+                  <Check className="w-2.5 h-2.5" />
+                  Saved successfully
+                </StatusBadge>
               </motion.div>
             )}
           </AnimatePresence>
-          <NeonButton color="cyan" size="sm" icon={<Plus className="w-3.5 h-3.5" />} onClick={openNew}>
+        }
+        actions={
+          <PrimaryButton onClick={openNew} icon={<Plus className="w-3.5 h-3.5" />}>
             Add Room
-          </NeonButton>
-        </div>
-      </div>
+          </PrimaryButton>
+        }
+      />
 
-      {/* Filter bar */}
+      {/* ── Filters ── */}
       <div className="flex gap-2 flex-wrap">
-        {[{ id: "all", name: "All Buildings" }, ...BUILDINGS.slice(0, 6)].map((b) => (
-          <button
-            key={b.id}
-            onClick={() => setFilter(b.id)}
-            className="px-3 py-1.5 rounded-lg text-[11px] transition-all"
-            style={{
-              background: filter === b.id ? "rgba(0,212,255,0.1)"  : "rgba(255,255,255,0.03)",
-              border:     `1px solid ${filter === b.id ? "rgba(0,212,255,0.3)" : "rgba(255,255,255,0.07)"}`,
-              color:      filter === b.id ? "var(--cyan)" : "var(--text-3)",
-              cursor:     "pointer",
-              fontFamily: "var(--font-body)",
-            }}
-          >
-            {"name" in b ? b.name : "All Buildings"}
-          </button>
+        <FilterPill active={filter === "all"} onClick={() => setFilter("all")}>
+          All Buildings
+        </FilterPill>
+        {BUILDINGS.slice(0, 6).map((b) => (
+          <FilterPill key={b.id} active={filter === b.id} onClick={() => setFilter(b.id)}>
+            {b.shortName}
+          </FilterPill>
         ))}
       </div>
 
-      {/* Form */}
+      {/* ── Form panel ── */}
       <AnimatePresence>
         {showForm && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0   }}
-            exit={{ opacity: 0, y: -6     }}
-            transition={{ duration: 0.25  }}
-          >
-            <GlassCard neon className="p-5">
-              <div className="flex items-center justify-between mb-4">
-                <div
-                  className="text-[11px] font-semibold tracking-[1.5px]"
-                  style={{ color: "var(--cyan)", fontFamily: "var(--font-display)" }}
-                >
-                  {editing ? "EDIT ROOM" : "NEW ROOM"}
-                </div>
-                <button
-                  onClick={() => setShowForm(false)}
-                  style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-3)" }}
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <Field label="ROOM NAME">
-                  <Input value={form.name} onChange={(v) => setField("name", v)} placeholder="e.g. CSE Lab 3" />
-                </Field>
-
-                <Field label="ROOM NUMBER">
-                  <Input value={form.number} onChange={(v) => setField("number", v)} placeholder="e.g. 201" />
-                </Field>
-
-                <Field label="BUILDING">
-                  <StyledSelect
-                    value={form.buildingId}
-                    onChange={(v) => setField("buildingId", v)}
-                  >
-                    {BUILDINGS.map((b) => (
-                      <option key={b.id} value={b.id}
-                        style={{ background: "var(--bg-2)", color: "var(--text-1)" }}
-                      >
-                        {b.name}
-                      </option>
-                    ))}
-                  </StyledSelect>
-                </Field>
-
-                <Field label="FLOOR">
-                  <StyledSelect
-                    value={form.floor}
-                    onChange={(v) => setField("floor", Number(v))}
-                  >
-                    {Array.from({ length: maxFloor }, (_, i) => i + 1).map((f) => (
-                      <option key={f} value={f}
-                        style={{ background: "var(--bg-2)", color: "var(--text-1)" }}
-                      >
-                        Floor {f}
-                      </option>
-                    ))}
-                  </StyledSelect>
-                </Field>
-
-                <Field label="ROOM TYPE">
-                  <StyledSelect
-                    value={form.type}
-                    onChange={(v) => setField("type", v as RoomType)}
-                  >
-                    {ROOM_TYPES.map((t) => (
-                      <option key={t} value={t}
-                        style={{ background: "var(--bg-2)", color: "var(--text-1)" }}
-                      >
-                        {t}
-                      </option>
-                    ))}
-                  </StyledSelect>
-                </Field>
-
-                <Field label="CAPACITY">
-                  <Input value={form.capacity} onChange={(v) => setField("capacity", Number(v))} type="number" placeholder="40" />
-                </Field>
-              </div>
-
-              <div className="flex gap-3 mt-5">
-                <NeonButton color="cyan" size="sm" icon={<Check className="w-3.5 h-3.5" />} onClick={save}>
-                  {editing ? "Update" : "Save Room"}
-                </NeonButton>
-                <NeonButton color="red" size="sm" variant="ghost" onClick={() => setShowForm(false)}>
-                  Cancel
-                </NeonButton>
-              </div>
-            </GlassCard>
-          </motion.div>
+          <RoomFormPanel
+            form={form}
+            editing={editing}
+            onClose={() => setShowForm(false)}
+            onSave={save}
+            setField={setField}
+          />
         )}
       </AnimatePresence>
 
-      {/* Rooms table */}
-      <GlassCard neon className="overflow-hidden">
+      {/* ── Table ── */}
+      <AdminCard className="overflow-hidden">
         {/* Table head */}
         <div
-          className="grid px-4 py-2.5"
+          className="grid px-4 py-3"
           style={{
-            gridTemplateColumns: "2fr 1fr 1fr 1fr 80px",
-            borderBottom:        "1px solid rgba(255,255,255,0.06)",
-            background:          "rgba(255,255,255,0.02)",
+            gridTemplateColumns: "2fr 1fr 80px 1fr 88px",
+            borderBottom:        "1px solid #f1f5f9",
+            background:          "#fafafa",
           }}
         >
-          {["Room Name", "Building", "Floor", "Type", ""].map((h) => (
+          {["Room", "Building", "Floor", "Type", ""].map((h) => (
             <div
               key={h}
-              className="text-[10px] font-semibold tracking-[1px]"
-              style={{ color: "var(--text-3)", fontFamily: "var(--font-display)" }}
+              className="text-[11px] font-semibold tracking-[0.5px]"
+              style={{ color: "#94a3b8" }}
             >
               {h}
             </div>
           ))}
         </div>
 
-        {/* Rows */}
+        {/* Empty state */}
         {filtered.length === 0 && (
-          <div
-            className="px-4 py-8 text-center text-[13px]"
-            style={{ color: "var(--text-3)", fontFamily: "var(--font-body)" }}
-          >
-            No rooms found
+          <div className="py-16 flex flex-col items-center gap-3">
+            <div
+              className="w-10 h-10 rounded-xl flex items-center justify-center"
+              style={{ background: "#f0f9ff", border: "1px solid #bae6fd" }}
+            >
+              <DoorOpen className="w-5 h-5" style={{ color: "#0ea5e9" }} />
+            </div>
+            <div className="text-center">
+              <div className="text-[13px] font-medium" style={{ color: "#0f172a" }}>No rooms found</div>
+              <div className="text-[12px] mt-0.5" style={{ color: "#94a3b8" }}>
+                {filter === "all"
+                  ? "Add your first room to get started"
+                  : "No rooms in this building yet"}
+              </div>
+            </div>
           </div>
         )}
+
+        {/* Rows */}
         {filtered.map((r, i) => {
-          const building = BUILDINGS.find((b) => b.id === r.buildingId);
-          const typeColor = ROOM_COLORS[r.type] ?? "var(--text-3)";
+          const building   = BUILDINGS.find((b) => b.id === r.buildingId);
+          const typeColor  = ROOM_COLORS[r.type] ?? "#94a3b8";
+          const typeLabel  = ROOM_TYPE_LABELS[r.type] ?? r.type;
+
           return (
             <motion.div
               key={r.id}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: i * 0.02 }}
-              className="grid px-4 py-3 items-center"
+              className="grid px-4 py-3 items-center transition-colors duration-100"
               style={{
-                gridTemplateColumns: "2fr 1fr 1fr 1fr 80px",
-                borderBottom:        i < filtered.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none",
+                gridTemplateColumns: "2fr 1fr 80px 1fr 88px",
+                borderBottom: i < filtered.length - 1 ? "1px solid #f8fafc" : "none",
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.02)")}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "#fafafa")}
               onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
             >
               {/* Name */}
               <div className="flex items-center gap-2.5 min-w-0">
                 <div
-                  className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0"
-                  style={{ background: `${typeColor}18`, border: `1px solid ${typeColor}33` }}
+                  className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+                  style={{ background: `${typeColor}12`, border: `1px solid ${typeColor}25` }}
                 >
-                  <DoorOpen className="w-3 h-3" style={{ color: typeColor }} />
+                  <DoorOpen className="w-3.5 h-3.5" style={{ color: typeColor }} />
                 </div>
                 <div className="min-w-0">
-                  <div
-                    className="text-[12px] font-medium truncate"
-                    style={{ fontFamily: "var(--font-body)" }}
-                  >
+                  <div className="text-[12px] font-medium truncate" style={{ color: "#0f172a" }}>
                     {r.name}
                   </div>
-                  <div
-                    className="text-[10px]"
-                    style={{ color: "var(--text-3)", fontFamily: "var(--font-body)" }}
-                  >
+                  <div className="text-[11px]" style={{ color: "#94a3b8" }}>
                     #{r.number} · {r.capacity} seats
                   </div>
                 </div>
               </div>
 
               {/* Building */}
-              <div
-                className="text-[12px] truncate"
-                style={{ color: "var(--text-2)", fontFamily: "var(--font-body)" }}
-              >
+              <div className="text-[12px] truncate" style={{ color: "#475569" }}>
                 {building?.shortName ?? r.buildingId}
               </div>
 
               {/* Floor */}
-              <div
-                className="text-[12px]"
-                style={{ color: "var(--text-2)", fontFamily: "var(--font-body)" }}
-              >
+              <div className="text-[12px]" style={{ color: "#475569" }}>
                 Floor {r.floor}
               </div>
 
               {/* Type */}
               <span
-                className="px-2 py-0.5 rounded-md text-[10px] font-medium inline-block w-fit"
+                className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-medium w-fit"
                 style={{
-                  background: `${typeColor}15`,
-                  border:     `1px solid ${typeColor}30`,
+                  background: `${typeColor}10`,
+                  border:     `1px solid ${typeColor}25`,
                   color:       typeColor,
-                  fontFamily: "var(--font-body)",
                 }}
               >
-                {r.type}
+                {typeLabel.charAt(0).toUpperCase() + typeLabel.slice(1)}
               </span>
 
               {/* Actions */}
               <div className="flex items-center gap-1.5 justify-end">
-                <motion.button
-                  whileHover={{ scale: 1.12 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => openEdit(r)}
-                  className="w-6 h-6 rounded-md flex items-center justify-center"
-                  style={{
-                    background: "rgba(0,212,255,0.07)",
-                    border:     "1px solid rgba(0,212,255,0.18)",
-                    color:      "var(--cyan)",
-                    cursor:     "pointer",
-                  }}
-                >
-                  <Pencil className="w-2.5 h-2.5" />
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.12 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => remove(r.id)}
-                  className="w-6 h-6 rounded-md flex items-center justify-center"
-                  style={{
-                    background: "rgba(239,68,68,0.07)",
-                    border:     "1px solid rgba(239,68,68,0.18)",
-                    color:      "var(--red)",
-                    cursor:     "pointer",
-                  }}
-                >
-                  <Trash2 className="w-2.5 h-2.5" />
-                </motion.button>
+                <IconButton onClick={() => openEdit(r)} variant="primary" title="Edit room">
+                  <Pencil className="w-3 h-3" />
+                </IconButton>
+                <IconButton onClick={() => remove(r.id)} variant="danger" title="Delete room">
+                  <Trash2 className="w-3 h-3" />
+                </IconButton>
               </div>
             </motion.div>
           );
         })}
-      </GlassCard>
+      </AdminCard>
     </div>
   );
 }

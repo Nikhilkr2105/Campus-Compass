@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import {
   LayoutDashboard, Building2, DoorOpen,
   Route, BarChart2, Settings, ShieldAlert,
+  ChevronRight,
 } from "lucide-react";
 
 export type AdminTab =
@@ -20,14 +21,33 @@ interface AdminSidebarProps {
   onChange: (t: AdminTab) => void;
 }
 
-const ITEMS: { id: AdminTab; label: string; icon: React.ElementType }[] = [
-  { id: "overview",   label: "Overview",   icon: LayoutDashboard },
-  { id: "buildings",  label: "Buildings",  icon: Building2       },
-  { id: "rooms",      label: "Rooms",      icon: DoorOpen        },
-  { id: "routes",     label: "Routes",     icon: Route           },
-  { id: "analytics",  label: "Analytics",  icon: BarChart2       },
-  { id: "emergency",  label: "Emergency",  icon: ShieldAlert     },
-  { id: "settings",   label: "Settings",   icon: Settings        },
+/* ── Nav structure ───────────────────────────────────────── */
+const GROUPS: {
+  label:  string;
+  items:  { id: AdminTab; label: string; icon: React.ElementType; badge?: string }[];
+}[] = [
+  {
+    label: "Overview",
+    items: [
+      { id: "overview",  label: "Dashboard",  icon: LayoutDashboard },
+      { id: "analytics", label: "Analytics",  icon: BarChart2       },
+    ],
+  },
+  {
+    label: "Campus Data",
+    items: [
+      { id: "buildings", label: "Buildings",  icon: Building2 },
+      { id: "rooms",     label: "Rooms",      icon: DoorOpen  },
+      { id: "routes",    label: "Routes",     icon: Route     },
+    ],
+  },
+  {
+    label: "System",
+    items: [
+      { id: "emergency", label: "Emergency",  icon: ShieldAlert, badge: "1" },
+      { id: "settings",  label: "Settings",   icon: Settings               },
+    ],
+  },
 ];
 
 export function AdminSidebar({ active, onChange }: AdminSidebarProps) {
@@ -35,99 +55,189 @@ export function AdminSidebar({ active, onChange }: AdminSidebarProps) {
     <aside
       className="flex flex-col h-full flex-shrink-0"
       style={{
-        width:       220,
-        borderRight: "1px solid rgba(255,255,255,0.06)",
-        background:  "rgba(2,4,8,0.6)",
+        width:       224,
+        background:  "#ffffff",
+        borderRight: "1px solid #e2e8f0",
       }}
     >
-      {/* Header */}
+      {/* ── Header ── */}
       <div
-        className="px-5 py-4 flex-shrink-0"
-        style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
+        className="px-5 py-5 flex-shrink-0"
+        style={{ borderBottom: "1px solid #f1f5f9" }}
       >
-        <div
-          className="text-[10px] font-semibold tracking-[2px]"
-          style={{ color: "var(--text-3)", fontFamily: "var(--font-display)" }}
-        >
-          ADMIN PANEL
-        </div>
-        <div
-          className="text-[13px] font-bold mt-0.5 gradient-text-cyan"
-          style={{ fontFamily: "var(--font-display)" }}
-        >
-          RIMT Navigator
+        {/* Logo mark */}
+        <div className="flex items-center gap-2.5 mb-1">
+          <div
+            className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+            style={{
+              background: "linear-gradient(135deg, #0ea5e9, #0284c7)",
+              boxShadow:  "0 2px 8px rgba(14,165,233,0.3)",
+            }}
+          >
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M2 4h10M2 7h6M2 10h8" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
+          </div>
+          <div>
+            <div
+              className="text-[13px] font-bold leading-tight"
+              style={{ color: "#0f172a", fontFamily: "var(--font-display, inherit)" }}
+            >
+              RIMT Campus
+            </div>
+            <div
+              className="text-[10px]"
+              style={{ color: "#94a3b8", letterSpacing: "0.5px" }}
+            >
+              Operations Center
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Nav items */}
-      <nav className="flex-1 px-3 py-4 flex flex-col gap-1 overflow-y-auto no-scrollbar">
-        {ITEMS.map(({ id, label, icon: Icon }) => {
-          const isActive = active === id;
-          return (
-            <motion.button
-              key={id}
-              onClick={() => onChange(id)}
-              whileHover={{ x: isActive ? 0 : 3 }}
-              whileTap={{ scale: 0.98 }}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-[13px] relative"
-              style={{
-                background: isActive ? "rgba(0,212,255,0.09)" : "transparent",
-                border:     `1px solid ${isActive ? "rgba(0,212,255,0.22)" : "transparent"}`,
-                color:      isActive ? "var(--cyan)" : "var(--text-2)",
-                cursor:     "pointer",
-                fontFamily: "var(--font-body)",
-                fontWeight: isActive ? 600 : 400,
-                transition: "background 0.2s, border-color 0.2s, color 0.2s",
-              }}
+      {/* ── Nav ── */}
+      <nav className="flex-1 px-3 py-4 overflow-y-auto no-scrollbar flex flex-col gap-5">
+        {GROUPS.map((group) => (
+          <div key={group.label}>
+            {/* Group label */}
+            <div
+              className="px-2 mb-1.5 text-[10px] font-semibold tracking-[1.2px] uppercase"
+              style={{ color: "#cbd5e1" }}
             >
-              {isActive && (
-                <motion.div
-                  layoutId="admin-indicator"
-                  className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full"
-                  style={{ background: "var(--cyan)", boxShadow: "0 0 8px var(--cyan)" }}
-                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                />
-              )}
-              <Icon
-                className="w-4 h-4 flex-shrink-0"
-                style={{ color: isActive ? "var(--cyan)" : "var(--text-3)" }}
-              />
-              {label}
-            </motion.button>
-          );
-        })}
+              {group.label}
+            </div>
+
+            {/* Items */}
+            <div className="flex flex-col gap-0.5">
+              {group.items.map(({ id, label, icon: Icon, badge }) => {
+                const isActive = active === id;
+                return (
+                  <motion.button
+                    key={id}
+                    onClick={() => onChange(id)}
+                    whileTap={{ scale: 0.98 }}
+                    className="relative w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left text-[13px] transition-colors duration-150"
+                    style={{
+                      background: isActive ? "#f0f9ff" : "transparent",
+                      color:      isActive ? "#0284c7" : "#475569",
+                      fontWeight: isActive ? 600 : 400,
+                      cursor:     "pointer",
+                      border:     "none",
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isActive) e.currentTarget.style.background = "#f8fafc";
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isActive) e.currentTarget.style.background = "transparent";
+                    }}
+                  >
+                    {/* Active indicator */}
+                    {isActive && (
+                      <motion.div
+                        layoutId="admin-indicator"
+                        className="absolute left-0 top-1/2 -translate-y-1/2 rounded-r-full"
+                        style={{
+                          width:      3,
+                          height:     20,
+                          background: "#0ea5e9",
+                        }}
+                        transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                      />
+                    )}
+
+                    <Icon
+                      className="w-4 h-4 flex-shrink-0"
+                      style={{ color: isActive ? "#0ea5e9" : "#94a3b8" }}
+                    />
+
+                    <span className="flex-1 min-w-0 truncate" style={{ fontFamily: "inherit" }}>
+                      {label}
+                    </span>
+
+                    {/* Notification badge */}
+                    {badge && (
+                      <span
+                        className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full leading-none"
+                        style={{
+                          background: "#fef2f2",
+                          color:      "#ef4444",
+                          border:     "1px solid #fecaca",
+                        }}
+                      >
+                        {badge}
+                      </span>
+                    )}
+
+                    {isActive && (
+                      <ChevronRight
+                        className="w-3 h-3 flex-shrink-0"
+                        style={{ color: "#0ea5e9", opacity: 0.6 }}
+                      />
+                    )}
+                  </motion.button>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </nav>
 
-      {/* Bottom user chip */}
+      {/* ── Campus status pill ── */}
+      <div
+        className="mx-3 mb-3 px-3 py-2.5 rounded-lg flex items-center gap-2"
+        style={{
+          background: "#f0fdf4",
+          border:     "1px solid #bbf7d0",
+        }}
+      >
+        <span
+          className="w-2 h-2 rounded-full flex-shrink-0"
+          style={{
+            background: "#22c55e",
+            boxShadow:  "0 0 0 3px rgba(34,197,94,0.2)",
+          }}
+        />
+        <div className="flex-1 min-w-0">
+          <div className="text-[11px] font-semibold" style={{ color: "#15803d" }}>
+            All systems operational
+          </div>
+          <div className="text-[10px]" style={{ color: "#86efac" }}>
+            6 / 6 services online
+          </div>
+        </div>
+      </div>
+
+      {/* ── User chip ── */}
       <div
         className="px-4 py-4 flex-shrink-0"
-        style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}
+        style={{ borderTop: "1px solid #f1f5f9" }}
       >
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
           <div
-            className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
+            className="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-bold flex-shrink-0"
             style={{
-              background: "linear-gradient(135deg,rgba(0,212,255,0.18),rgba(139,92,246,0.18))",
-              border:     "1.5px solid rgba(0,212,255,0.35)",
-              color:      "var(--cyan)",
+              background: "#eff6ff",
+              border:     "1.5px solid #bfdbfe",
+              color:      "#2563eb",
             }}
           >
             N
           </div>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <div
               className="text-[12px] font-semibold truncate"
-              style={{ fontFamily: "var(--font-display)" }}
+              style={{ color: "#0f172a", fontFamily: "var(--font-display, inherit)" }}
             >
               Nikhil
             </div>
-            <div
-              className="text-[10px]"
-              style={{ color: "var(--text-3)", fontFamily: "var(--font-body)" }}
-            >
+            <div className="text-[10px]" style={{ color: "#94a3b8" }}>
               Super Admin
             </div>
           </div>
+          <div
+            className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+            style={{ background: "#22c55e" }}
+          />
         </div>
       </div>
     </aside>
