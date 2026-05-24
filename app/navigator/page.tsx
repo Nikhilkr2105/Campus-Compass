@@ -333,12 +333,12 @@ export default function NavigatorPage() {
 
             {/* ── MODE TOGGLE ── */}
             <div
-              className="absolute top-4 right-4 z-30 flex rounded-xl overflow-hidden"
+              className="absolute top-4 right-4 z-30 flex rounded-2xl overflow-hidden p-1"
               style={{
-                background:     "rgba(6,13,24,0.92)",
-                border:         "1px solid rgba(0,212,255,0.18)",
-                backdropFilter: "blur(16px)",
-                boxShadow:      "0 8px 24px rgba(0,0,0,0.35)",
+                background:     "rgba(6,13,24,0.85)",
+                border:         "1px solid rgba(255,255,255,0.08)",
+                backdropFilter: "blur(20px)",
+                boxShadow:      "0 8px 32px rgba(0,0,0,0.3)",
               }}
             >
               {([ { id: "campus", label: "Campus Map" }, { id: "indoor", label: "Indoor Map" } ] as const).map((item) => {
@@ -347,25 +347,25 @@ export default function NavigatorPage() {
                   <button
                     key={item.id}
                     onClick={() => setMode(item.id)}
-                    className="relative px-4 py-2 text-[12px] font-semibold"
+                    className="relative px-4 py-2 text-[11px] font-semibold transition-all duration-300"
                     style={{
                       background: "transparent",
-                      color:      active ? "var(--cyan)" : "var(--text-2)",
+                      color:      active ? "#ffffff" : "rgba(240,244,255,0.5)",
                       border:     "none",
-                      borderRight: item.id === "campus"
-                        ? "1px solid rgba(255,255,255,0.06)"
-                        : "none",
                       cursor:     "pointer",
                       fontFamily: "var(--font-body)",
-                      transition: "color 0.2s ease",
                     }}
                   >
                     {active && (
                       <motion.span
                         layoutId="mode-pill"
                         className="absolute inset-0 rounded-xl"
-                        style={{ background: "rgba(0,212,255,0.12)", zIndex: -1 }}
-                        transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                        style={{ 
+                          background: "linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)", 
+                          zIndex: -1,
+                          boxShadow: "0 2px 10px rgba(14,165,233,0.3)"
+                        }}
+                        transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
                       />
                     )}
                     {item.label}
