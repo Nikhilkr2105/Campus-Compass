@@ -262,17 +262,7 @@ export default function NavigatorPage() {
     setIsNavigating(false);
   }, []);
 
-  // ─────────────────────────────────────────────
-  // AUTO STEP
-  // ─────────────────────────────────────────────
-
-  useEffect(() => {
-    if (!isNavigating || !route || currentStep >= route.buildings.length - 1) return;
-    const timer = setTimeout(() => {
-      setCurrentStep((s) => Math.min(s + 1, route.buildings.length - 1));
-    }, 4000);
-    return () => clearTimeout(timer);
-  }, [isNavigating, currentStep, route]);
+ 
 
   // ─────────────────────────────────────────────
   // RENDER
