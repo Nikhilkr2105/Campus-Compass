@@ -405,7 +405,7 @@ function TopologyMap() {
             }}
           />
           <span style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.7)", fontFamily: "var(--font-sans)", letterSpacing: "0.8px" }}>
-            RIMT CAMPUS · LIVE TOPOLOGY
+            CAMPUS COMPASS · LIVE TOPOLOGY
           </span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -967,7 +967,7 @@ export function LandingPage() {
                   display: "inline-block",
                 }}
               />
-              RIMT University · Intelligent Campus Ecosystem
+              COLLEGE COMPASS · Intelligent Campus Ecosystem
             </div>
           </motion.div>
 
@@ -1028,9 +1028,9 @@ export function LandingPage() {
             Navigation, safety, alerts, analytics, events, and AI — unified into a
             living intelligent ecosystem for{" "}
             <strong style={{ color: "rgba(255,255,255,0.9)", fontWeight: 600 }}>
-              RIMT University
+              COLLEGE STUDENTS
             </strong>
-            . Powered by Nikhil.
+            . Powered by Nikhil💗.
           </motion.p>
 
           {/* CTAs */}
@@ -1412,7 +1412,7 @@ export function LandingPage() {
               lineHeight: 1.75,
             }}
           >
-            Advanced AI meets elegant design — built for every student at RIMT
+            Advanced AI meets elegant design — built for every student from any COLLEGE
           </p>
         </motion.div>
 
@@ -1921,7 +1921,7 @@ export function LandingPage() {
                   margin: "0 auto 48px",
                 }}
               >
-                Join 2,400+ RIMT students already navigating smarter with AI
+                Join 2,400+ College students already navigating smarter with AI
               </p>
 
               <div
@@ -2028,7 +2028,7 @@ export function LandingPage() {
                   letterSpacing: "-0.2px",
                 }}
               >
-                RIMT Smart Campus Navigator
+                 Smart Campus Navigator
               </div>
               <div
                 style={{

@@ -20,6 +20,7 @@ import {
   ArrowRight,
   Command,
   Compass,
+  ArrowLeftRight,
 } from "lucide-react";
 
 import { BUILDINGS } from "@/data/buildings";
@@ -92,7 +93,125 @@ function useRecentSearches() {
     const next = [term, ...prev].slice(0, 6);
     try { localStorage.setItem(KEY, JSON.stringify(next)); } catch {}
   }, []);
-  return { get, add };
+  const remove = useCallback((term: string) => {
+    const next = get().filter((t) => t !== term);
+    try { localStorage.setItem(KEY, JSON.stringify(next)); } catch {}
+  }, []);
+  return { get, add, remove };
+}
+
+// ─────────────────────────────────────────────────────────────
+// SKELETON ROW — loading placeholder
+// ─────────────────────────────────────────────────────────────
+
+function SkeletonRow({ index }: { index: number }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ delay: index * 0.04, duration: 0.2 }}
+      className="flex items-center gap-3 mx-2 my-0.5 px-3 py-2.5 rounded-xl"
+    >
+      <div
+        className="w-8 h-8 rounded-lg flex-shrink-0"
+        style={{
+          background: "linear-gradient(90deg, rgba(226,232,240,0.8) 25%, rgba(241,245,249,0.9) 50%, rgba(226,232,240,0.8) 75%)",
+          backgroundSize: "200% 100%",
+          animation: "cp-shimmer 1.4s ease infinite",
+        }}
+      />
+      <div className="flex-1 min-w-0 flex flex-col gap-1.5">
+        <div
+          className="h-3 rounded-full"
+          style={{
+            width: `${55 + index * 11}%`,
+            background: "linear-gradient(90deg, rgba(226,232,240,0.8) 25%, rgba(241,245,249,0.9) 50%, rgba(226,232,240,0.8) 75%)",
+            backgroundSize: "200% 100%",
+            animation: "cp-shimmer 1.4s ease infinite",
+            animationDelay: `${index * 0.1}s`,
+          }}
+        />
+        <div
+          className="h-2 rounded-full"
+          style={{
+            width: `${35 + index * 7}%`,
+            background: "linear-gradient(90deg, rgba(226,232,240,0.6) 25%, rgba(241,245,249,0.7) 50%, rgba(226,232,240,0.6) 75%)",
+            backgroundSize: "200% 100%",
+            animation: "cp-shimmer 1.4s ease infinite",
+            animationDelay: `${index * 0.15 + 0.05}s`,
+          }}
+        />
+      </div>
+      <div
+        className="h-4 w-12 rounded-full flex-shrink-0"
+        style={{
+          background: "linear-gradient(90deg, rgba(226,232,240,0.6) 25%, rgba(241,245,249,0.7) 50%, rgba(226,232,240,0.6) 75%)",
+          backgroundSize: "200% 100%",
+          animation: "cp-shimmer 1.4s ease infinite",
+          animationDelay: `${index * 0.12}s`,
+        }}
+      />
+    </motion.div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// EMPTY STATE
+// ─────────────────────────────────────────────────────────────
+
+function EmptyState({ query }: { query: string }) {
+  const suggestions = ["library", "canteen", "admin", "lab", "sports"];
+  const tip = suggestions.find((s) => !query.toLowerCase().includes(s[0])) ?? "library";
+
+  return (
+    <motion.div
+      key="empty"
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -4 }}
+      transition={{ duration: 0.2 }}
+      className="flex flex-col items-center justify-center py-12 gap-3 px-6 text-center"
+      role="status"
+      aria-live="polite"
+      aria-label={`No results found for ${query}`}
+    >
+      <div
+        className="w-12 h-12 rounded-2xl flex items-center justify-center"
+        style={{
+          background: "rgba(241,245,249,0.8)",
+          border: "1px solid rgba(226,232,240,0.9)",
+        }}
+      >
+        <Search className="w-5 h-5" style={{ color: "#cbd5e1" }} />
+      </div>
+      <div>
+        <div
+          className="text-[13px] font-medium mb-1"
+          style={{
+            color: "#475569",
+            fontFamily: "var(--font-body, 'Plus Jakarta Sans', sans-serif)",
+          }}
+        >
+          No results for &ldquo;{query}&rdquo;
+        </div>
+        <div
+          className="text-[11px]"
+          style={{
+            color: "#94a3b8",
+            fontFamily: "var(--font-body, 'DM Sans', sans-serif)",
+          }}
+        >
+          Try a building name or type &mdash; e.g.{" "}
+          <span
+            className="font-medium"
+            style={{ color: "#64748b" }}
+          >
+            &ldquo;{tip}&rdquo;
+          </span>
+        </div>
+      </div>
+    </motion.div>
+  );
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -133,9 +252,10 @@ interface ResultRowProps {
   onSelect: () => void;
   onNavigate: () => void;
   onMouseEnter: () => void;
+  dataIndex: number;
 }
 
-function ResultRow({ result, isActive, onSelect, onNavigate, onMouseEnter }: ResultRowProps) {
+function ResultRow({ result, isActive, onSelect, onNavigate, onMouseEnter, dataIndex }: ResultRowProps) {
   return (
     <motion.div
       layout
@@ -146,6 +266,10 @@ function ResultRow({ result, isActive, onSelect, onNavigate, onMouseEnter }: Res
       whileHover={{ y: -1 }}
       onMouseEnter={onMouseEnter}
       onClick={onSelect}
+      data-index={dataIndex}
+      role="option"
+      aria-selected={isActive}
+      aria-label={`${result.label}${result.sublabel ? `, ${result.sublabel}` : ""}`}
       className="relative flex items-center gap-3 mx-2 my-0.5 px-3 py-2.5 rounded-xl cursor-pointer"
       style={{
         background: isActive
@@ -156,6 +280,7 @@ function ResultRow({ result, isActive, onSelect, onNavigate, onMouseEnter }: Res
           ? "0 2px 12px rgba(14,165,233,0.08), 0 1px 3px rgba(0,0,0,0.04)"
           : "none",
         transition: "background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease",
+        outline: "none",
       }}
     >
       {/* Left accent bar */}
@@ -183,6 +308,7 @@ function ResultRow({ result, isActive, onSelect, onNavigate, onMouseEnter }: Res
           border: `1px solid ${isActive ? `${result.color}30` : "rgba(226,232,240,0.9)"}`,
           transition: "all 0.18s ease",
         }}
+        aria-hidden="true"
       >
         {result.icon}
       </div>
@@ -222,6 +348,7 @@ function ResultRow({ result, isActive, onSelect, onNavigate, onMouseEnter }: Res
             whileTap={{ scale: 0.95 }}
             transition={{ type: "spring", stiffness: 340, damping: 22 }}
             onClick={(e) => { e.stopPropagation(); onNavigate(); }}
+            aria-label={`Navigate to ${result.label}`}
             className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-semibold"
             style={{
               background: "rgba(14,165,233,0.1)",
@@ -231,7 +358,7 @@ function ResultRow({ result, isActive, onSelect, onNavigate, onMouseEnter }: Res
               fontFamily: "var(--font-body, 'Plus Jakarta Sans', sans-serif)",
             }}
           >
-            <Navigation className="w-2.5 h-2.5" />
+            <Navigation className="w-2.5 h-2.5" aria-hidden="true" />
             Go
           </motion.button>
         )}
@@ -248,6 +375,8 @@ function SectionHeader({ label, icon: Icon }: { label: string; icon: React.Eleme
   return (
     <div
       className="flex items-center gap-2 px-5 pt-3 pb-1.5"
+      role="presentation"
+      aria-hidden="true"
       style={{ borderTop: "1px solid rgba(226,232,240,0.7)" }}
     >
       <Icon className="w-3 h-3 flex-shrink-0" style={{ color: "#94a3b8" }} />
@@ -265,6 +394,53 @@ function SectionHeader({ label, icon: Icon }: { label: string; icon: React.Eleme
 }
 
 // ─────────────────────────────────────────────────────────────
+// MODE TOGGLE PILL
+// ─────────────────────────────────────────────────────────────
+
+function ModeToggle({
+  mode,
+  onToggle,
+}: {
+  mode: "destination" | "source";
+  onToggle: () => void;
+}) {
+  return (
+    <motion.button
+      onClick={onToggle}
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.96 }}
+      aria-label={`Switch to ${mode === "destination" ? "set start point" : "set destination"}`}
+      aria-pressed={mode === "source"}
+      className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-semibold flex-shrink-0"
+      style={{
+        background: mode === "source"
+          ? "rgba(99,102,241,0.08)"
+          : "rgba(241,245,249,0.9)",
+        border: `1px solid ${mode === "source" ? "rgba(99,102,241,0.25)" : "rgba(203,213,225,0.8)"}`,
+        color: mode === "source" ? "#4338ca" : "#64748b",
+        cursor: "pointer",
+        fontFamily: "var(--font-body, 'Plus Jakarta Sans', sans-serif)",
+        transition: "all 0.15s ease",
+      }}
+    >
+      <ArrowLeftRight className="w-2.5 h-2.5" aria-hidden="true" />
+      {mode === "destination" ? "Destination" : "Start point"}
+    </motion.button>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// SHIMMER KEYFRAMES — injected once
+// ─────────────────────────────────────────────────────────────
+
+const SHIMMER_STYLE = `
+  @keyframes cp-shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+`;
+
+// ─────────────────────────────────────────────────────────────
 // MAIN
 // ─────────────────────────────────────────────────────────────
 
@@ -278,35 +454,50 @@ export function CommandPalette({
   const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
   const [mode, setMode] = useState<"destination" | "source">("destination");
+  const [isLoading, setIsLoading] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const recentStore = useRecentSearches();
 
+  // Stable IDs for ARIA — use static string, no colons from useId
+  const listboxId = "cp-listbox";
+  const getOptionId = (index: number) => `cp-option-${index}`;
+
   const openPalette = useCallback(() => {
-    setOpen(true); setQuery(""); setActiveIndex(0);
+    setOpen(true);
+    setQuery("");
+    setActiveIndex(0);
+    setIsLoading(false);
   }, []);
 
   const closePalette = useCallback(() => {
-    setOpen(false); setQuery(""); setActiveIndex(0);
+    setOpen(false);
+    setQuery("");
+    setActiveIndex(0);
+    // Restore focus to trigger button
+    setTimeout(() => triggerRef.current?.focus(), 50);
   }, []);
 
+  // Auto-focus input on open
   useEffect(() => {
     if (open) setTimeout(() => inputRef.current?.focus(), 50);
   }, [open]);
 
+  // Global ⌘K handler
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
         open ? closePalette() : openPalette();
       }
-      if (e.key === "Escape" && open) closePalette();
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, [open, openPalette, closePalette]);
 
+  // Results computation
   const results: SearchResult[] = useMemo(() => {
     const q = query.trim();
     if (!q) {
@@ -352,20 +543,59 @@ export function CommandPalette({
     return out;
   }, [results, query]);
 
+  // flat list drives ALL keyboard navigation — single source of truth
   const flat = useMemo(() => groups.flatMap((g) => g.items), [groups]);
 
+  // Reset activeIndex when query or flat list changes
+  useEffect(() => {
+    setActiveIndex(0);
+  }, [query, flat.length]);
+
+  // Keyboard handler — uses flat, wraps, Home/End, Escape clears first
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (!open) return;
     switch (e.key) {
-      case "ArrowDown": e.preventDefault(); setActiveIndex((i) => Math.min(i + 1, results.length - 1)); break;
-      case "ArrowUp":   e.preventDefault(); setActiveIndex((i) => Math.max(i - 1, 0)); break;
-      case "Enter":     e.preventDefault(); if (results[activeIndex]) handleSelect(results[activeIndex]); break;
-      case "Escape":    closePalette(); break;
+      case "ArrowDown":
+        e.preventDefault();
+        setActiveIndex((i) => (i + 1) % Math.max(flat.length, 1));
+        break;
+      case "ArrowUp":
+        e.preventDefault();
+        setActiveIndex((i) => (i - 1 + Math.max(flat.length, 1)) % Math.max(flat.length, 1));
+        break;
+      case "Home":
+        e.preventDefault();
+        setActiveIndex(0);
+        break;
+      case "End":
+        e.preventDefault();
+        setActiveIndex(Math.max(flat.length - 1, 0));
+        break;
+      case "Enter":
+        e.preventDefault();
+        if (flat[activeIndex]) handleSelect(flat[activeIndex]);
+        break;
+      case "Tab":
+        e.preventDefault();
+        setMode((m) => m === "destination" ? "source" : "destination");
+        break;
+      case "Escape":
+        e.preventDefault();
+        // First press: clear query. Second press (or no query): close.
+        if (query) {
+          setQuery("");
+          setActiveIndex(0);
+        } else {
+          closePalette();
+        }
+        break;
     }
-  }, [open, results, activeIndex]);
+  }, [open, flat, activeIndex, query, closePalette]);
 
+  // Scroll active item into view
   useEffect(() => {
-    const el = listRef.current?.children[activeIndex] as HTMLElement | undefined;
+    if (!listRef.current) return;
+    const el = listRef.current.querySelector(`[data-index="${activeIndex}"]`) as HTMLElement | null;
     el?.scrollIntoView({ block: "nearest", behavior: "instant" });
   }, [activeIndex]);
 
@@ -375,23 +605,32 @@ export function CommandPalette({
     if (mode === "destination") onSelectDestination(r.label);
     else onSetSource(r.label);
     closePalette();
-  }, [mode, onSelectDestination, onSetSource, onSelectBuilding]);
+  }, [mode, onSelectDestination, onSetSource, onSelectBuilding, closePalette, recentStore]);
 
   const handleNavigate = useCallback((r: SearchResult) => {
     recentStore.add(r.label);
     onSelectDestination(r.label);
     if (r.building) onSelectBuilding(r.building);
     closePalette();
-  }, [onSelectDestination, onSelectBuilding]);
+  }, [onSelectDestination, onSelectBuilding, closePalette, recentStore]);
+
+  const activeOptionId = flat.length > 0 ? getOptionId(activeIndex) : undefined;
 
   return (
     <>
+      {/* Shimmer keyframes */}
+      <style>{SHIMMER_STYLE}</style>
+
       {/* ── Floating trigger ── */}
       <div className="fixed z-40" style={{ bottom: 140, right: 100 }}>
         <motion.button
+          ref={triggerRef}
           onClick={openPalette}
           whileHover={{ scale: 1.03, boxShadow: "0 8px 32px rgba(14,165,233,0.18), 0 2px 8px rgba(0,0,0,0.08)" }}
           whileTap={{ scale: 0.96 }}
+          aria-label="Open command palette (⌘K)"
+          aria-haspopup="listbox"
+          aria-expanded={open}
           className="relative flex items-center gap-2.5 px-4 py-2.5 rounded-xl"
           style={{
             background: "rgba(255,255,255,0.92)",
@@ -403,7 +642,7 @@ export function CommandPalette({
             cursor: "pointer",
           }}
         >
-          <Search className="w-4 h-4 flex-shrink-0" />
+          <Search className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
           <span
             className="text-[12px] font-semibold hidden sm:inline"
             style={{ color: "#334155", fontFamily: "var(--font-body, 'Plus Jakarta Sans', sans-serif)" }}
@@ -412,6 +651,7 @@ export function CommandPalette({
           </span>
           <kbd
             className="hidden sm:flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[9px] font-semibold"
+            aria-hidden="true"
             style={{
               background: "rgba(241,245,249,0.9)",
               border: "1px solid rgba(203,213,225,0.8)",
@@ -436,6 +676,7 @@ export function CommandPalette({
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
               className="fixed inset-0 z-50"
+              aria-hidden="true"
               style={{
                 background: "rgba(15,23,42,0.45)",
                 backdropFilter: "blur(8px)",
@@ -452,6 +693,9 @@ export function CommandPalette({
               exit={{ opacity: 0, scale: 0.97, y: -10 }}
               transition={{ type: "spring", stiffness: 480, damping: 38, mass: 0.75 }}
               className="fixed z-50 left-1/2 overflow-hidden"
+              role="dialog"
+              aria-modal="true"
+              aria-label={`Campus command palette — ${mode === "destination" ? "searching destination" : "searching start point"}`}
               style={{
                 top: "clamp(5vh, 8vh, 64px)",
                 width: "min(640px, calc(100vw - 24px))",
@@ -471,8 +715,9 @@ export function CommandPalette({
                 flexDirection: "column",
               }}
             >
-              {/* Subtle top shimmer — replaces neon glow line */}
+              {/* Subtle top shimmer */}
               <div
+                aria-hidden="true"
                 style={{
                   position: "absolute",
                   top: 0,
@@ -491,9 +736,10 @@ export function CommandPalette({
                 className="flex items-center gap-3 px-4 pt-4 pb-3 flex-shrink-0"
                 style={{ borderBottom: "1px solid rgba(226,232,240,0.8)", position: "relative" }}
               >
-                {/* Compass badge — static, no pulsing */}
+                {/* Compass badge */}
                 <div
                   className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
+                  aria-hidden="true"
                   style={{
                     background: "linear-gradient(135deg, rgba(14,165,233,0.12), rgba(99,102,241,0.08))",
                     border: "1px solid rgba(14,165,233,0.2)",
@@ -502,7 +748,7 @@ export function CommandPalette({
                   <Compass className="w-4 h-4" style={{ color: "#0284c7" }} />
                 </div>
 
-                {/* Input */}
+                {/* Input — combobox */}
                 <input
                   ref={inputRef}
                   value={query}
@@ -514,24 +760,35 @@ export function CommandPalette({
                       : "Set your starting point..."
                   }
                   className="flex-1 bg-transparent outline-none text-[15px]"
+                  role="combobox"
+                  aria-expanded={flat.length > 0}
+                  aria-haspopup="listbox"
+                  aria-controls={listboxId}
+                  aria-activedescendant={activeOptionId}
+                  aria-label={mode === "destination" ? "Search destination" : "Search start point"}
+                  aria-autocomplete="list"
+                  autoComplete="off"
+                  spellCheck={false}
                   style={{
                     color: "#0f172a",
                     fontFamily: "var(--font-body, 'Plus Jakarta Sans', sans-serif)",
                     caretColor: "#0284c7",
                   }}
-                  autoComplete="off"
-                  spellCheck={false}
                 />
 
-                {/* Actions */}
-                <div className="flex items-center gap-2 flex-shrink-0">
+                {/* Mode toggle */}
+                <ModeToggle mode={mode} onToggle={() => setMode((m) => m === "destination" ? "source" : "destination")} />
+
+                {/* Clear button */}
+                <AnimatePresence>
                   {query && (
                     <motion.button
                       initial={{ opacity: 0, scale: 0.75 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.75 }}
-                      onClick={() => setQuery("")}
-                      className="w-6 h-6 rounded-lg flex items-center justify-center"
+                      onClick={() => { setQuery(""); inputRef.current?.focus(); }}
+                      aria-label="Clear search"
+                      className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0"
                       style={{
                         background: "rgba(241,245,249,0.9)",
                         border: "1px solid rgba(203,213,225,0.8)",
@@ -539,10 +796,10 @@ export function CommandPalette({
                         cursor: "pointer",
                       }}
                     >
-                      <X className="w-3 h-3" />
+                      <X className="w-3 h-3" aria-hidden="true" />
                     </motion.button>
                   )}
-                </div>
+                </AnimatePresence>
               </div>
 
               {/* ── Current Source banner ── */}
@@ -554,7 +811,7 @@ export function CommandPalette({
                     borderBottom: "1px solid rgba(14,165,233,0.1)",
                   }}
                 >
-                  <MapPin className="w-3 h-3 flex-shrink-0" style={{ color: "#0284c7" }} />
+                  <MapPin className="w-3 h-3 flex-shrink-0" style={{ color: "#0284c7" }} aria-hidden="true" />
                   <span
                     className="text-[11px]"
                     style={{ color: "#64748b", fontFamily: "var(--font-body, 'DM Sans', sans-serif)" }}
@@ -562,33 +819,33 @@ export function CommandPalette({
                     From:{" "}
                     <span style={{ color: "#0284c7", fontWeight: 600 }}>{currentSource}</span>
                   </span>
-                  <ArrowRight className="w-3 h-3 flex-shrink-0" style={{ color: "rgba(14,165,233,0.4)" }} />
+                  <ArrowRight className="w-3 h-3 flex-shrink-0" style={{ color: "rgba(14,165,233,0.4)" }} aria-hidden="true" />
                 </div>
               )}
 
               {/* ── Results ── */}
-              <div ref={listRef} className="flex-1 overflow-y-auto no-scrollbar pb-2">
+              <div
+                ref={listRef}
+                id={listboxId}
+                role="listbox"
+                aria-label={mode === "destination" ? "Search results for destination" : "Search results for start point"}
+                className="flex-1 overflow-y-auto no-scrollbar pb-2"
+              >
                 <AnimatePresence mode="popLayout">
-                  {flat.length === 0 && query ? (
-                    <motion.div
-                      key="empty"
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -4 }}
-                      transition={{ duration: 0.2 }}
-                      className="flex flex-col items-center justify-center py-14 gap-3"
-                    >
-                      <div className="text-3xl opacity-25">🔍</div>
-                      <div
-                        style={{
-                          color: "#94a3b8",
-                          fontSize: 13,
-                          fontFamily: "var(--font-body, 'DM Sans', sans-serif)",
-                        }}
-                      >
-                        No buildings found for &ldquo;{query}&rdquo;
+                  {isLoading ? (
+                    <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                      <div className="px-5 pt-3 pb-1.5" aria-hidden="true">
+                        <span
+                          className="text-[9px] font-semibold tracking-[2px]"
+                          style={{ color: "#94a3b8", fontFamily: "var(--font-display, 'Plus Jakarta Sans', sans-serif)" }}
+                        >
+                          SEARCHING...
+                        </span>
                       </div>
+                      {[0, 1, 2].map((i) => <SkeletonRow key={i} index={i} />)}
                     </motion.div>
+                  ) : flat.length === 0 && query ? (
+                    <EmptyState key="empty" query={query} />
                   ) : (
                     groups.map((group) => (
                       <div key={group.key}>
@@ -605,6 +862,7 @@ export function CommandPalette({
                             return (
                               <ResultRow
                                 key={r.id}
+                                dataIndex={flatIndex}
                                 result={r}
                                 isActive={flatIndex === activeIndex}
                                 onMouseEnter={() => setActiveIndex(flatIndex)}
@@ -623,6 +881,7 @@ export function CommandPalette({
               {/* ── Footer hint ── */}
               <div
                 className="flex items-center justify-between px-4 py-2.5 flex-shrink-0"
+                aria-hidden="true"
                 style={{
                   borderTop: "1px solid rgba(226,232,240,0.8)",
                   background: "rgba(248,250,252,0.8)",
@@ -632,6 +891,7 @@ export function CommandPalette({
                   {[
                     { keys: ["↑", "↓"], label: "navigate" },
                     { keys: ["↵"],      label: "select"   },
+                    { keys: ["tab"],     label: "mode"     },
                     { keys: ["esc"],     label: "close"    },
                   ].map(({ keys, label }) => (
                     <span key={label} className="flex items-center gap-1">

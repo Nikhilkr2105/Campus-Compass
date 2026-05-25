@@ -432,7 +432,7 @@ export function Navbar() {
         <Link
           href="/"
           onClick={closeMobile}
-          aria-label="RIMT Navigator — go to homepage"   // FIX: descriptive label
+          aria-label="COLLEGE COMPASS — go to homepage"   // FIX: descriptive label
           className={FOCUS_RING_CLASS}
           style={{ textDecoration: "none", borderRadius: 18, ...focusRingStyle }}
         >
@@ -473,7 +473,7 @@ export function Navbar() {
                   transition: "color 0.25s ease",
                 }}
               >
-                RIMT Navigator
+                COLLEGE COMPASS
               </div>
               <div
                 style={{
@@ -485,7 +485,7 @@ export function Navbar() {
                   transition: "color 0.25s ease",
                 }}
               >
-                Smart Campus
+                By NIKHIL💗
               </div>
             </div>
           </motion.div>
