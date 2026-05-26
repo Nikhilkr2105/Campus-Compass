@@ -208,6 +208,8 @@ export default function NavigatorPage() {
   const [selected,   setSelected]   = useState<Building | null>(null);
   const [mode,       setMode]       = useState<NavigatorMode>("campus");
   const [condition,  setCondition]  = useState<CampusCondition>(getCampusCondition);
+  const [plannerSource, setPlannerSource] = useState("");
+  const [plannerDestination, setPlannerDestination] = useState("");
 
   // Refresh condition every 60s
   useEffect(() => {
@@ -225,9 +227,15 @@ export default function NavigatorPage() {
 
   const handleCloseBuilding = useCallback(() => setSelected(null), []);
 
-  const handleNavigateTo = useCallback((_name: string) => {
-    setSelected(null);
+  const handlePlannerDestinationChange = useCallback((name: string) => {
+    setPlannerDestination(name);
+    setMode("campus");
   }, []);
+
+  const handleNavigateTo = useCallback((name: string) => {
+    handlePlannerDestinationChange(name);
+    setSelected(null);
+  }, [handlePlannerDestinationChange]);
 
   // ─────────────────────────────────────────────
   // ROUTE
@@ -285,13 +293,14 @@ export default function NavigatorPage() {
           willChange: "opacity",
         }}
       >
-        <div className="flex h-full overflow-hidden">
+        <div className="relative flex h-full overflow-hidden">
 
           {/* ── SIDEBAR ── */}
           <AnimatePresence mode="wait">
             {mode === "campus" && (
               <motion.div
                 key="sidebar"
+                className="absolute inset-y-0 left-0 z-30 md:relative md:inset-auto md:z-auto"
                 initial={{ x: -24, opacity: 0 }}
                 animate={{ x: 0,   opacity: 1 }}
                 exit={{    x: -24, opacity: 0 }}
@@ -300,6 +309,8 @@ export default function NavigatorPage() {
               >
                 <Sidebar
                   selectedBuilding={selected}
+                  plannerSource={plannerSource}
+                  plannerDestination={plannerDestination}
                   route={route}
                   isNavigating={isNavigating}
                   currentStep={currentStep}
@@ -311,6 +322,8 @@ export default function NavigatorPage() {
                   onClear={handleClear}
                   onCloseBuilding={handleCloseBuilding}
                   onNavigateTo={handleNavigateTo}
+                  onPlannerSourceChange={setPlannerSource}
+                  onPlannerDestinationChange={setPlannerDestination}
                 />
               </motion.div>
             )}
@@ -407,10 +420,13 @@ export default function NavigatorPage() {
 
             {/* ── COMMAND PALETTE ── */}
             <CommandPalette
-              onSelectDestination={(name) => {}}
+              onSelectDestination={handlePlannerDestinationChange}
               onSelectBuilding={(b)  => setSelected(b)}
-              onSetSource={() => {}}
-              currentSource=""
+              onSetSource={(name) => {
+                setPlannerSource(name);
+                setMode("campus");
+              }}
+              currentSource={plannerSource}
             />
           </div>
         </div>

@@ -15,6 +15,8 @@ import { buildGraph, dijkstra, distToMinutes } from "@/lib/dijkstra";
 
 /* ─── Types ─────────────────────────────────────────────────────── */
 interface RoutePanelProps {
+  source:          string;
+  destination:     string;
   route:           NavigationRoute | null;
   isNavigating:    boolean;
   currentStep:     number;
@@ -24,6 +26,7 @@ interface RoutePanelProps {
   onNext:          () => void;
   onPrev:          () => void;
   onClear:         () => void;
+  onSourceChange:  (name: string) => void;
   onDestChange:    (name: string) => void;
 }
 
@@ -33,7 +36,7 @@ interface ErrorState {
   hints: string[];
 }
 
-function resolveError(code: string, accessible: boolean): ErrorState {
+function resolveError(code: string): ErrorState {
   switch (code) {
     case "missing_fields":
       return {
@@ -55,7 +58,7 @@ function resolveError(code: string, accessible: boolean): ErrorState {
         message: "No route found between these locations.",
         hints: [
           "Try a nearby starting point.",
-          accessible ? "Disable accessible mode — a standard path may exist." : "Enable accessible mode for alternative paths.",
+          "This demo map may not yet contain a connecting path.",
           "Verify both locations are on campus.",
         ],
       };
@@ -290,25 +293,25 @@ function SmartSearch({
 
 /* ─── Main Component ─────────────────────────────────────────────── */
 export function RoutePanel({
+  source, destination,
   route, isNavigating, currentStep,
-  onRouteFound, onStart, onStop, onNext, onPrev, onClear, onDestChange,
+  onRouteFound, onStart, onStop, onNext, onPrev, onClear, onSourceChange, onDestChange,
 }: RoutePanelProps) {
-  const [source,          setSource]          = useState("");
-  const [destination,     setDestination]     = useState("");
   const [finding,         setFinding]         = useState(false);
   const [error,           setError]           = useState<ErrorState | null>(null);
   const [accessible,      setAccessible]      = useState(false);
   const [hoveredBuilding, setHoveredBuilding] = useState<string | null>(null);
   // Track whether a find was attempted to show inline hints
   const [attempted,       setAttempted]       = useState(false);
+  const hasAccessibilityAlternatives = PATH_EDGES.some((edge) => !edge.accessible);
 
   const handleSourceChange = useCallback((v: string) => {
-    setSource(v); setError(null);
+    onSourceChange(v); setError(null);
     if (!v) onClear();
-  }, [onClear]);
+  }, [onSourceChange, onClear]);
 
   const handleDestChange = useCallback((v: string) => {
-    setDestination(v); onDestChange(v); setError(null);
+    onDestChange(v); setError(null);
     if (!v) onClear();
   }, [onDestChange, onClear]);
 
@@ -316,11 +319,11 @@ export function RoutePanel({
     setAttempted(true);
 
     if (!source || !destination) {
-      setError(resolveError("missing_fields", accessible));
+      setError(resolveError("missing_fields"));
       return;
     }
     if (source.toLowerCase() === destination.toLowerCase()) {
-      setError(resolveError("same_location", accessible));
+      setError(resolveError("same_location"));
       return;
     }
 
@@ -337,7 +340,7 @@ export function RoutePanel({
     );
 
     if (!srcB || !dstB) {
-      setError(resolveError("location_not_found", accessible));
+      setError(resolveError("location_not_found"));
       setFinding(false); return;
     }
 
@@ -345,7 +348,7 @@ export function RoutePanel({
     const result = dijkstra(graph, srcB.id, dstB.id);
 
     if (!result.found || result.path.length < 2) {
-      setError(resolveError("no_route", accessible));
+      setError(resolveError("no_route"));
       setFinding(false); return;
     }
 
@@ -359,8 +362,8 @@ export function RoutePanel({
   }, [source, destination, onRouteFound, accessible]);
 
   const handleSwap = useCallback(() => {
-    setSource(destination); setDestination(source); onClear(); setAttempted(false);
-  }, [source, destination, onClear]);
+    onSourceChange(destination); onDestChange(source); onClear(); setAttempted(false);
+  }, [source, destination, onSourceChange, onDestChange, onClear]);
 
   const handleQuickDest = useCallback((name: string) => handleDestChange(name), [handleDestChange]);
 
@@ -468,19 +471,25 @@ export function RoutePanel({
 
           {/* Accessibility toggle */}
           <motion.button
-            onClick={() => setAccessible(!accessible)}
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.99 }}
+            onClick={() => hasAccessibilityAlternatives && setAccessible(!accessible)}
+            disabled={!hasAccessibilityAlternatives}
+            whileHover={hasAccessibilityAlternatives ? { scale: 1.01 } : {}}
+            whileTap={hasAccessibilityAlternatives ? { scale: 0.99 } : {}}
             aria-pressed={accessible}
             className="flex items-center gap-2.5 px-4 py-2.5 rounded-2xl border text-[12px] font-medium transition-all duration-200"
             style={{
               background:   accessible ? "#ecfdf5" : "#f8fafc",
               borderColor:  accessible ? "#6ee7b7" : "#e2e8f0",
               color:        accessible ? "#059669" : "#64748b",
+              cursor:       hasAccessibilityAlternatives ? "pointer" : "not-allowed",
             }}
           >
             <Accessibility className="w-3.5 h-3.5 flex-shrink-0" />
-            <span className="flex-1 text-left">Accessible route (ramp-friendly)</span>
+            <span className="flex-1 text-left">
+              {hasAccessibilityAlternatives
+                ? "Accessible route (ramp-friendly)"
+                : "Accessibility routes not differentiated in demo map"}
+            </span>
             <div
               className="w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all"
               style={{

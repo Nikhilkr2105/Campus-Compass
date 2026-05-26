@@ -336,6 +336,17 @@ function BuildingNode({
       onClick={onClick}
       onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}
+      onFocus={() => setHov(true)}
+      onBlur={() => setHov(false)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onClick();
+        }
+      }}
+      role="button"
+      tabIndex={0}
+      aria-label={`Select ${building.name}`}
       style={{ cursor: "pointer" }}
     >
       {/* Occupancy ambient glow — soft, no neon */}
@@ -676,7 +687,7 @@ function LiveStatusBar({ tod, buildingCount }: { tod: TimeOfDay; buildingCount: 
         className="text-[9px]"
         style={{ color: "var(--text-3)", fontFamily: "var(--font-body)" }}
       >
-        {buildingCount} nodes
+        {buildingCount} nodes - simulated occupancy
       </span>
     </div>
   );
@@ -766,7 +777,7 @@ export function CampusMap({
   const lastTouch = useRef<{ x: number; y: number } | null>(null);
 
   const routeKey = route.join("-");
-  const routeSet = useMemo(() => new Set(route), [routeKey]);
+  const routeSet = useMemo(() => new Set(route), [route]);
 
   const occupancyMap = useMemo(() => {
     const m: Record<string, { level: OccupancyLevel; pct: number }> = {};
@@ -790,7 +801,7 @@ export function CampusMap({
       }
       return false;
     },
-    [routeKey]
+    [route]
   );
 
   // ── Mouse handlers ────────────────────────────────────────

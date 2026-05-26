@@ -16,6 +16,8 @@ import { NavigationRoute } from "@/types/navigation";
 
 interface SidebarProps {
   selectedBuilding: Building | null;
+  plannerSource:    string;
+  plannerDestination: string;
   route:            NavigationRoute | null;
   isNavigating:     boolean;
   currentStep:      number;
@@ -27,6 +29,8 @@ interface SidebarProps {
   onClear:          () => void;
   onCloseBuilding:  () => void;
   onNavigateTo:     (name: string) => void;
+  onPlannerSourceChange: (name: string) => void;
+  onPlannerDestinationChange: (name: string) => void;
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -89,11 +93,17 @@ type BuildingHours = { open: number; close: number; label: string };
 const DEFAULT_HOURS: BuildingHours = { open: 8, close: 20, label: "8:00 AM – 8:00 PM" };
 
 const BUILDING_HOURS: Record<string, BuildingHours> = {
-  library:    { open: 7,  close: 22, label: "7:00 AM – 10:00 PM" },
-  cafeteria:  { open: 7,  close: 21, label: "7:00 AM – 9:00 PM"  },
-  sports:     { open: 6,  close: 22, label: "6:00 AM – 10:00 PM" },
-  hostel:     { open: 0,  close: 24, label: "24 / 7"              },
-  admin:      { open: 9,  close: 17, label: "9:00 AM – 5:00 PM"   },
+  "main-gate":      { open: 0, close: 24, label: "24 / 7" },
+  library:          { open: 7, close: 22, label: "7:00 AM – 10:00 PM" },
+  "canteen-main":   { open: 7, close: 21, label: "7:00 AM – 9:00 PM" },
+  "canteen-north":  { open: 7, close: 21, label: "7:00 AM – 9:00 PM" },
+  "sports-complex": { open: 6, close: 22, label: "6:00 AM – 10:00 PM" },
+  "hostel-boys-a":  { open: 0, close: 24, label: "24 / 7" },
+  "hostel-boys-b":  { open: 0, close: 24, label: "24 / 7" },
+  "hostel-girls":   { open: 0, close: 24, label: "24 / 7" },
+  "admin-block":    { open: 9, close: 17, label: "9:00 AM – 5:00 PM" },
+  medical:          { open: 0, close: 24, label: "24 / 7" },
+  "fire-station":   { open: 0, close: 24, label: "24 / 7" },
 };
 
 function getBuildingHours(id: string): BuildingHours {
@@ -628,14 +638,12 @@ function BuildingPanel({
 // ─────────────────────────────────────────────────────────────
 
 export function Sidebar({
-  selectedBuilding, route, isNavigating, currentStep,
+  selectedBuilding, plannerSource, plannerDestination, route, isNavigating, currentStep,
   onRouteFound, onStart, onStop, onNext, onPrev, onClear,
-  onCloseBuilding, onNavigateTo,
+  onCloseBuilding, onNavigateTo, onPlannerSourceChange, onPlannerDestinationChange,
 }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const sys = useSystemStatus();
-
-  const handleDestChange = useCallback((_name: string) => {}, []);
 
   return (
     <div className="relative flex h-full">
@@ -670,6 +678,7 @@ export function Sidebar({
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
         className="flex flex-col overflow-hidden h-full flex-shrink-0"
         style={{
+          maxWidth:       "calc(100vw - 36px)",
           borderRight:    "1px solid var(--border)",
           background:     "rgba(248,249,252,0.94)",
           backdropFilter: "blur(24px)",
@@ -738,7 +747,7 @@ export function Sidebar({
                     className="text-[9px] font-semibold"
                     style={{ color: "var(--green)", fontFamily: "var(--font-body)" }}
                   >
-                    Live
+                    Demo Data
                   </span>
                 </div>
               </div>
@@ -815,6 +824,8 @@ export function Sidebar({
               </AnimatePresence>
 
               <RoutePanel
+                source={plannerSource}
+                destination={plannerDestination}
                 route={route}
                 isNavigating={isNavigating}
                 currentStep={currentStep}
@@ -824,7 +835,8 @@ export function Sidebar({
                 onNext={onNext}
                 onPrev={onPrev}
                 onClear={onClear}
-                onDestChange={handleDestChange}
+                onSourceChange={onPlannerSourceChange}
+                onDestChange={onPlannerDestinationChange}
               />
 
               {/* Building detail */}

@@ -80,10 +80,10 @@ const activityFeed = [
 ];
 
 const quickActions = [
-  { label: "Trigger SOS",      icon: Siren,      accent: "#DC2626", bg: "rgba(220,38,38,0.08)",  border: "rgba(220,38,38,0.22)"  },
-  { label: "Alert Security",   icon: ShieldAlert, accent: "#D97706", bg: "rgba(217,119,6,0.08)",  border: "rgba(217,119,6,0.22)"  },
-  { label: "Navigate to Med",  icon: Navigation,  accent: "#0369A1", bg: "rgba(3,105,161,0.08)",  border: "rgba(3,105,161,0.22)"  },
-  { label: "Live Monitor",     icon: Eye,         accent: "#16A34A", bg: "rgba(22,163,74,0.08)",  border: "rgba(22,163,74,0.22)"  },
+  { label: "Trigger SOS (Demo)",     icon: Siren,       accent: "#DC2626", bg: "rgba(220,38,38,0.08)", border: "rgba(220,38,38,0.22)" },
+  { label: "Alert Security (Demo)",  icon: ShieldAlert, accent: "#D97706", bg: "rgba(217,119,6,0.08)", border: "rgba(217,119,6,0.22)" },
+  { label: "Navigate to Med (Demo)", icon: Navigation,  accent: "#0369A1", bg: "rgba(3,105,161,0.08)", border: "rgba(3,105,161,0.22)" },
+  { label: "Live Monitor (Demo)",    icon: Eye,         accent: "#16A34A", bg: "rgba(22,163,74,0.08)", border: "rgba(22,163,74,0.22)" },
 ];
 
 // severity → visual token
@@ -196,7 +196,7 @@ export default function EmergencyPage() {
               className="text-[11px] font-semibold"
               style={{ color: "var(--text-2)", fontFamily: "var(--font-body)" }}
             >
-              Campus Safety — All Systems Operational
+              Campus Safety Demo — Not connected to emergency services
             </span>
           </div>
           <div className="hidden sm:flex items-center gap-1.5">
@@ -251,6 +251,13 @@ export default function EmergencyPage() {
               emergency routing — available 24 hours a day.
             </p>
 
+            <p
+              className="text-[11px] leading-relaxed mb-5 px-3 py-2 rounded-lg"
+              style={{ color: "#B45309", background: "#FFFBEB", border: "1px solid #FDE68A", fontFamily: "var(--font-body)" }}
+            >
+              Simulation only: buttons and sample contacts below do not notify emergency responders.
+            </p>
+
             {/* Quick action buttons */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-6">
               {quickActions.map((action, i) => {
@@ -261,8 +268,10 @@ export default function EmergencyPage() {
                 return (
                   <motion.button
                     key={action.label}
-                    whileHover={{ y: -2 }}
-                    whileTap={{ scale: 0.97 }}
+                    whileHover={isSOS ? { y: -2 } : {}}
+                    whileTap={isSOS ? { scale: 0.97 } : {}}
+                    disabled={!isSOS}
+                    aria-disabled={!isSOS}
                     className="rounded-xl px-3 py-3.5 flex flex-col items-center gap-2 cursor-pointer transition-all"
                     style={{
                       background: isArmed
@@ -271,6 +280,8 @@ export default function EmergencyPage() {
                       border: `1px solid ${isArmed ? "rgba(220,38,38,0.45)" : action.border}`,
                       color: action.accent,
                       boxShadow: isActive ? `0 0 0 3px ${action.accent}30` : "none",
+                      opacity: isSOS ? 1 : 0.7,
+                      cursor: isSOS ? "pointer" : "not-allowed",
                     }}
                     onClick={() => isSOS ? handleSOS() : undefined}
                   >
@@ -287,13 +298,14 @@ export default function EmergencyPage() {
             </div>
 
             {/* Emergency contact cards */}
+            <p className="text-[10px] mb-2" style={{ color: "var(--text-3)", fontFamily: "var(--font-body)" }}>
+              Sample contact directory - calling is disabled in this demo.
+            </p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
               {contacts.map((c) => (
-                <motion.a
+                <motion.div
                   key={c.label}
-                  href={`tel:${c.value.replace(/\s/g, "")}`}
                   whileHover={{ y: -1 }}
-                  whileTap={{ scale: 0.98 }}
                   className="rounded-xl p-3.5 flex flex-col gap-2 group"
                   style={{
                     background: c.bg,
@@ -341,7 +353,7 @@ export default function EmergencyPage() {
                       <Phone className="w-3 h-3" />
                     </div>
                   </div>
-                </motion.a>
+                </motion.div>
               ))}
             </div>
           </div>
@@ -565,7 +577,7 @@ export default function EmergencyPage() {
                   className="text-[11px] font-semibold tracking-wide uppercase"
                   style={{ color: "var(--text-3)", fontFamily: "var(--font-body)" }}
                 >
-                  Incident Feed
+                  Sample Incident Feed
                 </span>
               </div>
               <div className="flex items-center gap-1.5">
@@ -574,7 +586,7 @@ export default function EmergencyPage() {
                   className="text-[10px] font-medium"
                   style={{ color: "#16A34A", fontFamily: "var(--font-body)" }}
                 >
-                  Live
+                  Simulated
                 </span>
               </div>
             </div>

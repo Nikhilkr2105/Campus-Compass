@@ -551,6 +551,21 @@ export function CommandPalette({
     setActiveIndex(0);
   }, [query, flat.length]);
 
+  const handleSelect = useCallback((r: SearchResult) => {
+    recentStore.add(r.label);
+    if (r.building) onSelectBuilding(r.building);
+    if (mode === "destination") onSelectDestination(r.label);
+    else onSetSource(r.label);
+    closePalette();
+  }, [mode, onSelectDestination, onSetSource, onSelectBuilding, closePalette, recentStore]);
+
+  const handleNavigate = useCallback((r: SearchResult) => {
+    recentStore.add(r.label);
+    onSelectDestination(r.label);
+    if (r.building) onSelectBuilding(r.building);
+    closePalette();
+  }, [onSelectDestination, onSelectBuilding, closePalette, recentStore]);
+
   // Keyboard handler — uses flat, wraps, Home/End, Escape clears first
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (!open) return;
@@ -590,7 +605,7 @@ export function CommandPalette({
         }
         break;
     }
-  }, [open, flat, activeIndex, query, closePalette]);
+  }, [open, flat, activeIndex, query, closePalette, handleSelect]);
 
   // Scroll active item into view
   useEffect(() => {
@@ -598,21 +613,6 @@ export function CommandPalette({
     const el = listRef.current.querySelector(`[data-index="${activeIndex}"]`) as HTMLElement | null;
     el?.scrollIntoView({ block: "nearest", behavior: "instant" });
   }, [activeIndex]);
-
-  const handleSelect = useCallback((r: SearchResult) => {
-    recentStore.add(r.label);
-    if (r.building) onSelectBuilding(r.building);
-    if (mode === "destination") onSelectDestination(r.label);
-    else onSetSource(r.label);
-    closePalette();
-  }, [mode, onSelectDestination, onSetSource, onSelectBuilding, closePalette, recentStore]);
-
-  const handleNavigate = useCallback((r: SearchResult) => {
-    recentStore.add(r.label);
-    onSelectDestination(r.label);
-    if (r.building) onSelectBuilding(r.building);
-    closePalette();
-  }, [onSelectDestination, onSelectBuilding, closePalette, recentStore]);
 
   const activeOptionId = flat.length > 0 ? getOptionId(activeIndex) : undefined;
 

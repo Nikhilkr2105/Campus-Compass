@@ -554,7 +554,7 @@ function Overview({ onNavigate }: { onNavigate: (tab: AdminTab) => void }) {
               </StatusBadge>
             </div>
             <p className="text-[12px] mt-0.5" style={{ color: "#64748b" }}>
-              RIMT Smart Campus · Admin Control Center
+               RIMT Smart Campus · Admin Control Center · Demo Data
             </p>
           </div>
 
@@ -622,7 +622,7 @@ function Overview({ onNavigate }: { onNavigate: (tab: AdminTab) => void }) {
               <div className="text-[13px] font-semibold" style={{ color: "#0f172a" }}>
                 Infrastructure Load
               </div>
-              <div className="text-[11px]" style={{ color: "#94a3b8" }}>Live server metrics</div>
+               <div className="text-[11px]" style={{ color: "#94a3b8" }}>Simulated server metrics</div>
             </div>
             <StatusBadge variant={phase.variant}>
               {phase.short} · {phase.loadPct}%
@@ -687,12 +687,12 @@ function Overview({ onNavigate }: { onNavigate: (tab: AdminTab) => void }) {
             style={{ borderBottom: "1px solid #f8fafc" }}
           >
             <div>
-              <div className="text-[13px] font-semibold" style={{ color: "#0f172a" }}>Live Activity</div>
-              <div className="text-[11px]" style={{ color: "#94a3b8" }}>Real-time campus events</div>
+               <div className="text-[13px] font-semibold" style={{ color: "#0f172a" }}>Simulated Activity</div>
+               <div className="text-[11px]" style={{ color: "#94a3b8" }}>Generated campus events</div>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full" style={{ background: "#22c55e" }} />
-              <span className="text-[11px] font-medium" style={{ color: "#22c55e" }}>Streaming</span>
+               <span className="text-[11px] font-medium" style={{ color: "#22c55e" }}>Demo</span>
             </div>
           </div>
           <LiveActivityFeed phase={phase} />

@@ -69,7 +69,7 @@ function RoomRect({
   const stroke = isCorridor
     ? "rgba(255,255,255,0.06)"
     : isActive  ? base
-    : isStart   ? "var(--cyan)"
+    : isStart   ? "var(--sky)"
     : isEnd     ? "var(--purple)"
     : isOnPath  ? `${base}99`
     : hovered   ? `${base}66`
@@ -82,6 +82,21 @@ function RoomRect({
       onClick={!isCorridor ? onClick : undefined}
       onMouseEnter={() => !isCorridor && setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      onFocus={() => !isCorridor && setHovered(true)}
+      onBlur={() => setHovered(false)}
+      onKeyDown={
+        !isCorridor
+          ? (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onClick();
+              }
+            }
+          : undefined
+      }
+      role={!isCorridor ? "button" : undefined}
+      tabIndex={!isCorridor ? 0 : undefined}
+      aria-label={!isCorridor ? `Select room ${room.name}` : undefined}
       style={{ cursor: isCorridor ? "default" : "pointer" }}
     >
       {/* Glow */}
@@ -113,8 +128,8 @@ function RoomRect({
           cx={room.x + room.w - 8}
           cy={room.y + 8}
           r={8}
-          fill={isStart ? "var(--cyan)" : "var(--purple)"}
-          style={{ filter: `drop-shadow(0 0 6px ${isStart ? "var(--cyan)" : "var(--purple)"})` }}
+          fill={isStart ? "var(--sky)" : "var(--purple)"}
+          style={{ filter: `drop-shadow(0 0 6px ${isStart ? "var(--sky)" : "var(--purple)"})` }}
         />
       )}
       {(isStart || isEnd) && (
@@ -202,7 +217,7 @@ function FloorPathLine({
       <path
         key={animKey}
         d={d} fill="none"
-        stroke="var(--cyan)"
+        stroke="var(--sky)"
         strokeWidth={2.5}
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -216,7 +231,7 @@ function FloorPathLine({
       {/* Waypoint dots */}
       {points.slice(1, -1).map((p, i) => (
         <circle key={i} cx={p.x} cy={p.y} r={3}
-          fill="var(--cyan)" opacity={0.7}
+          fill="var(--sky)" opacity={0.7}
           style={{ filter: "drop-shadow(0 0 3px #00d4ff)" }}
         />
       ))}
@@ -248,7 +263,7 @@ function FloorSelector({
             border: `1px solid ${f.floor === active
               ? "rgba(0,212,255,0.5)"
               : "rgba(255,255,255,0.08)"}`,
-            color:      f.floor === active ? "var(--cyan)" : "var(--text-3)",
+            color:      f.floor === active ? "var(--sky)" : "var(--text-3)",
             cursor:     "pointer",
             boxShadow:  f.floor === active ? "0 0 12px rgba(0,212,255,0.2)" : "none",
             fontFamily: "var(--font-display)",
@@ -399,7 +414,7 @@ export function FloorMap() {
         <GlassCard neon className="p-4">
           <div
             className="text-[10px] font-semibold tracking-[1.5px] mb-1"
-            style={{ color: "var(--cyan)", fontFamily: "var(--font-display)" }}
+            style={{ color: "var(--sky)", fontFamily: "var(--font-display)" }}
           >
             INDOOR NAVIGATOR
           </div>
@@ -428,7 +443,7 @@ export function FloorMap() {
               style={{
                 background: pickMode === "start" ? "rgba(0,212,255,0.12)" : "rgba(255,255,255,0.03)",
                 border:     `1px solid ${pickMode === "start" ? "rgba(0,212,255,0.4)" : "rgba(255,255,255,0.07)"}`,
-                color:      startRoom ? "var(--cyan)" : "var(--text-3)",
+                color:      startRoom ? "var(--sky)" : "var(--text-3)",
                 cursor:     "pointer",
                 fontFamily: "var(--font-body)",
               }}
@@ -466,7 +481,7 @@ export function FloorMap() {
                 className="flex-1 py-1.5 text-[10px] capitalize transition-all"
                 style={{
                   background: mode === m ? "rgba(0,212,255,0.1)" : "transparent",
-                  color:      mode === m ? "var(--cyan)"          : "var(--text-3)",
+                  color:      mode === m ? "var(--sky)"           : "var(--text-3)",
                   border:     "none", cursor: "pointer",
                   fontFamily: "var(--font-body)",
                 }}
@@ -509,7 +524,7 @@ export function FloorMap() {
               <GlassCard neon className="p-4">
                 <div
                   className="text-[10px] font-semibold tracking-[1.5px] mb-3"
-                  style={{ color: "var(--cyan)", fontFamily: "var(--font-display)" }}
+                  style={{ color: "var(--sky)", fontFamily: "var(--font-display)" }}
                 >
                   ROUTE DETAILS
                 </div>
@@ -528,7 +543,7 @@ export function FloorMap() {
                     >
                       <div
                         className="text-[14px] font-bold"
-                        style={{ color: "var(--cyan)", fontFamily: "var(--font-display)" }}
+                        style={{ color: "var(--sky)", fontFamily: "var(--font-display)" }}
                       >
                         {s.value}
                       </div>
@@ -633,7 +648,7 @@ export function FloorMap() {
           className="absolute top-4 left-4 z-10 px-3 py-1.5 rounded-lg text-[11px] font-semibold"
           style={{
             background: "rgba(0,212,255,0.08)", border: "1px solid rgba(0,212,255,0.2)",
-            color: "var(--cyan)", fontFamily: "var(--font-display)",
+            color: "var(--sky)", fontFamily: "var(--font-display)",
           }}
         >
           Floor {activeFloor} — {floorData?.label}
@@ -647,7 +662,7 @@ export function FloorMap() {
             className="absolute top-4 left-1/2 -translate-x-1/2 z-10 px-4 py-2 rounded-xl text-[11px]"
             style={{
               background: "rgba(6,13,24,0.95)", border: "1px solid rgba(0,212,255,0.3)",
-              color: "var(--cyan)", fontFamily: "var(--font-body)",
+              color: "var(--sky)", fontFamily: "var(--font-body)",
               backdropFilter: "blur(12px)",
             }}
           >

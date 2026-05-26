@@ -25,6 +25,7 @@
 
   /* Brand Colors */
   --sky: #3882f6;
+  --cyan: var(--sky);
   --sky-light: #6ea8ff;
   --sky-deep: #1a4fa8;
   --gold: #c9922a;

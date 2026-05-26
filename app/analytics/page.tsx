@@ -284,7 +284,7 @@ function CampusLoadGauge({ phase }: { phase: CampusPhase }) {
    LIVE BADGE
 ════════════════════════════════════════════════════════════════ */
 
-function LiveBadge({ label = "Live" }: { label?: string }) {
+function LiveBadge({ label = "Simulated" }: { label?: string }) {
   return (
     <div className="flex items-center gap-2">
       <span className="relative flex h-[7px] w-[7px]">
@@ -308,11 +308,11 @@ function LiveBadge({ label = "Live" }: { label?: string }) {
 ════════════════════════════════════════════════════════════════ */
 
 function AnimatedStatPill({ label, value, color }: { label: string; value: number; color: string }) {
-  const [prev, setPrev] = useState(value);
+  const prev = useRef(value);
   const [dir, setDir]   = useState(0);
   useEffect(() => {
-    setDir(value > prev ? 1 : value < prev ? -1 : 0);
-    setPrev(value);
+    setDir(value > prev.current ? 1 : value < prev.current ? -1 : 0);
+    prev.current = value;
   }, [value]);
   return (
     <div className="text-center">
@@ -434,7 +434,7 @@ function PageHeader({ time, date, phase }: { time: string; date: string; phase: 
               <div className="w-px h-8" style={{ background: "rgba(15,23,42,0.08)" }} />
             </div>
 
-            <LiveBadge label="Live Feed" />
+            <LiveBadge label="Simulated Feed" />
 
             <div className="hidden sm:block w-px h-8" style={{ background: "rgba(15,23,42,0.08)" }} />
             <div className="hidden sm:block text-right">
@@ -638,7 +638,7 @@ export default function AnalyticsPage() {
           <motion.section variants={staggerItem}>
             <SectionHeader
               label="Campus Pulse"
-              description="Live performance indicators across the navigation ecosystem"
+              description="Simulated performance indicators across the navigation ecosystem"
               action="Export"
               live
             />
@@ -658,7 +658,7 @@ export default function AnalyticsPage() {
           <motion.section variants={staggerItem}>
             <SectionHeader
               label="Building Utilization"
-              description="Real-time occupancy and 7-day activity trends by facility"
+              description="Simulated occupancy and 7-day activity trends by facility"
               live
             />
             <BuildingUtilization />
@@ -734,8 +734,8 @@ export default function AnalyticsPage() {
           {/* 10. LIVE OPERATIONS */}
           <motion.section variants={staggerItem}>
             <SectionHeader
-              label="Live Campus Operations"
-              description="Real-time event feed, 24h activity profile, and campus load"
+              label="Simulated Campus Operations"
+              description="Generated event feed, 24h activity profile, and campus load"
               live
             />
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
@@ -752,7 +752,7 @@ export default function AnalyticsPage() {
                   <div className="flex items-center gap-2 mb-3">
                     <div className="w-1.5 h-1.5 rounded-full" style={{ background: T.green }} />
                     <span className="text-[10px] font-semibold tracking-wider uppercase" style={{ color: T.green }}>
-                      Live Event Feed
+                      Simulated Event Feed
                     </span>
                   </div>
                   <LiveEventFeed />

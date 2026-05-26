@@ -197,7 +197,7 @@ Global command palette for faster navigation:
 
 ### AI Integration
 
-- Anthropic SDK
+- Google Gemini API (`@google/generative-ai`)
 - AI Chat API
 
 ### Algorithms
@@ -254,7 +254,7 @@ npm install
 Create `.env.local`
 
 ```env
-ANTHROPIC_API_KEY=your_api_key_here
+GEMINI_API_KEY=your_api_key_here
 ```
 
 Run the development server:
@@ -287,7 +287,9 @@ npx tsc --noEmit
 
 - Indoor navigation currently supports Block A.
 - Administrative workflows currently use local/demo state.
-- AI assistant requires a valid Anthropic API key.
+- Analytics, occupancy, operational status, and emergency activity panels currently display simulated/demo data.
+- Emergency action controls and displayed contact numbers are demonstration-only and are not connected to response services.
+- AI assistant requires a valid Gemini API key.
 - Outdoor route times are calculated from campus path distances.
 - Accessibility routing filters accessible edges within the campus graph.
 
@@ -317,7 +319,7 @@ Completed:
 - Premium Landing Experience
 - Unified Design System
 - Modern Campus Map Experience
-- Production-Ready Admin Dashboard
+- Polished Admin Dashboard Prototype
 - Enhanced Analytics Center
 - Emergency Operations Center
 - Command Palette Improvements
