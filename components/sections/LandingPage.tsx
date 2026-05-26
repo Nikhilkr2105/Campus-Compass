@@ -927,7 +927,13 @@ export function LandingPage() {
         <SkyHero />
 
         <motion.div
-          style={{ y: springY, opacity: heroOpacity, position: "relative", zIndex: 2 }}
+  style={{
+    y: springY,
+    opacity: heroOpacity,
+    position: "relative",
+    zIndex: 2,
+    paddingTop: 90,
+  }}
           className="flex flex-col items-center text-center px-6"
         >
           {/* Badge */}
