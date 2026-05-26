@@ -226,11 +226,10 @@ function BarChart({ data, maxVal }: { data: { label: string; val: number }[]; ma
               {/* Bar */}
               <motion.div
                 className="w-full rounded-t-md relative overflow-hidden"
-                style={{ height: Math.max(barH, 3) }}
+                style={{ transformOrigin: "bottom", height: Math.max(barH, 3) }}
                 initial={{ scaleY: 0 }}
                 animate={{ scaleY: 1 }}
                 transition={{ delay: i * 0.04, duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-                style={{ transformOrigin: "bottom", height: Math.max(barH, 3) }}
               >
                 <div
                   className="absolute inset-0 rounded-t-md transition-all duration-200"
@@ -632,12 +631,12 @@ export function StudentActivityTrends() {
                       background: `${s.color}${hovered === i ? "ff" : "bb"}`,
                       height: barH,
                       alignSelf: "flex-end",
+                      transformOrigin: "bottom",
                       transition: "background 0.2s",
                     }}
                     initial={{ scaleY: 0 }}
                     animate={{ scaleY: 1 }}
                     transition={{ delay: i * 0.05, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                    style={{ transformOrigin: "bottom", height: barH, alignSelf: "flex-end" }}
                   />
                 );
               })}

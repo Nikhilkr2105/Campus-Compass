@@ -94,7 +94,7 @@ function matchBuilding(text: string): string[] {
     }
   }
 
-  return [...new Set(matched)];
+  return Array.from(new Set(matched));
 }
 
 function buildContextSnippet(text: string): string {

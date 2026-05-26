@@ -9,7 +9,7 @@ import {
 } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ZoomIn, ZoomOut, RotateCcw, Crosshair, MapPin, Clock } from "lucide-react";
-import { BUILDINGS, PATH_EDGES } from "@/data/buildings";
+import { BUILDINGS, CATEGORY_LABELS, PATH_EDGES } from "@/data/buildings";
 import { Building } from "@/types/navigation";
 
 // ─────────────────────────────────────────────────────────────
@@ -554,7 +554,7 @@ function BuildingNode({
             animation:  "fade-in-up 0.35s cubic-bezier(0.22,1,0.36,1) both",
           }}
         >
-          {building.floors}F · {building.category ?? "Building"}
+          {building.floors}F · {CATEGORY_LABELS[building.type]}
         </text>
       )}
     </g>

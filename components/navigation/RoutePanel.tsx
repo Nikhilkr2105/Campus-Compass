@@ -7,7 +7,7 @@ import {
   ChevronLeft, ChevronRight, StopCircle,
   MapPin, Search, Clock, Accessibility,
   AlertCircle, CheckCircle2, Footprints,
-  Flag, CircleDot, ChevronDown,
+  Flag, CircleDot, ChevronDown, Compass,
 } from "lucide-react";
 import { BUILDINGS, SEARCH_TERMS, Building, PATH_EDGES, getBuildingById } from "@/data/buildings";
 import { NavigationRoute } from "@/types/navigation";
@@ -25,6 +25,43 @@ interface RoutePanelProps {
   onPrev:          () => void;
   onClear:         () => void;
   onDestChange:    (name: string) => void;
+}
+
+/* ─── Actionable error messages ─────────────────────────────────── */
+interface ErrorState {
+  message: string;
+  hints: string[];
+}
+
+function resolveError(code: string, accessible: boolean): ErrorState {
+  switch (code) {
+    case "missing_fields":
+      return {
+        message: "Both start and destination are required.",
+        hints: ["Select from search suggestions for best results."],
+      };
+    case "same_location":
+      return {
+        message: "Start and destination cannot be the same.",
+        hints: ["Choose a different destination."],
+      };
+    case "location_not_found":
+      return {
+        message: "Could not find one or both locations.",
+        hints: ["Try a shorter keyword (e.g. 'Library' instead of full name)."],
+      };
+    case "no_route":
+      return {
+        message: "No route found between these locations.",
+        hints: [
+          "Try a nearby starting point.",
+          accessible ? "Disable accessible mode — a standard path may exist." : "Enable accessible mode for alternative paths.",
+          "Verify both locations are on campus.",
+        ],
+      };
+    default:
+      return { message: "Something went wrong.", hints: ["Try again."] };
+  }
 }
 
 /* ─── Fuzzy search (unchanged logic) ────────────────────────────── */
@@ -67,6 +104,7 @@ const QUICK = [
 function SmartSearch({
   value, onChange, placeholder, variant = "origin",
   onHoverBuilding, onUnhoverBuilding,
+  validationHint, inputId,
 }: {
   value: string;
   onChange: (v: string) => void;
@@ -74,6 +112,8 @@ function SmartSearch({
   variant?: "origin" | "destination";
   onHoverBuilding?: (name: string | null) => void;
   onUnhoverBuilding?: () => void;
+  validationHint?: string | null;
+  inputId?: string;
 }) {
   const [focused,   setFocused]   = useState(false);
   const [loading,   setLoading]   = useState(false);
@@ -83,7 +123,8 @@ function SmartSearch({
   const showDrop = focused && filtered.length > 0;
 
   const isOrigin = variant === "origin";
-  const accentColor = isOrigin ? "#0ea5e9" : "#f59e0b"; // sky-500 : amber-400
+  const accentColor = isOrigin ? "#0ea5e9" : "#f59e0b";
+  const hintId = inputId ? `${inputId}-hint` : undefined;
 
   const handleSelect = (s: string) => {
     setLoading(true);
@@ -103,25 +144,33 @@ function SmartSearch({
     if (showDrop && filtered[activeIdx]) onHoverBuilding?.(filtered[activeIdx]);
   }, [activeIdx, showDrop, filtered, onHoverBuilding]);
 
+  const showValidationHint = validationHint && !focused && !value;
+
   return (
     <div className={focused ? "relative z-[80]" : "relative z-0"}>
       {/* Input pill */}
       <motion.div
         animate={{
-          boxShadow: focused
+          boxShadow: showValidationHint
+            ? "0 0 0 2px #fbbf2440, 0 1px 4px rgba(0,0,0,0.06)"
+            : focused
             ? `0 0 0 3px ${accentColor}20, 0 4px 16px rgba(0,0,0,0.08)`
             : "0 1px 4px rgba(0,0,0,0.06)",
         }}
         transition={{ duration: 0.2 }}
         className="flex items-center gap-3 rounded-2xl px-4 py-3 bg-white border transition-colors duration-200"
         style={{
-          borderColor: focused ? `${accentColor}60` : "rgba(148,163,184,0.25)",
+          borderColor: showValidationHint
+            ? "#fbbf24"
+            : focused
+            ? `${accentColor}60`
+            : "rgba(148,163,184,0.25)",
         }}
       >
         {/* Dot indicator */}
         <div
           className="w-2 h-2 rounded-full flex-shrink-0"
-          style={{ background: value ? accentColor : "#cbd5e1" }}
+          style={{ background: value ? accentColor : showValidationHint ? "#fbbf24" : "#cbd5e1" }}
         />
 
         {loading ? (
@@ -132,6 +181,7 @@ function SmartSearch({
         ) : null}
 
         <input
+          id={inputId}
           value={value}
           onChange={(e) => { onChange(e.target.value); setActiveIdx(0); }}
           onFocus={() => setFocused(true)}
@@ -139,6 +189,9 @@ function SmartSearch({
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           className="flex-1 bg-transparent outline-none text-sm text-slate-800 placeholder:text-slate-400 font-medium"
+          aria-describedby={hintId}
+          aria-invalid={showValidationHint ? "true" : undefined}
+          autoComplete="off"
         />
 
         <AnimatePresence>
@@ -150,12 +203,31 @@ function SmartSearch({
               transition={{ duration: 0.12 }}
               onClick={() => { onChange(""); setActiveIdx(0); }}
               className="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center hover:bg-slate-200 transition-colors flex-shrink-0"
+              aria-label="Clear input"
             >
               <X className="w-3 h-3 text-slate-500" />
             </motion.button>
           )}
         </AnimatePresence>
       </motion.div>
+
+      {/* Inline validation hint */}
+      <AnimatePresence>
+        {showValidationHint && (
+          <motion.p
+            id={hintId}
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            transition={{ duration: 0.15 }}
+            className="text-[11px] text-amber-600 font-medium mt-1.5 px-1 flex items-center gap-1"
+            role="status"
+          >
+            <span className="w-1 h-1 rounded-full bg-amber-400 inline-block flex-shrink-0" />
+            {validationHint}
+          </motion.p>
+        )}
+      </AnimatePresence>
 
       {/* Dropdown */}
       <AnimatePresence>
@@ -167,10 +239,14 @@ function SmartSearch({
             transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
             className="absolute top-full left-0 right-0 mt-2 rounded-2xl overflow-hidden z-[100] bg-white shadow-2xl border border-slate-100"
             style={{ boxShadow: "0 20px 60px rgba(0,0,0,0.12), 0 4px 16px rgba(0,0,0,0.06)" }}
+            role="listbox"
+            aria-label="Location suggestions"
           >
             {filtered.map((s, i) => (
               <motion.button
                 key={s}
+                role="option"
+                aria-selected={i === activeIdx}
                 onMouseDown={() => handleSelect(s)}
                 onMouseEnter={() => { setActiveIdx(i); onHoverBuilding?.(s); }}
                 onMouseLeave={() => onUnhoverBuilding?.()}
@@ -220,9 +296,11 @@ export function RoutePanel({
   const [source,          setSource]          = useState("");
   const [destination,     setDestination]     = useState("");
   const [finding,         setFinding]         = useState(false);
-  const [error,           setError]           = useState<string | null>(null);
+  const [error,           setError]           = useState<ErrorState | null>(null);
   const [accessible,      setAccessible]      = useState(false);
   const [hoveredBuilding, setHoveredBuilding] = useState<string | null>(null);
+  // Track whether a find was attempted to show inline hints
+  const [attempted,       setAttempted]       = useState(false);
 
   const handleSourceChange = useCallback((v: string) => {
     setSource(v); setError(null);
@@ -235,8 +313,16 @@ export function RoutePanel({
   }, [onDestChange, onClear]);
 
   const handleFindRoute = useCallback(async () => {
-    if (!source || !destination) { setError("Please enter both start and destination."); return; }
-    if (source.toLowerCase() === destination.toLowerCase()) { setError("Start and destination cannot be the same."); return; }
+    setAttempted(true);
+
+    if (!source || !destination) {
+      setError(resolveError("missing_fields", accessible));
+      return;
+    }
+    if (source.toLowerCase() === destination.toLowerCase()) {
+      setError(resolveError("same_location", accessible));
+      return;
+    }
 
     setFinding(true); setError(null);
     await new Promise(r => setTimeout(r, 400));
@@ -251,7 +337,7 @@ export function RoutePanel({
     );
 
     if (!srcB || !dstB) {
-      setError("Could not find one or both locations. Try selecting from suggestions.");
+      setError(resolveError("location_not_found", accessible));
       setFinding(false); return;
     }
 
@@ -259,7 +345,7 @@ export function RoutePanel({
     const result = dijkstra(graph, srcB.id, dstB.id);
 
     if (!result.found || result.path.length < 2) {
-      setError("No route found between these locations.");
+      setError(resolveError("no_route", accessible));
       setFinding(false); return;
     }
 
@@ -269,15 +355,18 @@ export function RoutePanel({
 
     onRouteFound({ path: result.path, buildings, totalDistance: result.distance, estimatedMinutes: distToMinutes(result.distance), accessible });
     setFinding(false);
+    setAttempted(false);
   }, [source, destination, onRouteFound, accessible]);
 
   const handleSwap = useCallback(() => {
-    setSource(destination); setDestination(source); onClear();
+    setSource(destination); setDestination(source); onClear(); setAttempted(false);
   }, [source, destination, onClear]);
 
   const handleQuickDest = useCallback((name: string) => handleDestChange(name), [handleDestChange]);
 
-  const handleClear = useCallback(() => { onClear(); setError(null); setHoveredBuilding(null); }, [onClear]);
+  const handleClear = useCallback(() => {
+    onClear(); setError(null); setHoveredBuilding(null); setAttempted(false);
+  }, [onClear]);
 
   const routeStats = useMemo(() => {
     if (!route) return null;
@@ -289,6 +378,10 @@ export function RoutePanel({
   }, [route]);
 
   const progress = route ? ((currentStep) / Math.max(route.buildings.length - 1, 1)) * 100 : 0;
+
+  // Inline validation hints — only shown after a find attempt
+  const sourceHint      = attempted && !source      ? "Choose a starting location" : null;
+  const destinationHint = attempted && !destination ? "Select where you want to go"  : null;
 
   return (
     <div className="flex flex-col gap-3">
@@ -315,16 +408,21 @@ export function RoutePanel({
         <div className="px-5 pt-4 pb-5 flex flex-col gap-3">
           {/* FROM */}
           <div>
-            <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5 block px-1">
+            <label
+              htmlFor="route-source"
+              className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5 block px-1"
+            >
               From
             </label>
             <SmartSearch
+              inputId="route-source"
               value={source}
               onChange={handleSourceChange}
               placeholder="Starting point…"
               variant="origin"
               onHoverBuilding={setHoveredBuilding}
               onUnhoverBuilding={() => setHoveredBuilding(null)}
+              validationHint={sourceHint}
             />
           </div>
 
@@ -340,6 +438,7 @@ export function RoutePanel({
               onClick={handleSwap}
               transition={{ type: "spring", stiffness: 350, damping: 22 }}
               title="Swap start and destination"
+              aria-label="Swap start and destination"
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-500 text-[11px] font-medium hover:bg-slate-100 hover:text-slate-700 transition-colors ml-auto"
             >
               <ArrowUpDown className="w-3 h-3" />
@@ -349,16 +448,21 @@ export function RoutePanel({
 
           {/* TO */}
           <div>
-            <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5 block px-1">
+            <label
+              htmlFor="route-destination"
+              className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5 block px-1"
+            >
               To
             </label>
             <SmartSearch
+              inputId="route-destination"
               value={destination}
               onChange={handleDestChange}
               placeholder="Where are you headed?"
               variant="destination"
               onHoverBuilding={setHoveredBuilding}
               onUnhoverBuilding={() => setHoveredBuilding(null)}
+              validationHint={destinationHint}
             />
           </div>
 
@@ -367,6 +471,7 @@ export function RoutePanel({
             onClick={() => setAccessible(!accessible)}
             whileHover={{ scale: 1.01 }}
             whileTap={{ scale: 0.99 }}
+            aria-pressed={accessible}
             className="flex items-center gap-2.5 px-4 py-2.5 rounded-2xl border text-[12px] font-medium transition-all duration-200"
             style={{
               background:   accessible ? "#ecfdf5" : "#f8fafc",
@@ -387,17 +492,33 @@ export function RoutePanel({
             </div>
           </motion.button>
 
-          {/* Error */}
+          {/* Actionable Error */}
           <AnimatePresence>
             {error && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
                 exit={{ opacity: 0, height: 0 }}
-                className="px-3.5 py-2.5 rounded-xl text-[12px] flex items-start gap-2 bg-red-50 border border-red-200 text-red-600"
+                className="rounded-xl overflow-hidden"
+                role="alert"
+                aria-live="assertive"
               >
-                <AlertCircle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
-                <span>{error}</span>
+                <div className="px-3.5 pt-3 pb-2.5 bg-red-50 border border-red-200">
+                  <div className="flex items-start gap-2 text-red-600">
+                    <AlertCircle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+                    <span className="text-[12px] font-semibold">{error.message}</span>
+                  </div>
+                  {error.hints.length > 0 && (
+                    <div className="mt-2 pl-5 flex flex-col gap-1">
+                      {error.hints.map((hint, i) => (
+                        <div key={i} className="flex items-start gap-1.5">
+                          <span className="text-[10px] text-red-400 mt-0.5 flex-shrink-0">•</span>
+                          <span className="text-[11px] text-red-500">{hint}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
@@ -405,17 +526,18 @@ export function RoutePanel({
           {/* Find Route CTA */}
           <motion.button
             onClick={handleFindRoute}
-            disabled={!source || !destination || finding}
-            whileHover={{ scale: !source || !destination || finding ? 1 : 1.015, y: -1 }}
+            disabled={finding}
+            whileHover={{ scale: finding ? 1 : 1.015, y: finding ? 0 : -1 }}
             whileTap={{ scale: 0.985 }}
             transition={{ duration: 0.15 }}
-            className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-[13px] font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            aria-busy={finding}
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-[13px] font-semibold transition-all duration-200 disabled:cursor-not-allowed"
             style={{
-              background: (!source || !destination || finding)
+              background: finding
                 ? "#f1f5f9"
                 : "linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)",
-              color: (!source || !destination || finding) ? "#94a3b8" : "white",
-              boxShadow: (!source || !destination || finding)
+              color: finding ? "#94a3b8" : "white",
+              boxShadow: finding
                 ? "none"
                 : "0 4px 16px rgba(14,165,233,0.35), 0 1px 4px rgba(14,165,233,0.2)",
             }}
@@ -460,6 +582,7 @@ export function RoutePanel({
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.04, duration: 0.25 }}
+                aria-pressed={isSelected}
                 className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left text-[12px] font-medium transition-all duration-150 border"
                 style={{
                   background:  isSelected ? "#f0f9ff" : "#f8fafc",
@@ -477,6 +600,32 @@ export function RoutePanel({
         </div>
       </motion.div>
 
+      {/* ── Empty Route State ────────────────────────────────────── */}
+      <AnimatePresence>
+        {!route && !finding && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 4, scale: 0.99 }}
+            transition={{ duration: 0.35, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+            className="rounded-3xl border border-dashed border-slate-200 bg-slate-50/60 px-5 py-6 flex flex-col items-center text-center gap-2"
+            aria-label="No route generated yet"
+          >
+            <div className="w-10 h-10 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-center justify-center mb-1">
+              <Compass className="w-5 h-5 text-slate-300" />
+            </div>
+            <p className="text-[13px] font-semibold text-slate-500 tracking-tight">Ready to Navigate</p>
+            <p className="text-[11px] text-slate-400 leading-relaxed max-w-[200px]">
+              Choose a starting point and destination to generate the best campus route.
+            </p>
+            <div className="flex items-center gap-1.5 mt-1 px-2.5 py-1 rounded-full bg-white border border-slate-200">
+              <Clock className="w-3 h-3 text-slate-400" />
+              <span className="text-[10px] font-medium text-slate-400">Route generation &lt; 2 seconds</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* ── Route Result ─────────────────────────────────────────── */}
       <AnimatePresence>
         {route && (
@@ -492,10 +641,29 @@ export function RoutePanel({
             <div className="px-5 pt-5 pb-4 border-b border-slate-100">
               <div className="flex items-start justify-between">
                 <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <div className="w-2 h-2 rounded-full bg-emerald-400" />
-                    <span className="text-[11px] font-semibold text-emerald-600 uppercase tracking-wider">Route ready</span>
-                  </div>
+                  {/* Route ready confirmation */}
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.92 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                    className="flex items-center gap-2 mb-1"
+                    aria-live="polite"
+                  >
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 20, delay: 0.1 }}
+                      className="w-4 h-4 rounded-full bg-emerald-400 flex items-center justify-center"
+                    >
+                      <CheckCircle2 className="w-2.5 h-2.5 text-white" />
+                    </motion.div>
+                    <span className="text-[11px] font-semibold text-emerald-600 uppercase tracking-wider">
+                      Route Ready
+                    </span>
+                    <span className="text-[11px] text-slate-400">
+                      · {(routeStats?.distance || 0).toFixed(0)} m · ~{routeStats?.duration} min walk
+                    </span>
+                  </motion.div>
                   <h3 className="text-[14px] font-semibold text-slate-900 tracking-tight leading-snug">
                     {route.buildings[0]?.name} →{" "}
                     <span className="text-amber-600">{route.buildings[route.buildings.length - 1]?.name}</span>
@@ -506,6 +674,7 @@ export function RoutePanel({
                   whileHover={{ scale: 1.15, rotate: 90 }}
                   whileTap={{ scale: 0.9 }}
                   transition={{ duration: 0.15 }}
+                  aria-label="Clear route"
                   className="w-7 h-7 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 hover:bg-slate-200 hover:text-slate-600 transition-colors flex-shrink-0"
                 >
                   <X className="w-3.5 h-3.5" />
@@ -513,7 +682,7 @@ export function RoutePanel({
               </div>
 
               {/* Stats row */}
-              <div className="flex items-center gap-3 mt-3.5">
+              <div className="flex items-center gap-3 mt-3.5" role="group" aria-label="Route statistics">
                 <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-sky-50 border border-sky-100">
                   <Clock className="w-3 h-3 text-sky-500" />
                   <span className="text-[12px] font-semibold text-sky-700">~{routeStats?.duration} min</span>
@@ -543,14 +712,22 @@ export function RoutePanel({
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
                   className="px-5 py-3 border-b border-slate-100 bg-sky-50/60"
+                  aria-label="Navigation progress"
                 >
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[11px] font-semibold text-sky-600 uppercase tracking-wider">Navigating</span>
-                    <span className="text-[11px] text-slate-500">
+                    <span className="text-[11px] text-slate-500" aria-live="polite">
                       Step {currentStep + 1} of {route.buildings.length}
                     </span>
                   </div>
-                  <div className="w-full h-1.5 rounded-full bg-sky-100 overflow-hidden">
+                  <div
+                    className="w-full h-1.5 rounded-full bg-sky-100 overflow-hidden"
+                    role="progressbar"
+                    aria-valuenow={Math.round(progress)}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-label="Navigation progress"
+                  >
                     <motion.div
                       className="h-full rounded-full bg-gradient-to-r from-sky-400 to-sky-500"
                       animate={{ width: `${progress}%` }}
@@ -562,7 +739,7 @@ export function RoutePanel({
             </AnimatePresence>
 
             {/* Steps — timeline */}
-            <div className="px-5 py-4 max-h-[280px] overflow-y-auto">
+            <div className="px-5 py-4 max-h-[280px] overflow-y-auto" role="list" aria-label="Route steps">
               <div className="flex flex-col">
                 {route.buildings.map((b, i) => {
                   const isActive = isNavigating && i === currentStep;
@@ -574,6 +751,8 @@ export function RoutePanel({
                   return (
                     <motion.div
                       key={b.id}
+                      role="listitem"
+                      aria-current={isActive ? "step" : undefined}
                       className="flex items-stretch gap-3.5"
                       onHoverStart={() => setHoveredBuilding(b.name)}
                       onHoverEnd={() => setHoveredBuilding(null)}
@@ -698,6 +877,7 @@ export function RoutePanel({
                     onClick={onPrev}
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.96 }}
+                    aria-label="Previous step"
                     className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-[12px] font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors border border-slate-200"
                   >
                     <ChevronLeft className="w-3.5 h-3.5" />
@@ -708,6 +888,7 @@ export function RoutePanel({
                     onClick={onNext}
                     whileHover={{ scale: 1.03, y: -0.5 }}
                     whileTap={{ scale: 0.96 }}
+                    aria-label="Next step"
                     className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[12px] font-semibold text-white transition-all"
                     style={{
                       background: "linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)",
@@ -722,6 +903,7 @@ export function RoutePanel({
                     onClick={onStop}
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.96 }}
+                    aria-label="Stop navigation"
                     className="flex items-center justify-center w-10 rounded-xl bg-red-50 text-red-500 hover:bg-red-100 border border-red-200 transition-colors"
                   >
                     <StopCircle className="w-4 h-4" />
