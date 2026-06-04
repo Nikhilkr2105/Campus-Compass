@@ -409,7 +409,7 @@ function PageHeader({ time, date, phase }: { time: string; date: string; phase: 
                 </span>
               </div>
               <p className="text-[11px] leading-none" style={{ color: T.muted }}>
-                RIMT University · Campus Navigation System
+                Campus Compass · Analytics Center
               </p>
             </div>
           </div>

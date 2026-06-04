@@ -82,13 +82,13 @@ export function AdminSidebar({ active, onChange }: AdminSidebarProps) {
               className="text-[13px] font-bold leading-tight"
               style={{ color: "#0f172a", fontFamily: "var(--font-display, inherit)" }}
             >
-              RIMT Campus
+              Campus Compass
             </div>
             <div
               className="text-[10px]"
               style={{ color: "#94a3b8", letterSpacing: "0.5px" }}
             >
-              Operations Center
+              Admin Console
             </div>
           </div>
         </div>

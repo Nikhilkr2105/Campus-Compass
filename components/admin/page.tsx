@@ -554,7 +554,7 @@ function Overview({ onNavigate }: { onNavigate: (tab: AdminTab) => void }) {
               </StatusBadge>
             </div>
             <p className="text-[12px] mt-0.5" style={{ color: "#64748b" }}>
-               RIMT Smart Campus · Admin Control Center · Demo Data
+               Campus Compass · Admin Console · Demo Data
             </p>
           </div>
 

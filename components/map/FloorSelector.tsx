@@ -35,6 +35,8 @@ export function FloorSelector({
           <motion.button
             key={floor}
             onClick={() => onFloorChange(floor)}
+            aria-label={`Floor ${floor}`}
+            aria-pressed={active}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.93 }}
             className="w-9 h-9 rounded-xl flex items-center justify-center text-[12px] font-bold"

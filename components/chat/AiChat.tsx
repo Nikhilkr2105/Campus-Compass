@@ -32,7 +32,7 @@ const QUICK_PROMPTS = [
 const INITIAL: Message = {
   id:        "init",
   role:      "assistant",
-  content:   "Hi! I'm your RIMT Campus AI. Ask me for directions, building info, or anything campus-related.",
+  content:   "Hi! I'm Campus Assistant, your AI guide to campus. Ask me for directions, building info, or anything campus-related.",
   timestamp: new Date(),
 };
 
@@ -383,7 +383,7 @@ export function AIChat() {
                     className="text-[13px] font-semibold leading-tight"
                     style={{ fontFamily: "var(--font-display)" }}
                   >
-                    RIMT AI
+                    Campus Assistant
                   </div>
                   <div className="flex items-center gap-1.5 mt-0.5">
                     <span

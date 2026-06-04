@@ -682,7 +682,7 @@ export function Navbar() {
         <Link
           href="/"
           onClick={closeMobile}
-          aria-label="COLLEGE COMPASS — go to homepage"
+          aria-label="Campus Compass — go to homepage"
           className={FOCUS_RING_CLASS}
           style={{ textDecoration: "none", borderRadius: 18, ...focusRingStyle }}
         >
@@ -723,7 +723,7 @@ export function Navbar() {
                   transition: "color 0.25s ease",
                 }}
               >
-                COLLEGE COMPASS
+                CAMPUS COMPASS
               </div>
               <div
                 style={{

@@ -400,7 +400,7 @@ export function RoutePanel({
         {/* Header */}
         <div className="px-5 pt-5 pb-0 flex items-center justify-between">
           <div>
-            <h2 className="text-[15px] font-semibold text-slate-900 tracking-tight">Journey Planner</h2>
+            <h2 className="text-[15px] font-semibold text-slate-900 tracking-tight">Navigation Center</h2>
             <p className="text-[11px] text-slate-400 mt-0.5">Campus navigation assistant</p>
           </div>
           <div className="w-9 h-9 rounded-xl bg-sky-50 flex items-center justify-center">

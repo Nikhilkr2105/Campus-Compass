@@ -718,7 +718,7 @@ export function Sidebar({
                       color:      "var(--text-1)",
                     }}
                   >
-                    Campus Navigator
+                    Navigation Center
                   </div>
                   <div
                     className="text-[9.5px] tracking-widest mt-0.5"

@@ -4,15 +4,14 @@ import { Navbar } from "@/components/layout/Navbar";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "RIMT Smart Campus Navigator",
+  title: "Campus Compass - The Intelligent Campus Navigation Platform",
   description:
-    "AI-powered indoor + outdoor campus navigation for RIMT University. By Nikhil.",
+    "Smart indoor + outdoor campus navigation with AI-powered routing, real-time guidance, and campus intelligence.",
   keywords: [
-    "RIMT",
     "campus navigation",
     "indoor navigation",
     "AI",
-    "smart campus",
+    "campus compass",
   ],
 };
 

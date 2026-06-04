@@ -232,7 +232,7 @@ export default function EmergencyPage() {
               className="text-[11px] font-semibold tracking-widest uppercase mb-3"
               style={{ color: "var(--text-3)", fontFamily: "var(--font-body)" }}
             >
-              Campus Safety Center
+              Campus Compass Safety Center
             </p>
 
             <h1
@@ -693,7 +693,7 @@ export default function EmergencyPage() {
             className="text-[11px]"
             style={{ color: "var(--text-3)", fontFamily: "var(--font-body)" }}
           >
-            Campus Safety System · All data refreshed live
+            Campus Compass Safety Center · All data refreshed live
           </span>
         </motion.div>
       </motion.div>

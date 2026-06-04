@@ -49,6 +49,8 @@ export function MapLegend({ activeFilter, onFilterChange }: MapLegendProps) {
         {/* Header */}
         <button
           onClick={() => setOpen((o) => !o)}
+          aria-expanded={open}
+          aria-label="Toggle map legend"
           className="w-full flex items-center justify-between px-4 py-3"
           style={{
             background: "none",
