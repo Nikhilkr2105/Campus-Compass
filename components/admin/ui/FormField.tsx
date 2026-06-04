@@ -101,7 +101,7 @@ export function FormInput({
 
   return (
     <div
-      className="flex items-center rounded-lg overflow-hidden transition-all duration-150"
+      className="flex min-w-0 items-center rounded-lg overflow-hidden transition-all duration-150"
       style={{
         border:    `1.5px solid ${borderColor}`,
         boxShadow: shadow,
@@ -130,7 +130,7 @@ export function FormInput({
         disabled={disabled}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
-        className="flex-1 px-3 py-2.5 text-[13px] outline-none bg-transparent"
+        className="min-w-0 flex-1 px-3 py-2.5 text-[13px] outline-none bg-transparent"
         style={{
           color:      disabled ? "#94a3b8" : "#0f172a",
           fontFamily: "inherit",
@@ -285,9 +285,9 @@ export function PageHeader({
   badge?:    React.ReactNode;
 }) {
   return (
-    <div className="flex items-start justify-between gap-4 mb-6">
-      <div>
-        <div className="flex items-center gap-3">
+    <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      <div className="min-w-0">
+        <div className="flex flex-wrap items-center gap-3">
           <h1
             className="text-[22px] font-bold tracking-tight"
             style={{ color: "#0f172a", fontFamily: "var(--font-display, inherit)" }}
@@ -306,7 +306,7 @@ export function PageHeader({
         )}
       </div>
       {actions && (
-        <div className="flex items-center gap-2.5 flex-shrink-0">
+        <div className="flex w-full items-center gap-2.5 sm:w-auto sm:flex-shrink-0">
           {actions}
         </div>
       )}
@@ -328,7 +328,7 @@ export function AdminCard({
 }) {
   return (
     <div
-      className={`rounded-xl bg-white ${className}`}
+      className={`min-w-0 rounded-xl bg-white ${className}`}
       style={{
         border:    noBorder ? "none" : "1px solid #e2e8f0",
         boxShadow: "0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03)",
@@ -362,7 +362,7 @@ export function IconButton({
     <button
       onClick={onClick}
       title={title}
-      className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors duration-150 flex-shrink-0"
+      className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg transition-colors duration-150 sm:h-7 sm:w-7"
       style={{
         background: styles.bg,
         border:     `1px solid ${styles.border}`,

@@ -76,7 +76,7 @@ function PrimaryButton({
     <motion.button
       onClick={onClick}
       whileTap={{ scale: 0.97 }}
-      className={`inline-flex items-center gap-2 ${padding} rounded-lg text-[13px] font-medium transition-opacity`}
+      className={`inline-flex min-h-10 items-center justify-center gap-2 ${padding} rounded-lg text-[13px] font-medium transition-opacity`}
       style={{
         background: styles.bg,
         color:      styles.color,
@@ -121,10 +121,10 @@ function BuildingFormPanel({
       <AdminCard className="overflow-hidden">
         {/* Form header */}
         <div
-          className="flex items-center justify-between px-5 py-4"
+          className="flex items-center justify-between gap-3 px-4 py-4 sm:px-5"
           style={{ borderBottom: "1px solid #f1f5f9" }}
         >
-          <div className="flex items-center gap-3">
+          <div className="flex min-w-0 items-center gap-3">
             <div
               className="w-8 h-8 rounded-lg flex items-center justify-center text-base"
               style={{
@@ -134,7 +134,7 @@ function BuildingFormPanel({
             >
               {form.icon || "🏢"}
             </div>
-            <div>
+            <div className="min-w-0">
               <div className="text-[14px] font-semibold" style={{ color: "#0f172a" }}>
                 {editing ? "Edit Building" : "Add New Building"}
               </div>
@@ -155,7 +155,7 @@ function BuildingFormPanel({
         </div>
 
         {/* Form body */}
-        <div className="p-5">
+        <div className="p-4 sm:p-5">
           {/* Section: Identity */}
           <SectionLabel>Identity</SectionLabel>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
@@ -257,13 +257,13 @@ function BuildingFormPanel({
 
         {/* Form footer */}
         <div
-          className="flex items-center justify-between px-5 py-4"
+          className="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5"
           style={{ borderTop: "1px solid #f1f5f9", background: "#fafafa" }}
         >
           <div className="text-[11px]" style={{ color: "#94a3b8" }}>
             Fields marked <span style={{ color: "#0ea5e9" }}>*</span> are required
           </div>
-          <div className="flex items-center gap-2.5">
+          <div className="flex w-full items-center justify-end gap-2.5 sm:w-auto">
             <PrimaryButton variant="ghost" size="sm" onClick={onClose}>
               Cancel
             </PrimaryButton>
@@ -409,7 +409,7 @@ export function BuildingForm() {
                 transition={{ delay: i * 0.03, duration: 0.2 }}
               >
                 <AdminCard
-                  className="px-4 py-3.5 flex items-center gap-4 group transition-shadow duration-150"
+                  className="px-4 py-3.5 flex items-center gap-3 sm:gap-4 group transition-shadow duration-150"
                   style={{
                     cursor: "default",
                   }}
@@ -434,7 +434,7 @@ export function BuildingForm() {
                       {b.name}
                     </div>
                     <div
-                      className="text-[11px] mt-0.5 flex items-center gap-2"
+                      className="text-[11px] mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1"
                       style={{ color: "#94a3b8" }}
                     >
                       <span>{b.floors} floor{b.floors !== 1 ? "s" : ""}</span>

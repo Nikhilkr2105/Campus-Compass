@@ -206,7 +206,7 @@ export function KPICards() {
             />
 
             {/* Header row */}
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <span
                 className="text-[10.5px] font-semibold tracking-wider uppercase"
                 style={{ color: T.muted, letterSpacing: "0.08em" }}
@@ -227,7 +227,7 @@ export function KPICards() {
             </div>
 
             {/* Value + sparkline */}
-            <div className="flex items-end justify-between gap-3">
+            <div className="flex flex-wrap items-end justify-between gap-3">
               <div>
                 <div
                   className="text-[30px] font-bold leading-none tracking-tight"
@@ -278,7 +278,7 @@ export function TopLocations() {
       }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between mb-5">
+      <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h3 className="text-[13px] font-semibold" style={{ color: T.navy }}>
             Top Destinations
@@ -302,7 +302,7 @@ export function TopLocations() {
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: i * 0.06, duration: 0.4 }}
-            className="flex items-center gap-3 group"
+            className="group flex items-center gap-3"
           >
             {/* Rank */}
             <div
@@ -325,7 +325,7 @@ export function TopLocations() {
 
             {/* Bar + label */}
             <div className="flex-1 min-w-0">
-              <div className="flex justify-between items-center mb-1.5">
+              <div className="mb-1.5 flex flex-wrap items-center justify-between gap-1">
                 <span className="text-[12px] font-medium truncate" style={{ color: T.navy }}>
                   {loc.name}
                 </span>
@@ -381,7 +381,7 @@ export function PopularRoutes() {
       }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between mb-5">
+      <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h3 className="text-[13px] font-semibold" style={{ color: T.navy }}>
             Popular Routes
@@ -402,7 +402,7 @@ export function PopularRoutes() {
         {POPULAR_ROUTES.map((r, i) => (
           <motion.div
             key={i}
-            className="flex items-center gap-3 py-3 first:pt-0 last:pb-0"
+            className="flex flex-wrap items-center gap-3 py-3 first:pt-0 last:pb-0"
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.07 }}
@@ -597,13 +597,13 @@ export function NavigationIntelligence() {
         boxShadow:   "0 1px 3px rgba(15,23,42,0.06), 0 8px 24px rgba(15,23,42,0.04)",
       }}
     >
-      <div className="flex items-center justify-between mb-5">
+      <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h3 className="text-[13px] font-semibold" style={{ color: T.navy }}>Navigation Intelligence</h3>
           <p className="text-[11px] mt-0.5" style={{ color: T.muted }}>Route patterns and campus pathfinding insights</p>
         </div>
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
         {NAV_METRICS.map((m, i) => (
           <motion.div
             key={m.label}
@@ -670,7 +670,7 @@ export function PredictiveInsights() {
       }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between mb-5">
+      <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="flex items-center gap-2.5">
             <h3 className="text-[13px] font-semibold" style={{ color: T.navy }}>Predictive Insights</h3>
@@ -700,12 +700,12 @@ export function PredictiveInsights() {
               initial={{ opacity: 0, x: -8 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: i * 0.07, duration: 0.4 }}
-              className="flex items-start gap-3 p-4 rounded-xl"
+              className="flex flex-col gap-3 rounded-xl p-4 sm:flex-row sm:items-start"
               style={{ background: meta.bg, border: `1px solid ${meta.border}` }}
             >
               <span className="text-lg flex-shrink-0 mt-0.5">{meta.icon}</span>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-0.5">
+                <div className="mb-0.5 flex flex-wrap items-center gap-2">
                   <span className="text-[12px] font-semibold" style={{ color: T.navy }}>
                     {ins.message}
                   </span>

@@ -171,9 +171,9 @@ function BarChart({ data, maxVal }: { data: { label: string; val: number }[]; ma
   const gridLines = [0, 25, 50, 75, 100];
 
   return (
-    <div className="relative" style={{ paddingLeft: 28 }}>
+    <div className="relative min-w-0" style={{ paddingLeft: 22 }}>
       {/* Y-axis gridlines */}
-      <div className="absolute inset-0 pointer-events-none" style={{ paddingLeft: 28 }}>
+      <div className="absolute inset-0 pointer-events-none" style={{ paddingLeft: 22 }}>
         {gridLines.map((g) => (
           <div
             key={g}
@@ -192,7 +192,7 @@ function BarChart({ data, maxVal }: { data: { label: string; val: number }[]; ma
       </div>
 
       {/* Bars */}
-      <div className="flex items-end gap-1.5" style={{ height: H }}>
+      <div className="flex min-w-0 items-end gap-1" style={{ height: H }}>
         {data.map((d, i) => {
           const barH = Math.round((d.val / maxVal) * (H - 8));
           const isH  = hovered === i;
@@ -247,7 +247,7 @@ function BarChart({ data, maxVal }: { data: { label: string; val: number }[]; ma
       </div>
 
       {/* X-axis labels */}
-      <div className="flex items-center gap-1.5 mt-2.5">
+      <div className="mt-2.5 flex items-center gap-1">
         {data.map((d, i) => (
           <div
             key={d.label}
@@ -307,7 +307,7 @@ export function TrafficChart() {
   return (
     <Card className="p-5">
       {/* Header */}
-      <div className="flex items-center justify-between mb-5">
+      <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h3 className="text-[13px] font-semibold" style={{ color: T.navy }}>Navigation Traffic</h3>
           <p className="text-[11px] mt-0.5" style={{ color: T.muted }}>Campus movement volume over time</p>
@@ -337,7 +337,7 @@ export function TrafficChart() {
       </div>
 
       {/* Legend */}
-      <div className="flex items-center gap-4 mb-4">
+      <div className="mb-4 flex flex-wrap items-center gap-x-4 gap-y-2">
         <div className="flex items-center gap-1.5">
           <div className="w-3 h-2 rounded-sm" style={{ background: `linear-gradient(90deg, ${T.sky}, ${T.purple})` }} />
           <span className="text-[10px]" style={{ color: T.muted }}>Navigation volume</span>
@@ -363,7 +363,7 @@ export function TrafficChart() {
 
       {/* Insight footer */}
       <div
-        className="mt-4 pt-4 flex items-center justify-between"
+        className="mt-4 flex flex-col gap-2 pt-4 sm:flex-row sm:items-center sm:justify-between"
         style={{ borderTop: "1px solid rgba(15,23,42,0.06)" }}
       >
         <div className="flex items-center gap-2">
@@ -413,7 +413,7 @@ export function BuildingSparklines() {
               transition={{ delay: i * 0.07, duration: 0.4 }}
             >
               {/* Header row */}
-              <div className="flex items-center justify-between mb-2">
+              <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
                 <span className="text-[12px] font-medium" style={{ color: T.navy }}>{b.name}</span>
                 <div className="flex items-center gap-2">
                   <span className="text-[10px]" style={{ color: T.muted }}>avg {avg}/day</span>
@@ -462,7 +462,7 @@ export function CampusFlowAnalysis() {
 
   return (
     <Card className="p-6">
-      <div className="flex items-center justify-between mb-5">
+      <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h3 className="text-[13px] font-semibold" style={{ color: T.navy }}>Campus Flow Analysis</h3>
           <p className="text-[11px] mt-0.5" style={{ color: T.muted }}>Movement patterns across time-of-day phases</p>
@@ -512,7 +512,7 @@ export function CampusFlowAnalysis() {
             >
               {/* Phase info */}
               <div
-                className="flex items-center gap-3 px-4 py-3 rounded-xl mb-4"
+                className="mb-4 flex flex-col gap-3 rounded-xl px-4 py-3 sm:flex-row sm:items-center"
                 style={{ background: `${f.color}08`, border: `1px solid ${f.color}18` }}
               >
                 <span className="text-2xl">{f.icon}</span>
@@ -522,7 +522,7 @@ export function CampusFlowAnalysis() {
                   </div>
                   <div className="text-[11px]" style={{ color: T.muted }}>{f.insight}</div>
                 </div>
-                <div className="ml-auto text-right">
+                <div className="text-left sm:ml-auto sm:text-right">
                   <div className="text-[22px] font-bold leading-none" style={{ color: f.color }}>{f.pct}%</div>
                   <div className="text-[9px]" style={{ color: T.faint }}>campus load</div>
                 </div>
@@ -580,7 +580,7 @@ export function StudentActivityTrends() {
   return (
     <Card className="p-5">
       {/* Header */}
-      <div className="flex items-center justify-between mb-5">
+      <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h3 className="text-[13px] font-semibold" style={{ color: T.navy }}>Student Activity Trends</h3>
           <p className="text-[11px] mt-0.5" style={{ color: T.muted }}>Academic · Social · Sports — weekly breakdown</p>
@@ -588,7 +588,7 @@ export function StudentActivityTrends() {
       </div>
 
       {/* Legend */}
-      <div className="flex items-center gap-4 mb-5">
+      <div className="mb-5 flex flex-wrap items-center gap-x-4 gap-y-2">
         {SERIES.map((s) => (
           <div key={s.key} className="flex items-center gap-1.5">
             <div className="w-2.5 h-2.5 rounded-sm" style={{ background: s.color }} />
@@ -660,7 +660,7 @@ export function StudentActivityTrends() {
 export function RecentTrends() {
   return (
     <Card className="p-6">
-      <div className="flex items-center justify-between mb-5">
+      <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h3 className="text-[13px] font-semibold" style={{ color: T.navy }}>Recent Trends</h3>
           <p className="text-[11px] mt-0.5" style={{ color: T.muted }}>Week-over-week navigation pattern shifts</p>
@@ -680,7 +680,7 @@ export function RecentTrends() {
             initial={{ opacity: 0, x: -6 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: i * 0.06, duration: 0.4 }}
-            className="flex items-center gap-4 py-3 first:pt-0 last:pb-0"
+            className="flex flex-wrap items-center gap-4 py-3 first:pt-0 last:pb-0"
           >
             <div
               className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-[11px] font-bold"
@@ -727,7 +727,7 @@ const OPS_METRICS = [
 export function OperationalMetrics() {
   return (
     <Card className="p-6">
-      <div className="flex items-center justify-between mb-5">
+      <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h3 className="text-[13px] font-semibold" style={{ color: T.navy }}>Operational Metrics</h3>
           <p className="text-[11px] mt-0.5" style={{ color: T.muted }}>System performance · infrastructure health</p>
@@ -738,7 +738,7 @@ export function OperationalMetrics() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
         {OPS_METRICS.map((m, i) => (
           <motion.div
             key={m.label}

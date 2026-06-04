@@ -361,7 +361,7 @@ function PageHeader({ time, date, phase }: { time: string; date: string; phase: 
       transition={{ duration: 0.6, ease: [0.21, 0.47, 0.32, 0.98] }}
     >
       <div
-        className="rounded-2xl px-7 py-5"
+        className="relative rounded-2xl px-3 py-4 sm:px-5 sm:py-5 md:px-7"
         style={{
           background:     "rgba(255,255,255,0.9)",
           backdropFilter: "blur(20px)",
@@ -375,9 +375,9 @@ function PageHeader({ time, date, phase }: { time: string; date: string; phase: 
           style={{ background: `linear-gradient(90deg, ${T.sky}, ${T.purple}55, transparent)` }}
         />
 
-        <div className="flex flex-wrap items-center justify-between gap-5">
+        <div className="flex flex-wrap items-center justify-between gap-4 sm:gap-5">
           {/* Identity */}
-          <div className="flex items-center gap-4">
+          <div className="flex min-w-0 items-start gap-3 sm:items-center sm:gap-4">
             <div
               className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
               style={{
@@ -389,14 +389,14 @@ function PageHeader({ time, date, phase }: { time: string; date: string; phase: 
                 <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
               </svg>
             </div>
-            <div>
-              <div className="flex items-center gap-2.5 mb-0.5">
-                <h1 className="text-[20px] font-bold tracking-tight leading-none" style={{ color: T.navy, letterSpacing: "-0.02em" }}>
+            <div className="min-w-0">
+              <div className="mb-0.5 flex flex-wrap items-center gap-x-2.5 gap-y-1">
+                <h1 className="text-[clamp(20px,5vw,28px)] font-bold tracking-tight leading-none" style={{ color: T.navy, letterSpacing: "-0.02em" }}>
                   Analytics
                 </h1>
-                <span className="text-[20px] font-light leading-none" style={{ color: "rgba(15,23,42,0.15)" }}>/</span>
+                <span className="hidden text-[20px] font-light leading-none min-[390px]:inline" style={{ color: "rgba(15,23,42,0.15)" }}>/</span>
                 <span
-                  className="text-[20px] font-bold tracking-tight leading-none"
+                  className="text-[18px] font-bold tracking-tight leading-none sm:text-[20px]"
                   style={{
                     background:           `linear-gradient(90deg, ${T.sky}, ${T.purple})`,
                     WebkitBackgroundClip: "text",
@@ -450,7 +450,7 @@ function PageHeader({ time, date, phase }: { time: string; date: string; phase: 
 
         {/* Status bar */}
         <div
-          className="mt-5 pt-4 flex flex-wrap items-center gap-6"
+          className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 pt-4"
           style={{ borderTop: "1px solid rgba(15,23,42,0.06)" }}
         >
           {[
@@ -499,8 +499,8 @@ function SectionHeader({
   live?:        boolean;
 }) {
   return (
-    <div className="flex items-end justify-between mb-4">
-      <div>
+    <div className="mb-4 flex flex-col gap-2 sm:gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <div className="min-w-0">
         <div className="flex items-center gap-2.5 mb-0.5">
           <div
             className="w-[3px] h-4 rounded-full"
@@ -523,14 +523,14 @@ function SectionHeader({
           )}
         </div>
         {description && (
-          <p className="text-[11px] ml-[19px]" style={{ color: T.muted }}>
+          <p className="ml-[19px] text-[11px]" style={{ color: T.muted }}>
             {description}
           </p>
         )}
       </div>
       {action && (
         <button
-          className="text-[11px] font-medium px-3 py-1.5 rounded-lg transition-all duration-200"
+          className="min-h-9 self-start rounded-lg px-3 py-1.5 text-[11px] font-medium transition-all duration-200 sm:self-auto"
           style={{
             color:      T.sky,
             background: `rgba(14,165,233,0.07)`,
@@ -618,7 +618,7 @@ export default function AnalyticsPage() {
       <AmbientBackground />
 
       <motion.div
-        className="relative z-10 max-w-[1320px] mx-auto px-5 sm:px-7 py-7"
+        className="relative z-10 max-w-[1320px] mx-auto px-3 py-5 sm:px-5 sm:py-6 md:px-7 md:py-7"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.4 }}
@@ -628,7 +628,7 @@ export default function AnalyticsPage() {
 
         {/* ── ALL SECTIONS ── */}
         <motion.div
-          className="space-y-8"
+          className="space-y-5 sm:space-y-6 md:space-y-8"
           variants={staggerContainer}
           initial="hidden"
           animate={mounted ? "show" : "hidden"}
@@ -670,7 +670,7 @@ export default function AnalyticsPage() {
               label="Student Activity Trends"
               description="Academic, social, and sports engagement across the week"
             />
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-5">
               <div className="lg:col-span-2">
                 <StudentActivityTrends />
               </div>
@@ -704,7 +704,7 @@ export default function AnalyticsPage() {
               label="Recent Trends"
               description="Week-over-week navigation shifts and demand changes"
             />
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 md:gap-5">
               <RecentTrends />
               <BuildingSparklines />
             </div>
@@ -725,7 +725,7 @@ export default function AnalyticsPage() {
               label="Campus Intelligence"
               description="Top destinations and highest-demand navigation route patterns"
             />
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 md:gap-5">
               <TopLocations />
               <PopularRoutes />
             </div>
@@ -738,7 +738,7 @@ export default function AnalyticsPage() {
               description="Generated event feed, 24h activity profile, and campus load"
               live
             />
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-5">
               <div className="lg:col-span-2">
                 <div
                   className="rounded-2xl p-5 h-full"
@@ -763,7 +763,7 @@ export default function AnalyticsPage() {
               </div>
               <div>
                 <div
-                  className="rounded-2xl p-5 h-full flex flex-col items-center justify-center"
+                  className="rounded-2xl p-4 sm:p-5 h-full flex flex-col items-center justify-center"
                   style={{
                     background:     "rgba(255,255,255,0.82)",
                     backdropFilter: "blur(16px)",

@@ -76,7 +76,7 @@ function PrimaryButton({
       onClick={onClick}
       whileTap={{ scale: 0.97 }}
       whileHover={{ opacity: 0.9 }}
-      className={`inline-flex items-center gap-2 ${p} rounded-lg text-[13px] font-medium`}
+      className={`inline-flex min-h-10 items-center justify-center gap-2 ${p} rounded-lg text-[13px] font-medium`}
       style={{ background: styles.bg, color: styles.color, border: styles.border, boxShadow: styles.shadow, cursor: "pointer" }}
     >
       {icon}{children}
@@ -110,17 +110,17 @@ function RoomFormPanel({
       <AdminCard className="overflow-hidden">
         {/* Header */}
         <div
-          className="flex items-center justify-between px-5 py-4"
+          className="flex items-center justify-between gap-3 px-4 py-4 sm:px-5"
           style={{ borderBottom: "1px solid #f1f5f9" }}
         >
-          <div className="flex items-center gap-3">
+          <div className="flex min-w-0 items-center gap-3">
             <div
               className="w-8 h-8 rounded-lg flex items-center justify-center"
               style={{ background: `${typeColor}15`, border: `1px solid ${typeColor}30` }}
             >
               <DoorOpen className="w-4 h-4" style={{ color: typeColor }} />
             </div>
-            <div>
+            <div className="min-w-0">
               <div className="text-[14px] font-semibold" style={{ color: "#0f172a" }}>
                 {editing ? "Edit Room" : "Add New Room"}
               </div>
@@ -141,7 +141,7 @@ function RoomFormPanel({
         </div>
 
         {/* Body */}
-        <div className="p-5">
+        <div className="p-4 sm:p-5">
           {/* Identity */}
           <SectionLabel>Room Identity</SectionLabel>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
@@ -217,13 +217,13 @@ function RoomFormPanel({
 
         {/* Footer */}
         <div
-          className="flex items-center justify-between px-5 py-4"
+          className="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5"
           style={{ borderTop: "1px solid #f1f5f9", background: "#fafafa" }}
         >
           <div className="text-[11px]" style={{ color: "#94a3b8" }}>
             Fields marked <span style={{ color: "#0ea5e9" }}>*</span> are required
           </div>
-          <div className="flex items-center gap-2.5">
+          <div className="flex w-full items-center justify-end gap-2.5 sm:w-auto">
             <PrimaryButton variant="ghost" size="sm" onClick={onClose}>Cancel</PrimaryButton>
             <PrimaryButton size="sm" onClick={onSave} icon={<Check className="w-3.5 h-3.5" />}>
               {editing ? "Update Room" : "Save Room"}
@@ -362,7 +362,7 @@ export function RoomForm() {
       <AdminCard className="overflow-hidden">
         {/* Table head */}
         <div
-          className="grid px-4 py-3"
+          className="hidden px-4 py-3 sm:grid"
           style={{
             gridTemplateColumns: "2fr 1fr 80px 1fr 88px",
             borderBottom:        "1px solid #f1f5f9",
@@ -412,7 +412,7 @@ export function RoomForm() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: i * 0.02 }}
-              className="grid px-4 py-3 items-center transition-colors duration-100"
+              className="flex flex-col gap-3 px-4 py-3 transition-colors duration-100 sm:grid sm:items-center sm:gap-0"
               style={{
                 gridTemplateColumns: "2fr 1fr 80px 1fr 88px",
                 borderBottom: i < filtered.length - 1 ? "1px solid #f8fafc" : "none",
@@ -421,7 +421,7 @@ export function RoomForm() {
               onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
             >
               {/* Name */}
-              <div className="flex items-center gap-2.5 min-w-0">
+              <div className="flex w-full items-center gap-2.5 min-w-0 sm:w-auto">
                 <div
                   className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
                   style={{ background: `${typeColor}12`, border: `1px solid ${typeColor}25` }}

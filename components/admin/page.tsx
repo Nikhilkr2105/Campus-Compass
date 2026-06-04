@@ -351,11 +351,11 @@ function LiveActivityFeed({ phase }: { phase: CampusPhase }) {
 function HeatRow({ label, values, currentHour }: { label: string; values: number[]; currentHour: number }) {
   const displayHour = currentHour - 6;
   return (
-    <div className="flex items-center gap-3">
-      <span className="text-[11px] w-14 flex-shrink-0 text-right" style={{ color: "#94a3b8" }}>
+    <div className="flex items-center gap-2 sm:gap-3">
+      <span className="w-12 flex-shrink-0 text-right text-[10px] sm:w-14 sm:text-[11px]" style={{ color: "#94a3b8" }}>
         {label}
       </span>
-      <div className="flex gap-1 flex-1">
+      <div className="flex min-w-0 flex-1 gap-0.5 sm:gap-1">
         {values.map((v, i) => {
           const isCurrent = i === displayHour;
           const opacity   = 0.08 + v * 0.82;
@@ -407,7 +407,7 @@ function ActionCenter({ onNavigate }: { onNavigate: (tab: AdminTab) => void }) {
           <div className="text-[12px]" style={{ color: "#94a3b8" }}>Common administrative tasks</div>
         </div>
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
         {actions.map((a) => (
           <motion.button
             key={a.label}
@@ -539,10 +539,10 @@ function Overview({ onNavigate }: { onNavigate: (tab: AdminTab) => void }) {
     <div className="flex flex-col gap-5">
 
       {/* ── Executive header ── */}
-      <AdminCard className="px-5 py-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-3">
+      <AdminCard className="px-3 py-3 sm:px-4 sm:py-4 md:px-5">
+        <div className="flex flex-col gap-3 sm:gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
               <h1
                 className="text-[20px] font-bold"
                 style={{ color: "#0f172a", fontFamily: "var(--font-display, inherit)" }}
@@ -558,7 +558,7 @@ function Overview({ onNavigate }: { onNavigate: (tab: AdminTab) => void }) {
             </p>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center justify-between gap-2 sm:gap-4 sm:justify-end">
             {/* Live widgets */}
             <div className="hidden md:flex items-center gap-2">
               {[
@@ -596,7 +596,7 @@ function Overview({ onNavigate }: { onNavigate: (tab: AdminTab) => void }) {
       </AdminCard>
 
       {/* ── KPI cards ── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
         {kpis.map((k, i) => (
           <motion.div
             key={k.label}
@@ -628,7 +628,7 @@ function Overview({ onNavigate }: { onNavigate: (tab: AdminTab) => void }) {
               {phase.short} · {phase.loadPct}%
             </StatusBadge>
           </div>
-          <div className="flex justify-around">
+          <div className="grid grid-cols-2 gap-3 sm:flex sm:justify-around">
             {sysLoad.map((s) => (
               <LoadMetric key={s.label} {...s} phase={phase} />
             ))}
@@ -653,9 +653,9 @@ function Overview({ onNavigate }: { onNavigate: (tab: AdminTab) => void }) {
                 initial={{ opacity: 0, x: -6 }}
                 animate={{ opacity: 1, x: 0  }}
                 transition={{ delay: 0.2 + i * 0.05 }}
-                className="flex items-center justify-between py-2.5"
+                className="flex items-center justify-between gap-3 py-2.5"
               >
-                <div className="flex items-center gap-2.5">
+                <div className="flex min-w-0 items-center gap-2.5">
                   <div
                     className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
                     style={{
@@ -668,7 +668,7 @@ function Overview({ onNavigate }: { onNavigate: (tab: AdminTab) => void }) {
                       style={{ color: s.variant === "success" ? "#22c55e" : s.variant === "warning" ? "#f59e0b" : "#3b82f6" }}
                     />
                   </div>
-                  <span className="text-[12px]" style={{ color: "#374151" }}>{s.label}</span>
+                  <span className="min-w-0 text-[12px]" style={{ color: "#374151" }}>{s.label}</span>
                 </div>
                 <StatusBadge variant={s.variant}>{s.state}</StatusBadge>
               </motion.div>
@@ -678,7 +678,7 @@ function Overview({ onNavigate }: { onNavigate: (tab: AdminTab) => void }) {
       </div>
 
       {/* ── Activity + Heatmap ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
 
         {/* Live activity */}
         <AdminCard className="overflow-hidden">
@@ -709,7 +709,7 @@ function Overview({ onNavigate }: { onNavigate: (tab: AdminTab) => void }) {
           </div>
 
           {/* Hour labels */}
-          <div className="flex items-center gap-1 mb-2 pl-[68px]">
+          <div className="flex items-center gap-0.5 mb-2 pl-12 sm:gap-1 sm:pl-14 md:pl-[68px]">
             {hours.map((h, i) => (
               <span
                 key={h}
@@ -731,7 +731,7 @@ function Overview({ onNavigate }: { onNavigate: (tab: AdminTab) => void }) {
           </div>
 
           {/* Legend */}
-          <div className="flex items-center gap-1.5 mt-3 justify-end">
+          <div className="flex flex-wrap items-center gap-1.5 mt-3 justify-end">
             <span className="text-[10px]" style={{ color: "#94a3b8" }}>Low</span>
             {[0.08, 0.28, 0.48, 0.68, 0.90].map((o, i) => (
               <div
@@ -806,7 +806,7 @@ function Settings() {
 
       <AdminCard className="overflow-hidden">
         <div
-          className="flex items-center justify-between px-5 py-4"
+          className="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5"
           style={{ borderBottom: "1px solid #f8fafc" }}
         >
           <div>
@@ -838,9 +838,9 @@ function Settings() {
                 initial={{ opacity: 0, x: -8 }}
                 animate={{ opacity: 1, x: 0  }}
                 transition={{ delay: i * 0.05 }}
-                className="flex items-center justify-between px-5 py-4"
+                className="flex items-center justify-between gap-3 px-4 py-4 sm:px-5"
               >
-                <div className="flex items-center gap-3">
+                <div className="flex min-w-0 items-center gap-3">
                   <div
                     className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors duration-200"
                     style={{
@@ -853,7 +853,7 @@ function Settings() {
                       style={{ color: on ? "#0ea5e9" : "#94a3b8" }}
                     />
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <div
                       className="text-[13px] font-medium transition-colors duration-150"
                       style={{ color: on ? "#0f172a" : "#64748b" }}
@@ -911,7 +911,7 @@ function Analytics() {
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex items-start justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-[22px] font-bold" style={{ color: "#0f172a" }}>Analytics</h1>
           <p className="text-[13px] mt-0.5" style={{ color: "#64748b" }}>Platform usage and performance metrics</p>
@@ -919,7 +919,7 @@ function Analytics() {
         <StatusBadge variant={phase.variant}>{phase.short} · {phase.loadPct}% load</StatusBadge>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         {metrics.map((m, i) => (
           <motion.div
             key={m.label}
@@ -983,7 +983,7 @@ function EmergencyAdmin() {
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex items-start justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-[22px] font-bold" style={{ color: "#0f172a" }}>Emergency Management</h1>
           <p className="text-[13px] mt-0.5" style={{ color: "#64748b" }}>Campus safety and incident monitoring</p>
@@ -1035,7 +1035,7 @@ function EmergencyAdmin() {
       </div>
 
       {/* All-clear notice */}
-      <AdminCard className="px-5 py-4 flex items-center gap-3" style={{ border: "1px solid #bbf7d0", background: "#f0fdf4" }}>
+      <AdminCard className="px-5 py-4 flex items-start gap-3" style={{ border: "1px solid #bbf7d0", background: "#f0fdf4" }}>
         <CheckCircle2 className="w-5 h-5 flex-shrink-0" style={{ color: "#22c55e" }} />
         <div>
           <div className="text-[13px] font-semibold" style={{ color: "#166534" }}>Campus Status: Secure</div>
@@ -1066,9 +1066,9 @@ export default function AdminPage() {
 
   return (
     <div
-      className="flex"
+      className="flex flex-col lg:flex-row"
       style={{
-        height:     "100vh",
+        height:     "100dvh",
         paddingTop: 95,
         background: "#f8fafc",
         overflow:   "hidden",
@@ -1076,8 +1076,8 @@ export default function AdminPage() {
     >
       <AdminSidebar active={tab} onChange={setTab} />
 
-      <main className="flex-1 overflow-y-auto">
-        <div className="max-w-[960px] mx-auto px-6 py-6">
+      <main className="min-w-0 flex-1 overflow-y-auto">
+        <div className="max-w-[960px] mx-auto px-3 py-3 sm:px-4 sm:py-4 md:px-6 md:py-6">
           <AnimatePresence mode="wait">
             <motion.div
               key={tab}

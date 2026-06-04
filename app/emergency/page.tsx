@@ -174,7 +174,7 @@ export default function EmergencyPage() {
       />
 
       <motion.div
-        className="relative z-10 max-w-[1200px] mx-auto px-5 py-8"
+        className="relative z-10 max-w-[1200px] mx-auto px-3 py-6 sm:px-5 sm:py-8"
         variants={container}
         initial="hidden"
         animate="show"
@@ -184,13 +184,13 @@ export default function EmergencyPage() {
         ═══════════════════════════════════════════════════════════════════ */}
         <motion.div
           variants={fadeUp}
-          className="flex items-center justify-between mb-6 px-4 py-2.5 rounded-xl"
+          className="mb-4 sm:mb-6 flex items-start justify-between gap-2 sm:gap-3 rounded-xl px-3 sm:px-4 py-2 sm:py-2.5 sm:items-center"
           style={{
             background: "rgba(22,163,74,0.06)",
             border: "1px solid rgba(22,163,74,0.16)",
           }}
         >
-          <div className="flex items-center gap-2.5">
+          <div className="flex min-w-0 items-start gap-2.5 sm:items-center">
             <PulseDot color="#16A34A" />
             <span
               className="text-[11px] font-semibold"
@@ -219,7 +219,7 @@ export default function EmergencyPage() {
         >
           {/* Hero card */}
           <div
-            className="rounded-2xl p-7 lg:p-8"
+            className="rounded-2xl p-5 sm:p-7 lg:p-8"
             style={{
               background: "var(--surface, rgba(255,255,255,0.04))",
               border: "1px solid rgba(255,255,255,0.09)",
@@ -236,7 +236,7 @@ export default function EmergencyPage() {
             </p>
 
             <h1
-              className="text-[clamp(28px,4.5vw,52px)] font-bold leading-[1.1] mb-3 tracking-tight"
+              className="text-[clamp(24px,5vw,40px)] font-bold leading-[1.1] mb-2 sm:mb-3 tracking-tight"
               style={{ color: "var(--text-1)", fontFamily: "var(--font-display)" }}
             >
               Get Help{" "}
@@ -259,7 +259,7 @@ export default function EmergencyPage() {
             </p>
 
             {/* Quick action buttons */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-6">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-2.5 mb-5 sm:mb-6">
               {quickActions.map((action, i) => {
                 const isSOS = i === 0;
                 const isArmed = isSOS && sosConfirm;
@@ -272,7 +272,7 @@ export default function EmergencyPage() {
                     whileTap={isSOS ? { scale: 0.97 } : {}}
                     disabled={!isSOS}
                     aria-disabled={!isSOS}
-                    className="rounded-xl px-3 py-3.5 flex flex-col items-center gap-2 cursor-pointer transition-all"
+                    className="min-h-20 sm:min-h-24 rounded-xl px-2 sm:px-3 py-2.5 sm:py-3.5 flex flex-col items-center justify-center gap-1.5 sm:gap-2 cursor-pointer transition-all"
                     style={{
                       background: isArmed
                         ? "rgba(220,38,38,0.15)"
@@ -301,19 +301,19 @@ export default function EmergencyPage() {
             <p className="text-[10px] mb-2" style={{ color: "var(--text-3)", fontFamily: "var(--font-body)" }}>
               Sample contact directory - calling is disabled in this demo.
             </p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-2.5">
               {contacts.map((c) => (
                 <motion.div
                   key={c.label}
                   whileHover={{ y: -1 }}
-                  className="rounded-xl p-3.5 flex flex-col gap-2 group"
+                  className="rounded-xl p-3 sm:p-3.5 flex flex-col gap-1.5 sm:gap-2 group"
                   style={{
                     background: c.bg,
                     border: `1px solid ${c.border}`,
                     textDecoration: "none",
                   }}
                 >
-                  <div className="flex items-center gap-2">
+                  <div className="flex min-w-0 items-center gap-2">
                     <div
                       className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
                       style={{
@@ -324,7 +324,7 @@ export default function EmergencyPage() {
                     >
                       <c.icon className="w-3.5 h-3.5" />
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <div
                         className="text-[11px] font-semibold leading-tight"
                         style={{ color: "var(--text-1)", fontFamily: "var(--font-body)" }}
@@ -339,7 +339,7 @@ export default function EmergencyPage() {
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-wrap items-center justify-between gap-1.5 sm:gap-2">
                     <span
                       className="text-[13px] font-bold tracking-tight"
                       style={{ color: c.accent, fontFamily: "var(--font-display)" }}
@@ -359,7 +359,7 @@ export default function EmergencyPage() {
           </div>
 
           {/* Right column: What To Do + Unit Status */}
-          <div className="flex flex-col gap-5">
+          <div className="flex flex-col gap-3 sm:gap-4 md:gap-5">
 
             {/* What To Do */}
             <div
@@ -432,7 +432,7 @@ export default function EmergencyPage() {
                 {liveStatuses.map((item) => (
                   <div
                     key={item.label}
-                    className="flex items-center justify-between rounded-lg px-3 py-2.5"
+                    className="flex items-center justify-between gap-3 rounded-lg px-3 py-2.5"
                     style={{
                       background: "rgba(255,255,255,0.025)",
                       border: "1px solid rgba(255,255,255,0.06)",
@@ -465,7 +465,7 @@ export default function EmergencyPage() {
         ═══════════════════════════════════════════════════════════════════ */}
         <motion.section
           variants={fadeUp}
-          className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-5 mb-5"
+          className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-3 sm:gap-4 md:gap-5 mb-5"
         >
           {/* Emergency Locations */}
           <div
@@ -486,7 +486,7 @@ export default function EmergencyPage() {
               </span>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-3 md:gap-4">
               {emergencyBuildings.map((building, i) => (
                 <motion.div
                   key={building.id}
@@ -570,7 +570,7 @@ export default function EmergencyPage() {
               backdropFilter: "blur(20px)",
             }}
           >
-            <div className="flex items-center justify-between mb-5">
+            <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-2">
                 <Activity className="w-4 h-4" style={{ color: "var(--text-3)" }} />
                 <span

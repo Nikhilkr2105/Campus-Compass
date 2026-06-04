@@ -53,16 +53,15 @@ const GROUPS: {
 export function AdminSidebar({ active, onChange }: AdminSidebarProps) {
   return (
     <aside
-      className="flex flex-col h-full flex-shrink-0"
+      className="flex w-full flex-shrink-0 flex-col border-b lg:h-full lg:w-56 lg:border-b-0 lg:border-r"
       style={{
-        width:       224,
         background:  "#ffffff",
-        borderRight: "1px solid #e2e8f0",
+        borderColor: "#e2e8f0",
       }}
     >
       {/* ── Header ── */}
       <div
-        className="px-5 py-5 flex-shrink-0"
+        className="px-4 py-3 flex-shrink-0 lg:px-5 lg:py-5"
         style={{ borderBottom: "1px solid #f1f5f9" }}
       >
         {/* Logo mark */}
@@ -96,9 +95,9 @@ export function AdminSidebar({ active, onChange }: AdminSidebarProps) {
       </div>
 
       {/* ── Nav ── */}
-      <nav className="flex-1 px-3 py-4 overflow-y-auto no-scrollbar flex flex-col gap-5">
+      <nav className="no-scrollbar flex gap-3 overflow-x-auto px-3 py-3 lg:flex-1 lg:flex-col lg:gap-5 lg:overflow-x-hidden lg:overflow-y-auto lg:py-4">
         {GROUPS.map((group) => (
-          <div key={group.label}>
+          <div key={group.label} className="flex-shrink-0 lg:flex-shrink">
             {/* Group label */}
             <div
               className="px-2 mb-1.5 text-[10px] font-semibold tracking-[1.2px] uppercase"
@@ -108,7 +107,7 @@ export function AdminSidebar({ active, onChange }: AdminSidebarProps) {
             </div>
 
             {/* Items */}
-            <div className="flex flex-col gap-0.5">
+            <div className="flex gap-1 lg:flex-col lg:gap-0.5">
               {group.items.map(({ id, label, icon: Icon, badge }) => {
                 const isActive = active === id;
                 return (
@@ -116,7 +115,7 @@ export function AdminSidebar({ active, onChange }: AdminSidebarProps) {
                     key={id}
                     onClick={() => onChange(id)}
                     whileTap={{ scale: 0.98 }}
-                    className="relative w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left text-[13px] transition-colors duration-150"
+                    className="relative flex min-h-10 w-full items-center gap-2.5 whitespace-nowrap rounded-lg px-2.5 py-2 text-left text-[13px] transition-colors duration-150"
                     style={{
                       background: isActive ? "#f0f9ff" : "transparent",
                       color:      isActive ? "#0284c7" : "#475569",
@@ -184,7 +183,7 @@ export function AdminSidebar({ active, onChange }: AdminSidebarProps) {
 
       {/* ── Campus status pill ── */}
       <div
-        className="mx-3 mb-3 px-3 py-2.5 rounded-lg flex items-center gap-2"
+        className="mx-3 mb-3 hidden items-center gap-2 rounded-lg px-3 py-2.5 lg:flex"
         style={{
           background: "#f0fdf4",
           border:     "1px solid #bbf7d0",
@@ -209,7 +208,7 @@ export function AdminSidebar({ active, onChange }: AdminSidebarProps) {
 
       {/* ── User chip ── */}
       <div
-        className="px-4 py-4 flex-shrink-0"
+        className="hidden px-4 py-4 flex-shrink-0 lg:block"
         style={{ borderTop: "1px solid #f1f5f9" }}
       >
         <div className="flex items-center gap-2.5">
