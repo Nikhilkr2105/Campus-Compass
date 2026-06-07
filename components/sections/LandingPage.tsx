@@ -32,6 +32,11 @@ import {
 } from "lucide-react";
 import { useRef, useState, useEffect } from "react";
 
+// ========== NEW IMPORTS FOR PHASE 1 ==========
+import { useScrollNarrative, type SectionId } from "@/hooks/useScrollNarrative";
+import { ScrollIndicator } from "@/components/ScrollIndicator";
+// ================================================
+
 /* ─────────────────────────────────────────
    EASING
 ───────────────────────────────────────── */
@@ -183,7 +188,7 @@ const ECOSYSTEM = [
 ];
 
 /* ─────────────────────────────────────────
-   SKY HERO BACKGROUND
+   SKY HERO BACKGROUND (PRESERVED)
 ───────────────────────────────────────── */
 function SkyHero() {
   return (
@@ -345,7 +350,7 @@ function SkyHero() {
 }
 
 /* ─────────────────────────────────────────
-   TOPOLOGY MAP — Deep premium campus style
+   TOPOLOGY MAP (PRESERVED)
 ───────────────────────────────────────── */
 function TopologyMap() {
   const buildings = [
@@ -671,7 +676,7 @@ function TopologyMap() {
 }
 
 /* ─────────────────────────────────────────
-   STAT CARD
+   STAT CARD (PRESERVED)
 ───────────────────────────────────────── */
 function StatCard({ s, i }: { s: (typeof STATS)[0]; i: number }) {
   const [visible, setVisible] = useState(false);
@@ -744,7 +749,7 @@ function StatCard({ s, i }: { s: (typeof STATS)[0]; i: number }) {
 }
 
 /* ─────────────────────────────────────────
-   FEATURE CARD
+   FEATURE CARD (PRESERVED)
 ───────────────────────────────────────── */
 function FeatureCard({ f, i }: { f: (typeof FEATURES)[0]; i: number }) {
   const [hovered, setHovered] = useState(false);
@@ -841,7 +846,7 @@ function FeatureCard({ f, i }: { f: (typeof FEATURES)[0]; i: number }) {
 }
 
 /* ─────────────────────────────────────────
-   SECTION LABEL
+   SECTION LABEL (PRESERVED)
 ───────────────────────────────────────── */
 function SectionLabel({
   children,
@@ -883,14 +888,17 @@ function SectionLabel({
   );
 }
 
-
-
 /* ─────────────────────────────────────────
-   MAIN PAGE
+   MAIN PAGE (MODIFIED FOR PHASE 1)
 ───────────────────────────────────────── */
 export function LandingPage() {
+  const containerRef = useRef<HTMLDivElement>(null);
   const featuresRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLDivElement>(null);
+
+  // ========== PHASE 1: USE SCROLL NARRATIVE HOOK ==========
+  const scrollState = useScrollNarrative();
+  // ========================================================
 
   const { scrollYProgress } = useScroll({
     target: heroRef,
@@ -903,12 +911,27 @@ export function LandingPage() {
   const scrollToFeatures = () =>
     featuresRef.current?.scrollIntoView({ behavior: "smooth" });
 
+  // ========== PHASE 1: SECTION-TRIGGERED ANIMATIONS ==========
+  // These will trigger animations when entering specific sections
+  const isStoryVisible = scrollState.sectionIndex >= 1;
+  const isStatsVisible = scrollState.sectionIndex >= 2;
+  const isFeaturesVisible = scrollState.sectionIndex >= 3;
+  // ========================================================
+
   return (
     <div
+      ref={containerRef}
       className="relative min-h-screen overflow-x-hidden"
       style={{ background: "var(--bg-1)" }}
     >
-      
+      {/* ========== PHASE 1: SCROLL INDICATOR ==========*/}
+      <ScrollIndicator
+        currentSection={scrollState.currentSection}
+        sectionIndex={scrollState.sectionIndex}
+        globalProgress={scrollState.globalProgress}
+        sections={scrollState.sections}
+      />
+      {/* ================================================ */}
 
       {/* ── HERO ── */}
       <section
@@ -927,13 +950,13 @@ export function LandingPage() {
         <SkyHero />
 
         <motion.div
-  style={{
-    y: springY,
-    opacity: heroOpacity,
-    position: "relative",
-    zIndex: 2,
-    paddingTop: 90,
-  }}
+          style={{
+            y: springY,
+            opacity: heroOpacity,
+            position: "relative",
+            zIndex: 2,
+            paddingTop: 90,
+          }}
           className="flex flex-col items-center text-center px-6"
         >
           {/* Badge */}
