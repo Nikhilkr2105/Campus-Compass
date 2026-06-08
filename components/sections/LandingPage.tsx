@@ -37,6 +37,11 @@ import { useScrollNarrative, type SectionId } from "@/hooks/useScrollNarrative";
 import { ScrollIndicator } from "@/components/ScrollIndicator";
 import { useAtmosphericEvolution } from "@/hooks/useAtmosphericEvolution";
 import { SkyHeroEnhanced } from "@/components/SkyHeroEnhanced";
+import { TopologyMapReactive } from "@/components/TopologyMapReactive";
+import { MiniCampusNavigator } from "@/components/MiniCampusNavigator";
+import { useMapNarrative } from "@/hooks/useMapNarrative";
+
+
 // ================================================
 
 /* ─────────────────────────────────────────
@@ -905,6 +910,10 @@ export function LandingPage() {
   sectionIndex: scrollState.sectionIndex,
   isScrolling: scrollState.isScrolling,
 });
+const mapState = useMapNarrative({
+  sectionIndex: scrollState.sectionIndex,
+  sectionProgress: scrollState.sectionProgress,
+});
   // ========================================================
 
   const { scrollYProgress } = useScroll({
@@ -938,6 +947,10 @@ export function LandingPage() {
         globalProgress={scrollState.globalProgress}
         sections={scrollState.sections}
       />
+      <MiniCampusNavigator
+  mapState={mapState}
+  sectionIndex={scrollState.sectionIndex}
+/>
       {/* ================================================ */}
 
       {/* ── HERO ── */}
@@ -1137,7 +1150,7 @@ export function LandingPage() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ duration: 1.1, delay: 0.85, ease: EASE }}
           >
-            <TopologyMap />
+            <TopologyMapReactive mapState={mapState} />
           </motion.div>
 
           {/* Scroll hint */}
