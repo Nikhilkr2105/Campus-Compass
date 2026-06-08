@@ -35,6 +35,8 @@ import { useRef, useState, useEffect } from "react";
 // ========== NEW IMPORTS FOR PHASE 1 ==========
 import { useScrollNarrative, type SectionId } from "@/hooks/useScrollNarrative";
 import { ScrollIndicator } from "@/components/ScrollIndicator";
+import { useAtmosphericEvolution } from "@/hooks/useAtmosphericEvolution";
+import { SkyHeroEnhanced } from "@/components/SkyHeroEnhanced";
 // ================================================
 
 /* ─────────────────────────────────────────
@@ -898,6 +900,11 @@ export function LandingPage() {
 
   // ========== PHASE 1: USE SCROLL NARRATIVE HOOK ==========
   const scrollState = useScrollNarrative();
+  const atmosphericState = useAtmosphericEvolution({
+  globalProgress: scrollState.globalProgress,
+  sectionIndex: scrollState.sectionIndex,
+  isScrolling: scrollState.isScrolling,
+});
   // ========================================================
 
   const { scrollYProgress } = useScroll({
@@ -947,7 +954,7 @@ export function LandingPage() {
           overflow: "hidden",
         }}
       >
-        <SkyHero />
+        <SkyHeroEnhanced atmosphericState={atmosphericState} />
 
         <motion.div
           style={{
