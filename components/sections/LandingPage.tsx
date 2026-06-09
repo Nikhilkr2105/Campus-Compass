@@ -40,6 +40,11 @@ import { SkyHeroEnhanced } from "@/components/SkyHeroEnhanced";
 import { TopologyMapReactive } from "@/components/TopologyMapReactive";
 import { MiniCampusNavigator } from "@/components/MiniCampusNavigator";
 import { useMapNarrative } from "@/hooks/useMapNarrative";
+import { useSpatialDepth } from "@/hooks/useSpatialDepth";
+import { AIDecisionEngine } from "@/components/AIDecisionEngine";
+import { ParallaxLayer } from "@/components/ParallaxLayer";
+import { useTilt } from "@/hooks/useTilt";
+import { DigitalTwin } from "@/components/DigitalTwin";
 
 
 // ================================================
@@ -689,6 +694,7 @@ function StatCard({ s, i }: { s: (typeof STATS)[0]; i: number }) {
   const [visible, setVisible] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const count = useCountUp(s.value, 2, visible);
+  const tilt = useTilt();
 
   useEffect(() => {
     const el = ref.current;
@@ -761,6 +767,7 @@ function StatCard({ s, i }: { s: (typeof STATS)[0]; i: number }) {
 function FeatureCard({ f, i }: { f: (typeof FEATURES)[0]; i: number }) {
   const [hovered, setHovered] = useState(false);
   const IconComp = f.icon;
+  const tilt = useTilt();
 
   return (
     <motion.div
@@ -909,6 +916,11 @@ export function LandingPage() {
   globalProgress: scrollState.globalProgress,
   sectionIndex: scrollState.sectionIndex,
   isScrolling: scrollState.isScrolling,
+});
+const spatialDepth = useSpatialDepth({
+  globalProgress: scrollState.globalProgress,
+  sectionIndex: scrollState.sectionIndex,
+  containerRef,
 });
 const mapState = useMapNarrative({
   sectionIndex: scrollState.sectionIndex,
@@ -1145,7 +1157,7 @@ const mapState = useMapNarrative({
 
           {/* Map preview */}
           <motion.div
-            style={{ width: "100%", maxWidth: 680, marginTop: 72 }}
+            style={{ width: "100%", maxWidth: 680, marginTop: 72, perspective: 1200, }}
             initial={{ opacity: 0, y: 56, scale: 0.94 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ duration: 1.1, delay: 0.85, ease: EASE }}
@@ -1471,6 +1483,11 @@ const mapState = useMapNarrative({
           ))}
         </div>
       </section>
+
+      {/* ── AI DECISION ENGINE ── Phase 5 */}
+      <AIDecisionEngine />
+      {/* ── DIGITAL TWIN ── Phase 6 */}
+<DigitalTwin />
 
       {/* ── ECOSYSTEM STRIP ── */}
       <section

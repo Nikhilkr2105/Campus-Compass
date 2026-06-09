@@ -159,7 +159,10 @@ export function TopologyMapReactive({ mapState }: TopologyMapReactiveProps) {
   } = mapState;
 
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0.85, scale: 0.98 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
       style={{
         position: "relative",
         width: "100%",
@@ -171,6 +174,9 @@ export function TopologyMapReactive({ mapState }: TopologyMapReactiveProps) {
         border: "1px solid rgba(56,130,246,0.2)",
         boxShadow:
           "0 40px 100px rgba(13,26,46,0.45), 0 8px 32px rgba(56,130,246,0.12), inset 0 1px 0 rgba(255,255,255,0.07), inset 0 -1px 0 rgba(56,130,246,0.08)",
+        // Phase 4: transformStyle needed for parent perspective to work
+        transformStyle: "preserve-3d",
+        willChange: "transform",
       }}
     >
       {/* ── Header bar (original, preserved) ─────────────────────────────── */}
@@ -591,6 +597,6 @@ export function TopologyMapReactive({ mapState }: TopologyMapReactiveProps) {
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
