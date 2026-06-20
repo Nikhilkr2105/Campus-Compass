@@ -42,10 +42,10 @@ import { MiniCampusNavigator } from "@/components/MiniCampusNavigator";
 import { useMapNarrative } from "@/hooks/useMapNarrative";
 import { useSpatialDepth } from "@/hooks/useSpatialDepth";
 import { AIDecisionEngine } from "@/components/AIDecisionEngine";
+import { CampusCompassTestimonials } from "@/components/CampusCompassTestimonials";
 import { ParallaxLayer } from "@/components/ParallaxLayer";
 import { useTilt } from "@/hooks/useTilt";
 import { DigitalTwin } from "@/components/DigitalTwin";
-
 
 // ================================================
 
@@ -939,6 +939,8 @@ const mapState = useMapNarrative({
   const scrollToFeatures = () =>
     featuresRef.current?.scrollIntoView({ behavior: "smooth" });
 
+  const [introComplete, setIntroComplete] = useState(false);
+
   // ========== PHASE 1: SECTION-TRIGGERED ANIMATIONS ==========
   // These will trigger animations when entering specific sections
   const isStoryVisible = scrollState.sectionIndex >= 1;
@@ -952,6 +954,8 @@ const mapState = useMapNarrative({
       className="relative min-h-screen overflow-x-hidden"
       style={{ background: "var(--bg-1)" }}
     >
+      
+
       {/* ========== PHASE 1: SCROLL INDICATOR ==========*/}
       <ScrollIndicator
         currentSection={scrollState.currentSection}
@@ -1483,7 +1487,8 @@ const mapState = useMapNarrative({
           ))}
         </div>
       </section>
-
+      {/* ── TESTIMONIALS ── */}
+<CampusCompassTestimonials />
       {/* ── AI DECISION ENGINE ── Phase 5 */}
       <AIDecisionEngine />
       {/* ── DIGITAL TWIN ── Phase 6 */}
