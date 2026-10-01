@@ -31,11 +31,6 @@ The long-term vision is to create a real-time intelligent campus platform capabl
 
 ![Landing Experience](docs/screenshots/landing.png)
 
----
-
-## Smart Navigation
-
-![Smart Navigation](docs/screenshots/navigation.png)
 
 ---
 
