@@ -34,11 +34,6 @@ The long-term vision is to create a real-time intelligent campus platform capabl
 
 ---
 
-## Analytics Dashboard
-
-![Analytics Dashboard](docs/screenshots/analytics.png)
-
----
 
 ## Emergency Center
 
@@ -46,11 +41,6 @@ The long-term vision is to create a real-time intelligent campus platform capabl
 
 ---
 
-## Admin Console
-
-![Admin Console](docs/screenshots/admin.png)
-
----
 
 # 🚀 Core Features
 
