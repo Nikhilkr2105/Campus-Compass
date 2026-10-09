@@ -25,23 +25,6 @@ The long-term vision is to create a real-time intelligent campus platform capabl
 
 ---
 
-# 📸 Screenshots
-
-## Landing Experience
-
-![Landing Experience](docs/screenshots/landing.png)
-
-
----
-
-
-## Emergency Center
-
-![Emergency Center](docs/screenshots/emergency.png)
-
----
-
-
 # 🚀 Core Features
 
 ## 🧭 Smart Navigation
