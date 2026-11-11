@@ -1,12 +1,13 @@
 import type { Metadata, Viewport } from "next";
 import { AIChat } from "@/components/chat/AiChat";
 import { Navbar } from "@/components/layout/Navbar";
+import IntroOverlay from "@/components/IntroOverlay";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Campus Compass - The Intelligent Campus Navigation Platform",
+  title: "Parul University Campus Compass",
   description:
-    "Smart indoor + outdoor campus navigation with AI-powered routing, real-time guidance, and campus intelligence.",
+    "Campus navigation for Parul University, Vadodara, Gujarat, with indoor routing and campus intelligence.",
   keywords: [
     "campus navigation",
     "indoor navigation",
@@ -47,9 +48,11 @@ export default function RootLayout({
         className="min-h-screen antialiased"
         style={{ background: "var(--bg-1)" }}
       >
-        <Navbar />
-        {children}
-        <AIChat />
+        <IntroOverlay>
+          <Navbar />
+          {children}
+          <AIChat />
+        </IntroOverlay>
       </body
 >
     </html>

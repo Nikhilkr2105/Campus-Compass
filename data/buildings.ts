@@ -22,6 +22,8 @@ export interface Building {
   icon: string;
 }
 
+// This topology remains a demo until verified Parul University survey data is supplied.
+
 export const CATEGORY_COLORS: Record<BuildingCategory, string> = {
   academic:  "#8b5cf6",
   admin:     "#3b82f6",
@@ -52,7 +54,7 @@ export const BUILDINGS: Building[] = [
     type: "admin",
     x: 310, y: 530,
     floors: 1,
-    description: "Main entrance to RIMT University. Security cabin, visitor registration, and reception desk.",
+    description: "Main entrance and reception location (Parul data verification required).",
     facilities: ["Security Cabin", "Visitor Registration", "CCTV Control", "Reception"],
     color: CATEGORY_COLORS.admin,
     icon: "🏛️",

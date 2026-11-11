@@ -82,7 +82,7 @@ function fuzzyScore(query: string, target: string): number {
 // ─────────────────────────────────────────────────────────────
 
 function useRecentSearches() {
-  const KEY = "rimt-recent-searches";
+  const KEY = "parul-university-recent-searches";
   const get = (): string[] => {
     if (typeof window === "undefined") return [];
     try { return JSON.parse(localStorage.getItem(KEY) || "[]"); }

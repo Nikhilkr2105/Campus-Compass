@@ -723,7 +723,7 @@ export function Navbar() {
                   transition: "color 0.25s ease",
                 }}
               >
-                CAMPUS COMPASS
+                PARUL UNIVERSITY
               </div>
               <div
                 style={{
@@ -735,7 +735,7 @@ export function Navbar() {
                   transition: "color 0.25s ease",
                 }}
               >
-                By NIKHIL💗
+                CAMPUS COMPASS
               </div>
             </div>
           </motion.div>

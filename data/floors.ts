@@ -35,6 +35,9 @@ export interface FloorData {
   connections: FloorConnection[];
 }
 
+// Room coordinates, floor plans and connections below are synthetic demo data
+// pending authoritative Parul University floor-plan data. See data/campus.ts.
+
 // ── Color map per room type ──────────────────────────
 export const ROOM_COLORS: Record<RoomType, string> = {
   lab:        "#8b5cf6",

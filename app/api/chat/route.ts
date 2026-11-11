@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from "next/server";
+import { CAMPUS } from "@/data/campus";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
@@ -127,7 +128,9 @@ function buildContextSnippet(text: string): string {
 }
 
 function buildSystemPrompt(intent: Intent, contextSnippet: string): string {
-  const base = `You are Campus Assistant — a friendly, knowledgeable AI guide helping students and visitors navigate campus.
+  const base = `You are Campus Assistant — a friendly, knowledgeable AI guide helping students and visitors navigate ${CAMPUS.displayName} in ${CAMPUS.city}, ${CAMPUS.state}.
+
+IMPORTANT DATA STATUS: The current building, floor and distance records are demonstration topology pending verification by Parul University. Do not claim an unverified location, floor, room, opening time or distance is authoritative; say that campus data verification is required when relevant.
 
 CAMPUS BUILDINGS & FACTS:
 ${Object.entries(BUILDINGS)

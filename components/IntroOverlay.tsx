@@ -9,11 +9,11 @@ interface IntroOverlayProps {
 }
 
 /**
- * Plays the intro on every single mount - i.e. every page refresh, by
- * design. Intentionally has no localStorage/sessionStorage/cookies and no
- * first-visit logic of any kind.
+ * Plays the intro once per root layout mount: once on a fresh browser load or
+ * refresh, but not on client-side route changes. It intentionally has no
+ * storage or pathname trigger.
  *
- * The landing page (children) mounts immediately and stays mounted for the
+ * The application (children) mounts immediately and stays mounted for the
  * entire lifetime of this component; the intro is purely a fullscreen
  * overlay on top of it that removes itself via local state once its own
  * fade-out finishes. No router involved, so no route change, no remount of

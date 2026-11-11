@@ -36,8 +36,8 @@ const INITIAL: Message = {
   timestamp: new Date(),
 };
 
-const CHAT_TOGGLE_EVENT = "rimt-ai-chat:toggle";
-const CHAT_STATE_EVENT  = "rimt-ai-chat:state";
+const CHAT_TOGGLE_EVENT = "parul-ai-chat:toggle";
+const CHAT_STATE_EVENT  = "parul-ai-chat:state";
 
 // ── Typing dots ──────────────────────────────────────
 function TypingDots() {

@@ -1196,7 +1196,7 @@ export function CampusMap({
               letterSpacing="4.5" fontFamily="var(--font-sans)"
               fontWeight="700" style={{ opacity: 0.6 }}
             >
-              RIMT UNIVERSITY CAMPUS
+              PARUL UNIVERSITY · VADODARA CAMPUS
             </text>
             <text
               x="310" y="604" textAnchor="middle"
